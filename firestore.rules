@@ -1,0 +1,99 @@
+rules_version = '2';
+service cloud.firestore {
+  match /databases/{database}/documents {
+    // Helper functions
+    function isAuthenticated() {
+      return request.auth != null;
+    }
+    function isAdmin() {
+      return isAuthenticated() &&
+        exists(/databases/$(database)/documents/users/$(request.auth.uid)) &&
+        get(/databases/$(database)/documents/users/$(request.auth.uid)).data.role == 'SUPER_ADMIN';
+    }
+    function isOwner(userId) {
+      return isAuthenticated() && request.auth.uid == userId;
+    }
+    function currentUserData() {
+      return get(/databases/$(database)/documents/users/$(request.auth.uid)).data;
+    }
+
+    // App settings: readable by anyone (needed for registration page), writable by admins
+    match /settings/{document} {
+      allow read: if true;
+      allow write: if isAdmin();
+    }
+
+    // Subscription plans: readable by anyone, writable by admins
+    match /subscriptionPlans/{planId} {
+      allow read: if true;
+      allow write: if isAdmin();
+    }
+
+    // User profiles: users can read/write their own document; admins can read/write any
+    match /users/{userId} {
+      allow read: if isAuthenticated() && (isOwner(userId) || isAdmin());
+      allow create: if isAuthenticated() && isOwner(userId);
+      allow update: if isAuthenticated() && (isOwner(userId) || isAdmin());
+      allow delete: if isAdmin();
+    }
+
+    // Services: readable by authenticated users; writable by service providers and admins
+    match /services/{serviceId} {
+      allow read: if isAuthenticated();
+      allow create: if isAuthenticated() && (currentUserData().role == 'SERVICE_PROVIDER' || isAdmin());
+      allow update, delete: if isAuthenticated() && (resource.data.providerId == request.auth.uid || isAdmin());
+    }
+
+    // Service requests: readable/writable by involved parties and admins
+    match /serviceRequests/{requestId} {
+      allow read: if isAuthenticated() &&
+        (resource.data.studentId == request.auth.uid ||
+         resource.data.providerId == request.auth.uid ||
+         isAdmin());
+      allow create: if isAuthenticated();
+      allow update, delete: if isAuthenticated() &&
+        (resource.data.studentId == request.auth.uid ||
+         resource.data.providerId == request.auth.uid ||
+         isAdmin());
+    }
+
+    // Payments: users can read their own; admins can read any; create own only
+    match /payments/{paymentId} {
+      allow read: if isAuthenticated() && (resource.data.userId == request.auth.uid || isAdmin());
+      allow create: if isAuthenticated() && request.resource.data.userId == request.auth.uid;
+      allow update, delete: if isAdmin();
+    }
+
+    // Escrow transactions: readable by payer/provider/admin; writable by admin
+    match /escrow/{transactionId} {
+      allow read: if isAuthenticated() &&
+        (resource.data.payerId == request.auth.uid ||
+         resource.data.providerId == request.auth.uid ||
+         isAdmin());
+      allow create: if isAuthenticated() && (request.resource.data.payerId == request.auth.uid || isAdmin());
+      allow update, delete: if isAdmin();
+    }
+
+    // Notifications: readable by owner; create by authenticated users/admins
+    match /notifications/{notificationId} {
+      allow read: if isAuthenticated() && resource.data.userId == request.auth.uid;
+      allow create: if isAuthenticated();
+      allow update, delete: if isAuthenticated() && (resource.data.userId == request.auth.uid || isAdmin());
+    }
+
+    // Transport check-ins: readable by provider/student/parent of student/admin; writable by provider/admin
+    match /transportCheckIns/{checkInId} {
+      allow read: if isAuthenticated() &&
+        (resource.data.providerId == request.auth.uid ||
+         resource.data.studentId == request.auth.uid ||
+         isAdmin());
+      allow create: if isAuthenticated() && (currentUserData().role == 'SERVICE_PROVIDER' || isAdmin());
+      allow update, delete: if isAuthenticated() && (resource.data.providerId == request.auth.uid || isAdmin());
+    }
+
+    // Deny access to all other collections by default
+    match /{document=**} {
+      allow read, write: if false;
+    }
+  }
+}
