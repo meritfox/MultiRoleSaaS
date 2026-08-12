@@ -1,4 +1,4 @@
-import { auth, db } from "./firebase";
+import { auth, db, ensureFirebaseInit } from "./firebase";
 import { 
   signInWithEmailAndPassword, 
   signOut, 
@@ -13,10 +13,12 @@ import { doc, setDoc, getDoc, updateDoc } from "firebase/firestore";
 import { UserProfile, PaymentStatus } from "@/types";
 
 export const login = async (email: string, pass: string) => {
+  if (!ensureFirebaseInit()) throw new Error("Firebase is not initialized. Check your environment variables.");
   return await signInWithEmailAndPassword(auth, email, pass);
 };
 
 export const logout = async () => {
+  if (!ensureFirebaseInit()) throw new Error("Firebase is not initialized. Check your environment variables.");
   return await signOut(auth);
 };
 
@@ -25,6 +27,7 @@ export const register = async (
   pass: string, 
   profile: UserProfile
 ) => {
+  if (!ensureFirebaseInit()) throw new Error("Firebase is not initialized. Check your environment variables.");
   const userCredential = await createUserWithEmailAndPassword(auth, email, pass);
   const user = userCredential.user;
 
@@ -46,6 +49,7 @@ export const register = async (
 };
 
 export const getUserProfile = async (uid: string): Promise<UserProfile | null> => {
+  if (!ensureFirebaseInit()) throw new Error("Firebase is not initialized. Check your environment variables.");
   const userDoc = await getDoc(doc(db, "users", uid));
   if (userDoc.exists()) {
     return userDoc.data() as UserProfile;
@@ -57,6 +61,7 @@ export const updateUserProfile = async (
   uid: string,
   data: Partial<UserProfile>
 ) => {
+  if (!ensureFirebaseInit()) throw new Error("Firebase is not initialized. Check your environment variables.");
   const userRef = doc(db, "users", uid);
   await updateDoc(userRef, {
     ...data,
@@ -68,6 +73,7 @@ export const updatePaymentStatus = async (
   uid: string,
   status: PaymentStatus
 ) => {
+  if (!ensureFirebaseInit()) throw new Error("Firebase is not initialized. Check your environment variables.");
   const userRef = doc(db, "users", uid);
   await updateDoc(userRef, {
     paymentStatus: status,
@@ -80,6 +86,7 @@ export const updateSubscription = async (
   plan: string,
   billing: string
 ) => {
+  if (!ensureFirebaseInit()) throw new Error("Firebase is not initialized. Check your environment variables.");
   const userRef = doc(db, "users", uid);
   await updateDoc(userRef, {
     subscriptionPlan: plan,
@@ -92,6 +99,7 @@ export const updateSubscription = async (
 // Phone OTP helpers
 export const setupRecaptcha = (containerId: string) => {
   if (typeof window === "undefined") return null;
+  if (!ensureFirebaseInit()) throw new Error("Firebase is not initialized. Check your environment variables.");
   
   const verifier = new RecaptchaVerifier(auth, containerId, {
     size: "invisible",
@@ -106,10 +114,12 @@ export const setupRecaptcha = (containerId: string) => {
 };
 
 export const sendPhoneOTP = async (phoneNumber: string, verifier: RecaptchaVerifier) => {
+  if (!ensureFirebaseInit()) throw new Error("Firebase is not initialized. Check your environment variables.");
   return await signInWithPhoneNumber(auth, phoneNumber, verifier);
 };
 
 export const verifyPhoneOTP = async (verificationId: string, otp: string) => {
+  if (!ensureFirebaseInit()) throw new Error("Firebase is not initialized. Check your environment variables.");
   const credential = PhoneAuthProvider.credential(verificationId, otp);
   return await signInWithCredential(auth, credential);
 };

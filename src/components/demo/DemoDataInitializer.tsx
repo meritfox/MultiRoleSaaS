@@ -2,12 +2,14 @@
 
 import { useEffect, useRef } from "react";
 import { seedDemoData } from "@/lib/demo-data";
+import { ensureFirebaseInit } from "@/lib/firebase";
 
 export function DemoDataInitializer() {
+  const firebaseReady = ensureFirebaseInit();
   const hasRun = useRef(false);
 
   useEffect(() => {
-    if (hasRun.current) return;
+    if (!firebaseReady || hasRun.current) return;
     hasRun.current = true;
 
     // Seed demo data on app load with retry logic
@@ -34,7 +36,7 @@ export function DemoDataInitializer() {
     // Delay initial seed to allow Firebase to connect
     const timer = setTimeout(() => trySeed(), 2000);
     return () => clearTimeout(timer);
-  }, []);
+  }, [firebaseReady]);
 
   return null;
 }
