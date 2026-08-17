@@ -3,13 +3,30 @@
 import React, { useState, useEffect, Suspense } from "react";
 import Link from "next/link";
 import { useRouter, useSearchParams } from "next/navigation";
-import { login } from "@/lib/auth-utils";
+import { login, getUserProfile } from "@/lib/auth-utils";
+import { useAuth } from "@/lib/auth-context";
+import { UserRole } from "@/types";
 import { Button } from "@/components/ui/Button";
 import { Input } from "@/components/ui/Input";
 import { Card } from "@/components/ui/Card";
 import { Alert } from "@/components/ui/Alert";
 import { DEMO_CREDENTIALS } from "@/lib/demo-data";
 import { Mail, Lock, Eye, EyeOff, Smartphone } from "lucide-react";
+
+const getDashboardPath = (role: UserRole | null | undefined): string => {
+  switch (role) {
+    case "SUPER_ADMIN":
+      return "/admin/dashboard";
+    case "SERVICE_PROVIDER":
+      return "/provider/dashboard";
+    case "STUDENT":
+      return "/student/dashboard";
+    case "PARENT":
+      return "/parent/dashboard";
+    default:
+      return "/";
+  }
+};
 
 function LoginForm() {
   const [email, setEmail] = useState("");
@@ -20,6 +37,14 @@ function LoginForm() {
   const [successMessage, setSuccessMessage] = useState<string | null>(null);
   const router = useRouter();
   const searchParams = useSearchParams();
+  const { user, role, loading: authLoading } = useAuth();
+
+  // Already authenticated -> go straight to the role dashboard
+  useEffect(() => {
+    if (!authLoading && user) {
+      router.replace(getDashboardPath(role));
+    }
+  }, [authLoading, user, role, router]);
 
   useEffect(() => {
     if (searchParams.get("payment") === "success") {
@@ -37,8 +62,9 @@ function LoginForm() {
     setSuccessMessage(null);
 
     try {
-      await login(email, password);
-      router.push("/");
+      const credential = await login(email, password);
+      const profile = await getUserProfile(credential.user.uid);
+      router.replace(getDashboardPath(profile?.role));
     } catch (err: any) {
       console.error(err);
       setError("Invalid email or password. Please try again.");

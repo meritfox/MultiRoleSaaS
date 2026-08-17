@@ -2,6 +2,7 @@
 
 import React, { useState } from "react";
 import Link from "next/link";
+import { useRouter } from "next/navigation";
 import { useAuth } from "@/lib/auth-context";
 import { Button } from "@/components/ui/Button";
 import { logout } from "@/lib/auth-utils";
@@ -14,10 +15,14 @@ interface NavbarProps {
 
 const Navbar = ({ title, showNav = true }: NavbarProps) => {
   const { user, role, loading } = useAuth();
+  const router = useRouter();
   const [mobileMenuOpen, setMobileMenuOpen] = useState(false);
 
   const handleLogout = async () => {
     await logout();
+    // Replace the current history entry so the Back button cannot return
+    // to a protected dashboard after signing out.
+    router.replace("/");
   };
 
   const getDashboardLink = () => {

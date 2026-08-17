@@ -1,7 +1,6 @@
 "use client";
 
 import React from "react";
-import { useRouter } from "next/navigation";
 import { useAuth } from "@/lib/auth-context";
 import Link from "next/link";
 import {
@@ -97,40 +96,18 @@ const roleCards = [
 /* --------------------------------- Page ----------------------------------- */
 
 export default function HomePage() {
-  const { user, role, loading } = useAuth();
-  const router = useRouter();
+  const { user, role } = useAuth();
 
-  React.useEffect(() => {
-    if (!loading && user) {
-      if (role === "SUPER_ADMIN") {
-        router.push("/admin/dashboard");
-      } else if (role === "SERVICE_PROVIDER") {
-        router.push("/provider/dashboard");
-      } else if (role === "STUDENT") {
-        router.push("/student/dashboard");
-      } else if (role === "PARENT") {
-        router.push("/parent/dashboard");
-      }
-    }
-  }, [user, role, loading, router]);
-
-  if (loading) {
-    return (
-      <div className="flex min-h-screen items-center justify-center bg-slate-50">
-        <div className="h-12 w-12 animate-spin rounded-full border-4 border-[#3b4cca] border-t-transparent"></div>
-      </div>
-    );
-  }
-
-  if (user) {
-    return (
-      <div className="flex min-h-screen flex-col items-center justify-center bg-slate-50 px-4 text-center">
-        <div className="h-12 w-12 animate-spin rounded-full border-4 border-[#3b4cca] border-t-transparent mb-4"></div>
-        <h1 className="text-2xl font-bold text-slate-900">Welcome back, {user.displayName}!</h1>
-        <p className="mt-2 text-slate-600">Redirecting you to your dashboard...</p>
-      </div>
-    );
-  }
+  const dashboardHref =
+    role === "SUPER_ADMIN"
+      ? "/admin/dashboard"
+      : role === "SERVICE_PROVIDER"
+      ? "/provider/dashboard"
+      : role === "STUDENT"
+      ? "/student/dashboard"
+      : role === "PARENT"
+      ? "/parent/dashboard"
+      : "/";
 
   return (
     <div className="min-h-screen bg-[#f4f4f2] text-slate-900">
@@ -157,18 +134,29 @@ export default function HomePage() {
             <a href="#roles" className="transition-colors hover:text-white">Roles</a>
           </div>
           <div className="flex items-center gap-3">
-            <Link
-              href="/login"
-              className="rounded-full border border-white/25 px-5 py-2 text-sm font-medium text-white transition-colors hover:bg-white/10"
-            >
-              Log In
-            </Link>
-            <Link
-              href="/register"
-              className="hidden rounded-full bg-[#ffc529] px-5 py-2 text-sm font-semibold text-[#0b1e3a] transition-colors hover:bg-[#ffd34d] sm:block"
-            >
-              Get Started
-            </Link>
+            {user ? (
+              <Link
+                href={dashboardHref}
+                className="rounded-full bg-[#ffc529] px-5 py-2 text-sm font-semibold text-[#0b1e3a] transition-colors hover:bg-[#ffd34d]"
+              >
+                Go to Dashboard
+              </Link>
+            ) : (
+              <>
+                <Link
+                  href="/login"
+                  className="rounded-full border border-white/25 px-5 py-2 text-sm font-medium text-white transition-colors hover:bg-white/10"
+                >
+                  Log In
+                </Link>
+                <Link
+                  href="/register"
+                  className="hidden rounded-full bg-[#ffc529] px-5 py-2 text-sm font-semibold text-[#0b1e3a] transition-colors hover:bg-[#ffd34d] sm:block"
+                >
+                  Get Started
+                </Link>
+              </>
+            )}
           </div>
         </nav>
 
@@ -190,18 +178,29 @@ export default function HomePage() {
               manage payments, all in one place.
             </p>
             <div className="mt-10 flex flex-wrap items-center gap-4">
-              <Link
-                href="/register"
-                className="inline-flex items-center gap-2 rounded-full bg-[#ffc529] px-8 py-4 text-base font-semibold text-[#0b1e3a] shadow-lg shadow-[#ffc529]/20 transition-all hover:-translate-y-0.5 hover:bg-[#ffd34d]"
-              >
-                Get Started <ArrowRight className="h-5 w-5" />
-              </Link>
-              <Link
-                href="/login"
-                className="inline-flex items-center gap-2 rounded-full border border-white/25 px-8 py-4 text-base font-medium text-white transition-colors hover:bg-white/10"
-              >
-                Log In
-              </Link>
+              {user ? (
+                <Link
+                  href={dashboardHref}
+                  className="inline-flex items-center gap-2 rounded-full bg-[#ffc529] px-8 py-4 text-base font-semibold text-[#0b1e3a] shadow-lg shadow-[#ffc529]/20 transition-all hover:-translate-y-0.5 hover:bg-[#ffd34d]"
+                >
+                  Go to Dashboard <ArrowRight className="h-5 w-5" />
+                </Link>
+              ) : (
+                <>
+                  <Link
+                    href="/register"
+                    className="inline-flex items-center gap-2 rounded-full bg-[#ffc529] px-8 py-4 text-base font-semibold text-[#0b1e3a] shadow-lg shadow-[#ffc529]/20 transition-all hover:-translate-y-0.5 hover:bg-[#ffd34d]"
+                  >
+                    Get Started <ArrowRight className="h-5 w-5" />
+                  </Link>
+                  <Link
+                    href="/login"
+                    className="inline-flex items-center gap-2 rounded-full border border-white/25 px-8 py-4 text-base font-medium text-white transition-colors hover:bg-white/10"
+                  >
+                    Log In
+                  </Link>
+                </>
+              )}
             </div>
             <Link
               href="/dashboard/guest"
