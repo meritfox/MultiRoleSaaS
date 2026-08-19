@@ -1,6 +1,6 @@
 "use client";
 
-import React, { useState } from "react";
+import React, { useState, useEffect } from "react";
 import { useRouter } from "next/navigation";
 import { useAuth } from "@/lib/auth-context";
 import { Button } from "@/components/ui/Button";
@@ -11,7 +11,7 @@ import { updateUserProfile } from "@/lib/auth-utils";
 import { User, Phone, MapPin, Building2, GraduationCap, Bus, CreditCard } from "lucide-react";
 
 export default function ProfileSetupPage() {
-  const { firebaseUser, role, refreshUser } = useAuth();
+  const { user, firebaseUser, role, refreshUser } = useAuth();
   const router = useRouter();
   const [isLoading, setIsLoading] = useState(false);
   const [error, setError] = useState<string | null>(null);
@@ -33,6 +33,18 @@ export default function ProfileSetupPage() {
     licenseNumber: "",
   });
 
+  // Prefill fields already captured during registration (e.g. phone number)
+  // once the user profile loads, so this step doesn't overwrite them.
+  useEffect(() => {
+    if (user) {
+      setFormData((prev) => ({
+        ...prev,
+        displayName: prev.displayName || user.displayName || "",
+        phoneNumber: user.phoneNumber || prev.phoneNumber,
+      }));
+    }
+  }, [user]);
+
   const handleChange = (field: string, value: string) => {
     setFormData((prev) => ({ ...prev, [field]: value }));
   };
@@ -50,13 +62,18 @@ export default function ProfileSetupPage() {
     try {
       const updateData: any = {
         displayName: formData.displayName,
-        phoneNumber: formData.phoneNumber,
         address: formData.address,
         city: formData.city,
         state: formData.state,
         country: formData.country,
         pincode: formData.pincode,
       };
+
+      // Only update the phone number when the field isn't left blank,
+      // so the verified number captured at registration isn't wiped.
+      if (formData.phoneNumber.trim()) {
+        updateData.phoneNumber = formData.phoneNumber.trim();
+      }
 
       if (role === "STUDENT") {
         updateData.grade = formData.grade;
@@ -85,7 +102,7 @@ export default function ProfileSetupPage() {
     <div className="flex min-h-screen items-center justify-center bg-slate-50 px-4 py-12">
       <div className="w-full max-w-2xl animate-fade-in">
         <div className="text-center mb-8">
-          <div className="inline-flex h-16 w-16 items-center justify-center rounded-2xl bg-gradient-to-br from-[#3b4cca] to-[#5a6fd6] mb-4">
+          <div className="inline-flex h-16 w-16 items-center justify-center rounded-2xl bg-gradient-to-br from-[#DC2626] to-[#ef4444] mb-4">
             <User className="h-8 w-8 text-white" />
           </div>
           <h1 className="text-3xl font-bold text-slate-900">Complete Your Profile</h1>
@@ -94,11 +111,11 @@ export default function ProfileSetupPage() {
 
         <div className="flex items-center justify-center mb-8">
           <div className="flex items-center gap-2">
-            <div className="h-2.5 w-2.5 rounded-full bg-[#3b4cca]"></div>
-            <div className="h-0.5 w-8 bg-[#3b4cca]"></div>
-            <div className="h-2.5 w-2.5 rounded-full bg-[#3b4cca]"></div>
-            <div className="h-0.5 w-8 bg-[#3b4cca]"></div>
-            <div className="h-2.5 w-2.5 rounded-full bg-[#3b4cca]"></div>
+            <div className="h-2.5 w-2.5 rounded-full bg-[#DC2626]"></div>
+            <div className="h-0.5 w-8 bg-[#DC2626]"></div>
+            <div className="h-2.5 w-2.5 rounded-full bg-[#DC2626]"></div>
+            <div className="h-0.5 w-8 bg-[#DC2626]"></div>
+            <div className="h-2.5 w-2.5 rounded-full bg-[#DC2626]"></div>
           </div>
         </div>
 
@@ -153,9 +170,9 @@ export default function ProfileSetupPage() {
             </div>
 
             {role === "STUDENT" && (
-              <div className="space-y-5 p-5 bg-blue-50/50 rounded-xl border border-blue-100">
+              <div className="space-y-5 p-5 bg-red-50/50 rounded-xl border border-red-100">
                 <h3 className="font-semibold text-slate-900 flex items-center gap-2">
-                  <GraduationCap className="h-5 w-5 text-[#3b4cca]" /> Student Information
+                  <GraduationCap className="h-5 w-5 text-[#DC2626]" /> Student Information
                 </h3>
                 <div className="grid grid-cols-1 md:grid-cols-3 gap-5">
                   <Input
@@ -175,7 +192,7 @@ export default function ProfileSetupPage() {
                     <select
                       value={formData.board}
                       onChange={(e) => handleChange("board", e.target.value)}
-                      className="flex h-11 w-full rounded-lg border border-slate-300 bg-white px-3 py-2 text-sm focus:outline-none focus:ring-2 focus:ring-[#3b4cca]"
+                      className="flex h-11 w-full rounded-lg border border-slate-300 bg-white px-3 py-2 text-sm focus:outline-none focus:ring-2 focus:ring-[#DC2626]"
                     >
                       <option value="CBSE">CBSE</option>
                       <option value="ICSE">ICSE</option>
@@ -207,7 +224,7 @@ export default function ProfileSetupPage() {
                       onChange={(e) => handleChange("bio", e.target.value)}
                       placeholder="Tell us about your services..."
                       rows={3}
-                      className="flex w-full rounded-lg border border-slate-300 bg-white px-3 py-2 text-sm focus:outline-none focus:ring-2 focus:ring-[#3b4cca] resize-none"
+                      className="flex w-full rounded-lg border border-slate-300 bg-white px-3 py-2 text-sm focus:outline-none focus:ring-2 focus:ring-[#DC2626] resize-none"
                     />
                   </div>
                   <div className="grid grid-cols-1 md:grid-cols-3 gap-5">

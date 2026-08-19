@@ -39,7 +39,7 @@ export default function SubscriptionPage() {
             monthlyPrice: 15,
             yearlyPrice: 144,
             features: ["Search for tutors", "View basic transport routes", "Access book marketplace"],
-            color: "#3b4cca",
+            color: "#DC2626",
           },
           {
             plan: "PRO",
@@ -106,10 +106,10 @@ export default function SubscriptionPage() {
 
         <div className="flex items-center justify-center mb-8">
           <div className="flex items-center gap-2">
-            <div className="h-2.5 w-2.5 rounded-full bg-[#3b4cca]"></div>
-            <div className="h-0.5 w-8 bg-[#3b4cca]"></div>
-            <div className="h-2.5 w-2.5 rounded-full bg-[#3b4cca]"></div>
-            <div className="h-0.5 w-8 bg-[#3b4cca]"></div>
+            <div className="h-2.5 w-2.5 rounded-full bg-[#DC2626]"></div>
+            <div className="h-0.5 w-8 bg-[#DC2626]"></div>
+            <div className="h-2.5 w-2.5 rounded-full bg-[#DC2626]"></div>
+            <div className="h-0.5 w-8 bg-[#DC2626]"></div>
             <div className="h-2.5 w-2.5 rounded-full bg-slate-300"></div>
           </div>
         </div>
@@ -120,7 +120,7 @@ export default function SubscriptionPage() {
             <button
               onClick={() => setBilling("MONTHLY")}
               className={`px-6 py-2 rounded-full text-sm font-medium transition-all ${
-                billing === "MONTHLY" ? "bg-[#3b4cca] text-white" : "text-slate-600 hover:text-slate-900"
+                billing === "MONTHLY" ? "bg-[#DC2626] text-white" : "text-slate-600 hover:text-slate-900"
               }`}
             >
               Monthly
@@ -128,7 +128,7 @@ export default function SubscriptionPage() {
             <button
               onClick={() => setBilling("YEARLY")}
               className={`px-6 py-2 rounded-full text-sm font-medium transition-all flex items-center gap-2 ${
-                billing === "YEARLY" ? "bg-[#3b4cca] text-white" : "text-slate-600 hover:text-slate-900"
+                billing === "YEARLY" ? "bg-[#DC2626] text-white" : "text-slate-600 hover:text-slate-900"
               }`}
             >
               Yearly
@@ -152,7 +152,7 @@ export default function SubscriptionPage() {
                     key={plan.plan}
                     className={`relative rounded-2xl border-2 bg-white p-6 transition-all ${
                       isSelected
-                        ? "border-[#3b4cca] shadow-lg scale-[1.02]"
+                        ? "border-[#DC2626] shadow-lg scale-[1.02]"
                         : "border-slate-200 hover:border-slate-300 hover:shadow-md"
                     } ${plan.popular ? "ring-2 ring-[#f59e0b]/20" : ""}`}
                   >
@@ -199,7 +199,7 @@ export default function SubscriptionPage() {
               >
                 Back
               </button>
-              <button className="flex items-center gap-1 text-sm text-slate-500 hover:text-[#3b4cca]">
+              <button className="flex items-center gap-1 text-sm text-slate-500 hover:text-[#DC2626]">
                 <HelpCircle className="h-4 w-4" /> Help Selecting a Plan?
               </button>
             </div>
@@ -207,8 +207,8 @@ export default function SubscriptionPage() {
         ) : (
           <Card className="max-w-md mx-auto">
             <div className="text-center mb-6">
-              <div className="inline-flex h-12 w-12 items-center justify-center rounded-full bg-[#3b4cca]/10 mb-3">
-                <CreditCard className="h-6 w-6 text-[#3b4cca]" />
+              <div className="inline-flex h-12 w-12 items-center justify-center rounded-full bg-[#DC2626]/10 mb-3">
+                <CreditCard className="h-6 w-6 text-[#DC2626]" />
               </div>
               <h3 className="text-xl font-bold text-slate-900">Complete Payment</h3>
               <p className="text-sm text-slate-600 mt-1">
@@ -228,7 +228,7 @@ export default function SubscriptionPage() {
               <div className="border-t border-slate-200 my-2"></div>
               <div className="flex justify-between items-center">
                 <span className="font-medium text-slate-900">Total</span>
-                <span className="text-xl font-bold text-[#3b4cca]">
+                <span className="text-xl font-bold text-[#DC2626]">
                   ${getPrice(plans.find((p) => p.plan === selectedPlan)!)}
                 </span>
               </div>

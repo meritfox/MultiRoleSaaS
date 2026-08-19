@@ -6,31 +6,47 @@ import ProtectedRoute from "@/components/auth/ProtectedRoute";
 import DashboardLayout from "@/components/layout/DashboardLayout";
 import { Card } from "@/components/ui/Card";
 import { Button } from "@/components/ui/Button";
+import { Alert } from "@/components/ui/Alert";
 import { Spinner } from "@/components/ui/Spinner";
-import { getEscrowByPayer, createEscrowTransaction } from "@/lib/services/payments";
-import { EscrowTransaction } from "@/types";
+import {
+  getEscrowByPayer,
+  createEscrowTransaction,
+  getPlatformCommissionRate,
+} from "@/lib/services/payments";
 import { getAllServices } from "@/lib/services/services";
-import { Service } from "@/types";
-import { IndianRupee, CreditCard, Wallet } from "lucide-react";
+import { EscrowTransaction, Service, RATE_UNIT_LABELS } from "@/types";
+import { IndianRupee, CreditCard, Wallet, ShieldCheck } from "lucide-react";
 
 const PARENT_ROLE = "PARENT";
+
+type Stage = "select" | "review" | "confirmed";
 
 export default function ParentPaymentsPage() {
   const { user } = useAuth();
   const [transactions, setTransactions] = useState<EscrowTransaction[]>([]);
   const [services, setServices] = useState<Service[]>([]);
+  const [commissionRate, setCommissionRate] = useState(5);
   const [loading, setLoading] = useState(true);
-  const [selectedService, setSelectedService] = useState<string>("");
+
+  const [selectedServiceId, setSelectedServiceId] = useState("");
+  const [stage, setStage] = useState<Stage>("select");
   const [paying, setPaying] = useState(false);
+  const [error, setError] = useState<string | null>(null);
+  const [confirmedTx, setConfirmedTx] = useState<EscrowTransaction | null>(null);
 
   useEffect(() => {
     if (!user) return;
     const fetch = async () => {
       setLoading(true);
       try {
-        const [txs, allServices] = await Promise.all([getEscrowByPayer(user.uid), getAllServices()]);
+        const [txs, allServices, rate] = await Promise.all([
+          getEscrowByPayer(user.uid),
+          getAllServices(),
+          getPlatformCommissionRate().catch(() => 5),
+        ]);
         setTransactions(txs);
         setServices(allServices);
+        setCommissionRate(rate);
       } catch (err) {
         console.error(err);
       } finally {
@@ -40,24 +56,46 @@ export default function ParentPaymentsPage() {
     fetch();
   }, [user]);
 
-  const handlePay = async () => {
+  const selectedService = services.find((s) => s.id === selectedServiceId);
+  const estimatedCommission = selectedService
+    ? Math.round((selectedService.price * commissionRate) / 100)
+    : 0;
+
+  const handleReview = () => {
+    if (!selectedServiceId) return;
+    setStage("review");
+  };
+
+  const handleConfirmPay = async () => {
     if (!user || !selectedService) return;
-    const service = services.find((s) => s.id === selectedService);
-    if (!service) return;
     setPaying(true);
+    setError(null);
     try {
-      const tx = await createEscrowTransaction(user.uid, service.providerId, service.name, service.price);
+      const tx = await createEscrowTransaction(
+        user.uid,
+        selectedService.providerId,
+        selectedService.name,
+        selectedService.price
+      );
+      setConfirmedTx(tx);
       setTransactions([tx, ...transactions]);
-      setSelectedService("");
+      setStage("confirmed");
     } catch (err) {
       console.error(err);
-      alert("Failed to process payment.");
+      setError("Failed to process payment.");
     } finally {
       setPaying(false);
     }
   };
 
+  const resetFlow = () => {
+    setSelectedServiceId("");
+    setConfirmedTx(null);
+    setStage("select");
+  };
+
   const totalPaid = transactions.reduce((sum, t) => sum + t.amount, 0);
+  const heldCount = transactions.filter((t) => t.status === "HELD").length;
 
   if (loading) {
     return (
@@ -71,14 +109,16 @@ export default function ParentPaymentsPage() {
 
   return (
     <ProtectedRoute allowedRoles={[PARENT_ROLE]}>
-      <DashboardLayout title="Payments">
+      <DashboardLayout title="OmniStud Payment Engine">
         <div className="max-w-3xl mx-auto space-y-6">
           <h2 className="text-2xl font-bold text-slate-900">Payments & Escrow</h2>
+
+          {error && <Alert variant="error">{error}</Alert>}
 
           <div className="grid gap-4 sm:grid-cols-2">
             <Card>
               <div className="flex items-center gap-3">
-                <div className="p-2 rounded-lg bg-blue-100 text-[#3b4cca]"><CreditCard className="h-5 w-5" /></div>
+                <div className="p-2 rounded-lg bg-red-100 text-[#DC2626]"><CreditCard className="h-5 w-5" /></div>
                 <div>
                   <p className="text-sm text-slate-500">Total Paid</p>
                   <p className="text-xl font-bold text-slate-900">₹{totalPaid}</p>
@@ -90,35 +130,97 @@ export default function ParentPaymentsPage() {
                 <div className="p-2 rounded-lg bg-emerald-100 text-emerald-600"><Wallet className="h-5 w-5" /></div>
                 <div>
                   <p className="text-sm text-slate-500">Active Escrows</p>
-                  <p className="text-xl font-bold text-slate-900">{transactions.filter((t) => t.status === "HELD").length}</p>
+                  <p className="text-xl font-bold text-slate-900">{heldCount}</p>
                 </div>
               </div>
             </Card>
           </div>
 
-          <Card title="Pay for a Service">
-            <div className="space-y-4">
-              <div>
-                <label className="text-sm font-medium text-slate-700">Select Service</label>
-                <select
-                  value={selectedService}
-                  onChange={(e) => setSelectedService(e.target.value)}
-                  className="mt-1 block w-full rounded-lg border border-slate-300 bg-white px-3 py-2 text-sm focus:border-[#3b4cca] focus:outline-none focus:ring-1 focus:ring-[#3b4cca]"
-                >
-                  <option value="">-- Select a service --</option>
-                  {services.map((s) => (
-                    <option key={s.id} value={s.id}>
-                      {s.name} - ₹{s.price} ({s.providerType})
-                    </option>
-                  ))}
-                </select>
+          {stage === "confirmed" && confirmedTx ? (
+            <Card title="Escrow Confirmation">
+              <div className="space-y-4">
+                <Alert variant="success">
+                  <div className="flex items-center gap-2 font-medium">
+                    <ShieldCheck className="h-4 w-4" />
+                    Payment securely held in OmniStud Escrow
+                  </div>
+                  <p className="text-xs mt-1">
+                    ₹{confirmedTx.amount} for {confirmedTx.serviceName}. ₹{confirmedTx.commission}
+                    platform commission included. Funds release on service completion.
+                  </p>
+                </Alert>
+                <div className="rounded-lg bg-slate-50 p-4 text-sm space-y-1">
+                  <p className="flex justify-between"><span>Transaction ID</span><span className="font-mono text-xs">{confirmedTx.id}</span></p>
+                  <p className="flex justify-between"><span>Service</span><span className="font-medium">{confirmedTx.serviceName}</span></p>
+                  <p className="flex justify-between"><span>Amount</span><span className="font-medium">₹{confirmedTx.amount}</span></p>
+                  <p className="flex justify-between"><span>Commission</span><span className="font-medium">₹{confirmedTx.commission}</span></p>
+                  <p className="flex justify-between">
+                    <span>Status</span>
+                    <span className="rounded-full bg-amber-100 px-2 py-0.5 text-xs font-medium text-amber-700">
+                      HELD IN ESCROW
+                    </span>
+                  </p>
+                </div>
+                <Button variant="outline" onClick={resetFlow} className="w-full">
+                  Make another payment
+                </Button>
               </div>
-              <Button onClick={handlePay} isLoading={paying} disabled={!selectedService} className="w-full">
-                <IndianRupee className="mr-2 h-4 w-4" /> Pay via Demo Gateway
-              </Button>
-              <p className="text-xs text-slate-500">This is a demo payment. No real money is deducted.</p>
-            </div>
-          </Card>
+            </Card>
+          ) : stage === "review" && selectedService ? (
+            <Card title="Review & Confirm Payment">
+              <div className="space-y-4">
+                <div className="rounded-lg border border-slate-200 p-4 text-sm space-y-1">
+                  <p className="flex justify-between"><span>Service</span><span className="font-medium">{selectedService.name}</span></p>
+                  <p className="flex justify-between">
+                    <span>Amount</span>
+                    <span className="font-medium">
+                      ₹{selectedService.price}
+                      {selectedService.rateUnit ? ` / ${RATE_UNIT_LABELS[selectedService.rateUnit]}` : ""}
+                    </span>
+                  </p>
+                  <p className="flex justify-between">
+                    <span>Platform commission ({commissionRate}%)</span>
+                    <span className="font-medium">₹{estimatedCommission}</span>
+                  </p>
+                </div>
+                <div className="flex gap-2">
+                  <Button onClick={handleConfirmPay} isLoading={paying} className="flex-1">
+                    <IndianRupee className="mr-2 h-4 w-4" /> Confirm & Pay
+                  </Button>
+                  <Button variant="outline" onClick={() => setStage("select")}>
+                    Back
+                  </Button>
+                </div>
+                <p className="text-xs text-slate-500">
+                  Amount held in OmniStud Escrow until service completion. Demo gateway.
+                </p>
+              </div>
+            </Card>
+          ) : (
+            <Card title="Pay for a Service">
+              <div className="space-y-4">
+                <div>
+                  <label className="text-sm font-medium text-slate-700">Select Service</label>
+                  <select
+                    value={selectedServiceId}
+                    onChange={(e) => setSelectedServiceId(e.target.value)}
+                    className="mt-1 block w-full rounded-lg border border-slate-300 bg-white px-3 py-2 text-sm focus:outline-none focus:ring-2 focus:ring-[#DC2626]"
+                  >
+                    <option value="">-- Select a service --</option>
+                    {services.map((s) => (
+                      <option key={s.id} value={s.id}>
+                        {s.name} - ₹{s.price}
+                        {s.rateUnit ? `/${RATE_UNIT_LABELS[s.rateUnit]}` : ""} ({s.providerType})
+                      </option>
+                    ))}
+                  </select>
+                </div>
+                <Button onClick={handleReview} disabled={!selectedServiceId} className="w-full">
+                  Review Payment
+                </Button>
+              </div>
+            </Card>
+          )}
 
           <Card title="Payment History">
             {transactions.length === 0 ? (
@@ -129,7 +231,9 @@ export default function ParentPaymentsPage() {
                   <div key={t.id} className="flex items-center justify-between p-4 rounded-lg bg-slate-50">
                     <div>
                       <p className="font-medium text-slate-900">{t.serviceName}</p>
-                      <p className="text-xs text-slate-500">{new Date(t.createdAt).toLocaleDateString()}</p>
+                      <p className="text-xs text-slate-500">
+                        {new Date(t.createdAt).toLocaleDateString()} · Commission ₹{t.commission}
+                      </p>
                     </div>
                     <div className="text-right">
                       <p className="font-bold text-slate-900">₹{t.amount}</p>

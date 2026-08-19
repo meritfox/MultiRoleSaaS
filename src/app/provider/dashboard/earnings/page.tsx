@@ -76,7 +76,7 @@ export default function ProviderEarningsPage() {
             </Card>
             <Card>
               <div className="flex items-center gap-3">
-                <div className="p-2 rounded-lg bg-blue-100 text-[#3b4cca]"><TrendingUp className="h-5 w-5" /></div>
+                <div className="p-2 rounded-lg bg-red-100 text-[#DC2626]"><TrendingUp className="h-5 w-5" /></div>
                 <div>
                   <p className="text-sm text-slate-500">Total Transactions</p>
                   <p className="text-xl font-bold text-slate-900">{transactions.length}</p>

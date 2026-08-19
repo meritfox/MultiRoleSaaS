@@ -36,7 +36,7 @@ export const SUBSCRIPTION_PLANS = [
     monthlyPrice: 15,
     yearlyPrice: 144,
     features: ["Search for tutors", "View basic transport routes", "Access book marketplace"],
-    color: "#3b4cca",
+    color: "#DC2626",
   },
   {
     plan: "PRO",

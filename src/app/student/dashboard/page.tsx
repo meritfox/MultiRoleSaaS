@@ -8,18 +8,9 @@ import { Card } from "@/components/ui/Card";
 import { Button } from "@/components/ui/Button";
 import { Alert } from "@/components/ui/Alert";
 import { Spinner } from "@/components/ui/Spinner";
-import { db } from "@/lib/firebase";
-import {
-  collection,
-  getDocs,
-  query,
-  addDoc,
-  doc,
-  getDoc,
-} from "firebase/firestore";
 import { Service, ServiceRequest } from "@/types";
 import { getAllServices, createServiceRequest, getRequestsByStudent } from "@/lib/services/services";
-import { Search, BookOpen, Bus, ShoppingCart, Briefcase, CreditCard, Gift, MapPin, Star, Map, Wallet } from "lucide-react";
+import { Search, BookOpen, Bus, ShoppingCart, Briefcase, MapPin, Star, Wallet } from "lucide-react";
 import Link from "next/link";
 
 const STUDENT_ROLE = "STUDENT" as const;
@@ -114,7 +105,7 @@ export default function StudentDashboard() {
                 placeholder="Search tutors, transport, marketplace..."
                 value={searchTerm}
                 onChange={(e) => setSearchTerm(e.target.value)}
-                className="w-full rounded-lg border border-slate-300 bg-white py-2.5 pl-10 pr-4 text-sm focus:outline-none focus:ring-2 focus:ring-[#3b4cca]"
+                className="w-full rounded-lg border border-slate-300 bg-white py-2.5 pl-10 pr-4 text-sm focus:outline-none focus:ring-2 focus:ring-[#DC2626]"
               />
             </div>
           </div>
@@ -127,12 +118,12 @@ export default function StudentDashboard() {
             {/* Find Tutor */}
             <Card className="hover:shadow-md transition-shadow">
               <div className="flex items-start gap-4">
-                <div className="p-3 rounded-xl bg-blue-100 text-[#3b4cca]">
+                <div className="p-3 rounded-xl bg-red-100 text-[#DC2626]">
                   <BookOpen className="h-6 w-6" />
                 </div>
                 <div className="flex-1">
                   <div className="flex items-center gap-2 mb-1">
-                    <span className="text-xs font-semibold px-2 py-0.5 rounded-full bg-blue-100 text-[#3b4cca]">Discovery - Tutor</span>
+                    <span className="text-xs font-semibold px-2 py-0.5 rounded-full bg-red-100 text-[#DC2626]">Discovery - Tutor</span>
                   </div>
                   <h3 className="font-bold text-slate-900">Find a Tutor / Institution</h3>
                   <p className="text-sm text-slate-600 mt-1">Subject, Area, Hobby, Review search.</p>
@@ -141,7 +132,7 @@ export default function StudentDashboard() {
                       tutorServices.map((service) => (
                         <div key={service.id} className="flex items-center justify-between text-sm p-2 bg-slate-50 rounded-lg">
                           <span className="text-slate-700">{service.name}</span>
-                          <span className="font-medium text-[#3b4cca]">₹{service.price}</span>
+                          <span className="font-medium text-[#DC2626]">₹{service.price}</span>
                         </div>
                       ))
                     ) : (
@@ -152,9 +143,11 @@ export default function StudentDashboard() {
                     <input
                       type="text"
                       placeholder="Math Tutor, Science Class..."
-                      className="flex-1 rounded-lg border border-slate-300 px-3 py-1.5 text-sm focus:outline-none focus:ring-2 focus:ring-[#3b4cca]"
+                      className="flex-1 rounded-lg border border-slate-300 px-3 py-1.5 text-sm focus:outline-none focus:ring-2 focus:ring-[#DC2626]"
                     />
-                    <Button size="sm">Search</Button>
+                    <Button size="sm" asChild>
+                      <Link href="/student/dashboard/tutors">Search</Link>
+                    </Button>
                   </div>
                 </div>
               </div>
@@ -204,7 +197,9 @@ export default function StudentDashboard() {
                     <li className="flex items-center gap-2"><span className="h-1.5 w-1.5 rounded-full bg-emerald-500"></span> Algebra 1 Textbook</li>
                     <li className="flex items-center gap-2"><span className="h-1.5 w-1.5 rounded-full bg-emerald-500"></span> School Bag, Guwahati</li>
                   </ul>
-                  <Button size="sm" variant="outline" className="mt-3">Browse Items</Button>
+                  <Button size="sm" variant="outline" className="mt-3" asChild>
+                    <Link href="/student/dashboard/marketplace">Browse Items</Link>
+                  </Button>
                 </div>
               </div>
             </Card>
@@ -222,7 +217,9 @@ export default function StudentDashboard() {
                     <li className="flex items-center gap-2"><span className="h-1.5 w-1.5 rounded-full bg-purple-500"></span> GhyPrep Delivery Gig</li>
                     <li className="flex items-center gap-2"><span className="h-1.5 w-1.5 rounded-full bg-purple-500"></span> Tutor request, GuwahatiPrep</li>
                   </ul>
-                  <Button size="sm" variant="outline" className="mt-3">View Gigs</Button>
+                  <Button size="sm" variant="outline" className="mt-3" asChild>
+                    <Link href="/student/dashboard/jobs">View Gigs</Link>
+                  </Button>
                 </div>
               </div>
             </Card>
@@ -240,7 +237,9 @@ export default function StudentDashboard() {
                     <li className="flex items-center gap-2"><span className="h-1.5 w-1.5 rounded-full bg-red-500"></span> Unique link: omnis.st/99</li>
                     <li className="flex items-center gap-2"><span className="h-1.5 w-1.5 rounded-full bg-red-500"></span> Contest entry confirmed.</li>
                   </ul>
-                  <Button size="sm" variant="outline" className="mt-3">Track Now</Button>
+                  <Button size="sm" variant="outline" className="mt-3" asChild>
+                    <Link href="/student/dashboard/tracking">Track Now</Link>
+                  </Button>
                 </div>
               </div>
             </Card>
@@ -264,7 +263,9 @@ export default function StudentDashboard() {
                       <span className="font-medium text-emerald-600">Secured</span>
                     </div>
                   </div>
-                  <Button size="sm" variant="outline" className="mt-3">View Payments</Button>
+                  <Button size="sm" variant="outline" className="mt-3" asChild>
+                    <Link href="/student/dashboard/payments">View Payments</Link>
+                  </Button>
                 </div>
               </div>
             </Card>
@@ -284,10 +285,10 @@ export default function StudentDashboard() {
                   return (
                     <div key={service.id} className="rounded-xl border border-slate-200 p-4 hover:shadow-md transition-shadow">
                       <div className="mb-3 flex items-center justify-between">
-                        <span className="inline-flex items-center rounded-full bg-blue-100 px-2.5 py-0.5 text-xs font-medium text-blue-800 capitalize">
+                        <span className="inline-flex items-center rounded-full bg-red-100 px-2.5 py-0.5 text-xs font-medium text-red-800 capitalize">
                           {service.providerType}
                         </span>
-                        <span className="text-lg font-bold text-[#3b4cca]">₹{service.price}</span>
+                        <span className="text-lg font-bold text-[#DC2626]">₹{service.price}</span>
                       </div>
                       <h3 className="font-semibold text-slate-900">{service.name}</h3>
                       <p className="mt-1 text-sm text-slate-600 line-clamp-2">{service.description}</p>

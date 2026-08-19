@@ -2,9 +2,10 @@
 
 :root {
   --background: #f8fafc;
-  --foreground: #1e293b;
-  --primary: #3b4cca;
-  --primary-dark: #2a3693;
+  --foreground: #0f172a;
+  --primary: #DC2626;
+  --primary-dark: #B91C1C;
+  --surface-dark: #0b1120;
   --secondary: #f59e0b;
   --accent: #10b981;
   --danger: #ef4444;
@@ -13,6 +14,15 @@
   --muted: #64748b;
   --card: #ffffff;
   --border: #e2e8f0;
+  /* Soft-tint status badge tokens */
+  --badge-success-bg: #ecfdf5;
+  --badge-success-text: #047857;
+  --badge-warning-bg: #fffbeb;
+  --badge-warning-text: #b45309;
+  --badge-danger-bg: #fef2f2;
+  --badge-danger-text: #b91c1c;
+  --badge-indigo-bg: #eef2ff;
+  --badge-indigo-text: #4338ca;
 }
 
 @theme inline {
@@ -28,6 +38,15 @@
   --color-muted: var(--muted);
   --color-card: var(--card);
   --color-border: var(--border);
+  --color-surface-dark: var(--surface-dark);
+  --color-badge-success-bg: var(--badge-success-bg);
+  --color-badge-success-text: var(--badge-success-text);
+  --color-badge-warning-bg: var(--badge-warning-bg);
+  --color-badge-warning-text: var(--badge-warning-text);
+  --color-badge-danger-bg: var(--badge-danger-bg);
+  --color-badge-danger-text: var(--badge-danger-text);
+  --color-badge-indigo-bg: var(--badge-indigo-bg);
+  --color-badge-indigo-text: var(--badge-indigo-text);
   --font-sans: var(--font-geist-sans);
   --font-mono: var(--font-geist-mono);
 }

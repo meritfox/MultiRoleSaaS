@@ -59,7 +59,7 @@ export default function ParentServicesPage() {
                   {services.map((s) => (
                     <div key={s.id} className="flex items-center justify-between p-3 rounded-lg bg-slate-50">
                       <div className="flex items-center gap-3">
-                        <div className={`p-2 rounded-lg ${s.providerType === "TRANSPORTER" ? "bg-amber-100 text-amber-600" : "bg-blue-100 text-[#3b4cca]"}`}>
+                        <div className={`p-2 rounded-lg ${s.providerType === "TRANSPORTER" ? "bg-amber-100 text-amber-600" : "bg-red-100 text-[#DC2626]"}`}>
                           {s.providerType === "TRANSPORTER" ? <Bus className="h-4 w-4" /> : <Clock className="h-4 w-4" />}
                         </div>
                         <div>

@@ -16,7 +16,7 @@ interface ButtonProps extends React.ButtonHTMLAttributes<HTMLButtonElement> {
 const Button = React.forwardRef<HTMLButtonElement, ButtonProps>(
   ({ className, variant = "primary", size = "md", isLoading, asChild, children, ...props }, ref) => {
     const variants = {
-      primary: "bg-[#3b4cca] text-white hover:bg-[#2a3693] shadow-sm",
+      primary: "bg-[#DC2626] text-white hover:bg-[#B91C1C] shadow-sm",
       secondary: "bg-slate-600 text-white hover:bg-slate-700 shadow-sm",
       outline: "border border-slate-300 bg-white hover:bg-slate-50 text-slate-700",
       ghost: "bg-transparent hover:bg-slate-100 text-slate-700",
@@ -33,17 +33,18 @@ const Button = React.forwardRef<HTMLButtonElement, ButtonProps>(
     };
 
     const combinedClassName = cn(
-      "inline-flex items-center justify-center rounded-lg font-medium transition-all duration-200 focus:outline-none focus:ring-2 focus:ring-[#3b4cca] focus:ring-offset-2 disabled:opacity-50 disabled:pointer-events-none active:scale-[0.98]",
+      "inline-flex items-center justify-center rounded-lg font-medium transition-all duration-200 focus:outline-none focus:ring-2 focus:ring-[#DC2626] focus:ring-offset-2 disabled:opacity-50 disabled:pointer-events-none active:scale-[0.98]",
       variants[variant],
       sizes[size],
       className
     );
 
     if (asChild && React.isValidElement(children)) {
-      return React.cloneElement(children as React.ReactElement<any>, {
-        className: cn(combinedClassName, (children.props as any).className),
+      const child = children as React.ReactElement<{ className?: string }>;
+      return React.cloneElement(child, {
         ...props,
-      });
+        className: cn(combinedClassName, child.props.className),
+      } as React.HTMLAttributes<HTMLElement>);
     }
 
     return (

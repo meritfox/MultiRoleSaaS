@@ -1,7 +1,6 @@
-﻿"use client";
+"use client";
 
 import React, { useState, useEffect } from "react";
-import { useAuth } from "@/lib/auth-context";
 import ProtectedRoute from "@/components/auth/ProtectedRoute";
 import DashboardLayout from "@/components/layout/DashboardLayout";
 import { Card } from "@/components/ui/Card";
@@ -28,7 +27,11 @@ export default function AdminSubscriptionsPage() {
     fetchPlans();
   }, []);
 
-  const handleUpdate = async (plan: SubscriptionPlan, field: keyof SubscriptionConfig, value: any) => {
+  const handleUpdate = async (
+    plan: SubscriptionPlan,
+    field: keyof SubscriptionConfig,
+    value: string | number | boolean | string[]
+  ) => {
     const updated = plans.map((p) => (p.plan === plan ? { ...p, [field]: value } : p));
     setPlans(updated);
   };
@@ -59,19 +62,19 @@ export default function AdminSubscriptionsPage() {
               <Card key={plan.plan} title={plan.name}>
                 <div className="space-y-4">
                   <div className="flex items-center gap-3">
-                    <div className="p-2 rounded-lg bg-blue-100 text-[#3b4cca]">
+                    <div className="p-2 rounded-lg bg-red-100 text-[#DC2626]">
                       <CreditCard className="h-5 w-5" />
                     </div>
                     <span className="text-xs font-bold uppercase text-slate-500">{plan.plan}</span>
                   </div>
                   <Input
-                    label="Monthly Price (₹)"
+                    label="Monthly Price (â‚¹)"
                     type="number"
                     value={plan.monthlyPrice}
                     onChange={(e) => handleUpdate(plan.plan, "monthlyPrice", parseFloat(e.target.value) || 0)}
                   />
                   <Input
-                    label="Yearly Price (₹)"
+                    label="Yearly Price (â‚¹)"
                     type="number"
                     value={plan.yearlyPrice}
                     onChange={(e) => handleUpdate(plan.plan, "yearlyPrice", parseFloat(e.target.value) || 0)}
@@ -82,7 +85,7 @@ export default function AdminSubscriptionsPage() {
                       rows={4}
                       value={plan.features.join("\n")}
                       onChange={(e) => handleUpdate(plan.plan, "features", e.target.value.split("\n").filter((f) => f.trim()))}
-                      className="mt-1 block w-full rounded-lg border border-slate-300 bg-white px-3 py-2 text-sm focus:border-[#3b4cca] focus:outline-none focus:ring-1 focus:ring-[#3b4cca]"
+                      className="mt-1 block w-full rounded-lg border border-slate-300 bg-white px-3 py-2 text-sm focus:border-[#DC2626] focus:outline-none focus:ring-1 focus:ring-[#DC2626]"
                     />
                   </div>
                   <Button className="w-full" onClick={() => handleSave(plan)}>Save Plan</Button>

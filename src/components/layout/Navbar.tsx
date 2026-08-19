@@ -38,10 +38,10 @@ const Navbar = ({ title, showNav = true }: NavbarProps) => {
       <div className="container mx-auto flex h-16 items-center justify-between px-4">
         <div className="flex items-center gap-4">
           <Link href={getDashboardLink()} className="flex items-center space-x-2">
-            <div className="flex h-8 w-8 items-center justify-center rounded-lg bg-gradient-to-br from-[#3b4cca] to-[#5a6fd6]">
+            <div className="flex h-8 w-8 items-center justify-center rounded-lg bg-gradient-to-br from-[#DC2626] to-[#ef4444]">
               <span className="text-lg font-bold text-white">O</span>
             </div>
-            <span className="text-xl font-bold text-[#3b4cca]">OmniStud</span>
+            <span className="text-xl font-bold text-[#DC2626]">OmniStud</span>
           </Link>
           {title && (
             <>
@@ -62,7 +62,7 @@ const Navbar = ({ title, showNav = true }: NavbarProps) => {
                   <span className="absolute top-1 right-1 h-2 w-2 rounded-full bg-red-500"></span>
                 </Button>
                 <div className="flex items-center gap-3 pl-3 border-l border-slate-200">
-                  <div className="h-9 w-9 rounded-full bg-gradient-to-br from-[#3b4cca] to-[#5a6fd6] flex items-center justify-center text-white font-medium">
+                  <div className="h-9 w-9 rounded-full bg-gradient-to-br from-[#DC2626] to-[#ef4444] flex items-center justify-center text-white font-medium">
                     {user.displayName?.charAt(0).toUpperCase() || <User className="h-4 w-4" />}
                   </div>
                   <div className="hidden lg:flex flex-col items-start">
@@ -103,7 +103,7 @@ const Navbar = ({ title, showNav = true }: NavbarProps) => {
           {user ? (
             <div className="space-y-3">
               <div className="flex items-center gap-3 pb-3 border-b border-slate-100">
-                <div className="h-10 w-10 rounded-full bg-gradient-to-br from-[#3b4cca] to-[#5a6fd6] flex items-center justify-center text-white font-medium">
+                <div className="h-10 w-10 rounded-full bg-gradient-to-br from-[#DC2626] to-[#ef4444] flex items-center justify-center text-white font-medium">
                   {user.displayName?.charAt(0).toUpperCase()}
                 </div>
                 <div>

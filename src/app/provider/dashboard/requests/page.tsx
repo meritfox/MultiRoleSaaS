@@ -157,7 +157,7 @@ export default function ProviderRequestsPage() {
                       <p className="text-sm text-gray-600">
                         From: {request.studentName} ({request.studentEmail})
                       </p>
-                      <p className="text-sm font-medium text-blue-600">₹{request.servicePrice}</p>
+                      <p className="text-sm font-medium text-red-600">₹{request.servicePrice}</p>
                     </div>
 
                     {request.status === "PENDING" && (

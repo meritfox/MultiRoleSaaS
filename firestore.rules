@@ -81,14 +81,45 @@ service cloud.firestore {
       allow update, delete: if isAuthenticated() && (resource.data.userId == request.auth.uid || isAdmin());
     }
 
-    // Transport check-ins: readable by provider/student/parent of student/admin; writable by provider/admin
+    // Transport check-ins: readable by any authenticated user (parents read
+    // their children's check-ins too); writable by provider/admin
     match /transportCheckIns/{checkInId} {
-      allow read: if isAuthenticated() &&
-        (resource.data.providerId == request.auth.uid ||
-         resource.data.studentId == request.auth.uid ||
-         isAdmin());
+      allow read: if isAuthenticated();
       allow create: if isAuthenticated() && (currentUserData().role == 'SERVICE_PROVIDER' || isAdmin());
       allow update, delete: if isAuthenticated() && (resource.data.providerId == request.auth.uid || isAdmin());
+    }
+
+    // Live vehicle locations (one doc per provider, id = providerId):
+    // readable by parents/students; writable by the owning provider/admin
+    match /transportLiveLocations/{providerId} {
+      allow read: if isAuthenticated();
+      allow create, update: if isAuthenticated() && (request.auth.uid == providerId || isAdmin());
+      allow delete: if isAdmin();
+    }
+
+    // Referrals (Refer & Earn): the referrer reads their own referrals; the
+    // referred user creates the record during registration; admins manage all
+    match /referrals/{referralId} {
+      allow read: if isAuthenticated() &&
+        (resource.data.referrerId == request.auth.uid ||
+         resource.data.refereeId == request.auth.uid ||
+         isAdmin());
+      allow create: if isAuthenticated() && request.resource.data.refereeId == request.auth.uid;
+      allow update, delete: if isAdmin();
+    }
+
+    // Feedback & suggestions: users read/create their own; admins read all
+    match /feedback/{feedbackId} {
+      allow read: if isAuthenticated() && (resource.data.userId == request.auth.uid || isAdmin());
+      allow create: if isAuthenticated() && request.resource.data.userId == request.auth.uid;
+      allow update, delete: if isAdmin();
+    }
+
+    // Monthly prize contest entries: created alongside feedback; users read their own
+    match /contestEntries/{entryId} {
+      allow read: if isAuthenticated() && (resource.data.userId == request.auth.uid || isAdmin());
+      allow create: if isAuthenticated() && request.resource.data.userId == request.auth.uid;
+      allow update, delete: if isAdmin();
     }
 
     // Deny access to all other collections by default

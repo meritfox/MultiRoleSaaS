@@ -75,6 +75,7 @@ const Sidebar = () => {
         { label: "My Services", href: "/provider/dashboard/services", icon: <Briefcase className="h-5 w-5" /> },
         { label: "Requests", href: "/provider/dashboard/requests", icon: <Users className="h-5 w-5" /> },
         { label: "Earnings", href: "/provider/dashboard/earnings", icon: <Wallet className="h-5 w-5" /> },
+        { label: "Transport Console", href: "/provider/dashboard/transport", icon: <Bus className="h-5 w-5" /> },
         { label: "GPS Check-in", href: "/provider/dashboard/checkin", icon: <MapPin className="h-5 w-5" /> },
         { label: "Profile", href: "/provider/dashboard/profile", icon: <UserCircle className="h-5 w-5" /> },
       ];
@@ -110,7 +111,7 @@ const Sidebar = () => {
                 className={cn(
                   "flex items-center gap-3 rounded-lg px-3 py-2.5 text-sm font-medium transition-colors",
                   isActive
-                    ? "bg-[#3b4cca]/10 text-[#3b4cca]"
+                    ? "bg-[#DC2626]/10 text-[#DC2626]"
                     : "text-slate-600 hover:bg-slate-100 hover:text-slate-900"
                 )}
               >
@@ -123,7 +124,7 @@ const Sidebar = () => {
       </div>
       <div className="p-4 border-t border-slate-200">
         <div className="flex items-center gap-3 mb-4">
-          <div className="h-9 w-9 rounded-full bg-gradient-to-br from-[#3b4cca] to-[#5a6fd6] flex items-center justify-center text-white font-medium text-sm">
+          <div className="h-9 w-9 rounded-full bg-gradient-to-br from-[#DC2626] to-[#ef4444] flex items-center justify-center text-white font-medium text-sm">
             {user?.displayName?.charAt(0).toUpperCase() || <UserCircle className="h-4 w-4" />}
           </div>
           <div className="flex-1 min-w-0">

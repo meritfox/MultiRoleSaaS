@@ -1,10 +1,11 @@
 import { auth, db, ensureFirebaseInit } from "./firebase";
-import { 
-  signInWithEmailAndPassword, 
-  signOut, 
-  createUserWithEmailAndPassword, 
+import {
+  signInWithEmailAndPassword,
+  signOut,
+  createUserWithEmailAndPassword,
   updateProfile,
   signInWithPhoneNumber,
+  linkWithPhoneNumber,
   RecaptchaVerifier,
   PhoneAuthProvider,
   signInWithCredential
@@ -96,7 +97,79 @@ export const updateSubscription = async (
   });
 };
 
+// ---------------------------------------------------------------------------
 // Phone OTP helpers
+// ---------------------------------------------------------------------------
+
+/**
+ * Normalizes a user-entered phone number to E.164 format.
+ * Plain 10-digit numbers are treated as Indian numbers (+91).
+ */
+export const normalizePhoneNumber = (raw: string): string => {
+  const trimmed = raw.trim();
+  if (!trimmed) return "";
+  if (trimmed.startsWith("+")) {
+    return "+" + trimmed.slice(1).replace(/\D/g, "");
+  }
+  const digits = trimmed.replace(/\D/g, "");
+  if (digits.length === 10) return `+91${digits}`;
+  return `+${digits}`;
+};
+
+/** Validates E.164 format (+ followed by 8-15 digits, no leading zero). */
+export const isValidPhoneNumber = (raw: string): boolean => {
+  return /^\+[1-9]\d{7,14}$/.test(normalizePhoneNumber(raw));
+};
+
+/** Maps Firebase phone-auth error codes to user-friendly messages. */
+export const getPhoneAuthErrorMessage = (err: unknown): string => {
+  const code = (err as { code?: string })?.code || "";
+  switch (code) {
+    case "auth/invalid-phone-number":
+      return "Invalid phone number. Use international format, e.g. +91 98765 43210.";
+    case "auth/too-many-requests":
+      return "Too many attempts. Please try again later.";
+    case "auth/invalid-verification-code":
+      return "Incorrect OTP. Please check the code and try again.";
+    case "auth/code-expired":
+      return "The OTP has expired. Please request a new one.";
+    case "auth/credential-already-in-use":
+      return "This phone number is already linked to another account.";
+    case "auth/provider-already-linked":
+      return "A phone number is already linked to this account.";
+    case "auth/captcha-check-failed":
+      return "reCAPTCHA verification failed. Please try again.";
+    case "auth/quota-exceeded":
+      return "SMS quota exceeded. Please try again later.";
+    case "auth/user-disabled":
+      return "This account has been disabled. Please contact support.";
+    default:
+      return "Something went wrong. Please try again.";
+  }
+};
+
+/** Safely clears a reCAPTCHA verifier so a new one can be created. */
+export const clearRecaptcha = (verifier: RecaptchaVerifier | null) => {
+  if (!verifier) return;
+  try {
+    verifier.clear();
+  } catch {
+    // Verifier may already be cleared - safe to ignore.
+  }
+};
+
+/**
+ * Sends an OTP to LINK a phone number to the currently signed-in user.
+ * Linking ensures that a later "Sign in with phone" resolves to this
+ * same account (same uid) instead of creating a separate one.
+ */
+export const sendPhoneLinkOTP = async (phoneNumber: string, verifier: RecaptchaVerifier) => {
+  if (!ensureFirebaseInit()) throw new Error("Firebase is not initialized. Check your environment variables.");
+  const user = auth.currentUser;
+  if (!user) throw new Error("You must be signed in to link a phone number.");
+  return await linkWithPhoneNumber(user, phoneNumber, verifier);
+};
+
 export const setupRecaptcha = (containerId: string) => {
   if (typeof window === "undefined") return null;
   if (!ensureFirebaseInit()) throw new Error("Firebase is not initialized. Check your environment variables.");

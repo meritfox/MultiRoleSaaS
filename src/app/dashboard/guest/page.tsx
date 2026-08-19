@@ -12,10 +12,10 @@ export default function GuestDashboard() {
       <nav className="sticky top-0 z-50 w-full border-b border-slate-200 bg-white/95 backdrop-blur">
         <div className="container mx-auto flex h-16 items-center justify-between px-4">
           <div className="flex items-center gap-2">
-            <div className="flex h-8 w-8 items-center justify-center rounded-lg bg-gradient-to-br from-[#3b4cca] to-[#5a6fd6]">
+            <div className="flex h-8 w-8 items-center justify-center rounded-lg bg-gradient-to-br from-[#DC2626] to-[#ef4444]">
               <span className="text-lg font-bold text-white">O</span>
             </div>
-            <span className="text-xl font-bold text-[#3b4cca]">OmniStud</span>
+            <span className="text-xl font-bold text-[#DC2626]">OmniStud</span>
           </div>
           <div className="flex items-center gap-3">
             <Button variant="ghost" asChild>
@@ -39,13 +39,13 @@ export default function GuestDashboard() {
           <input
             type="text"
             placeholder="Search tutors, schools, transport services..."
-            className="w-full rounded-lg border border-slate-300 bg-white py-3 pl-10 pr-4 text-sm focus:outline-none focus:ring-2 focus:ring-[#3b4cca]"
+            className="w-full rounded-lg border border-slate-300 bg-white py-3 pl-10 pr-4 text-sm focus:outline-none focus:ring-2 focus:ring-[#DC2626]"
           />
         </div>
 
         <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-5 mb-10">
           {[
-            { icon: <GraduationCap className="h-6 w-6" />, title: "Students", desc: "Find tutors and learning resources", color: "bg-blue-100 text-[#3b4cca]" },
+            { icon: <GraduationCap className="h-6 w-6" />, title: "Students", desc: "Find tutors and learning resources", color: "bg-red-100 text-[#DC2626]" },
             { icon: <Users className="h-6 w-6" />, title: "Parents", desc: "Track children and manage services", color: "bg-orange-100 text-orange-600" },
             { icon: <BookOpen className="h-6 w-6" />, title: "Teachers", desc: "Offer classes and grow earnings", color: "bg-emerald-100 text-emerald-600" },
             { icon: <Bus className="h-6 w-6" />, title: "Transporters", desc: "Manage routes and fleet", color: "bg-amber-100 text-amber-600" },
@@ -67,14 +67,14 @@ export default function GuestDashboard() {
             ].map((service) => (
               <div key={service.name} className="p-4 rounded-xl border border-slate-200 hover:shadow-md transition-shadow">
                 <div className="flex justify-between items-start mb-2">
-                  <span className="text-xs font-medium px-2 py-0.5 rounded-full bg-blue-100 text-[#3b4cca]">{service.type}</span>
+                  <span className="text-xs font-medium px-2 py-0.5 rounded-full bg-red-100 text-[#DC2626]">{service.type}</span>
                   <div className="flex items-center gap-1 text-amber-500 text-sm">
                     <Star className="h-4 w-4 fill-current" />
                     {service.rating}
                   </div>
                 </div>
                 <h4 className="font-medium text-slate-900">{service.name}</h4>
-                <p className="text-lg font-bold text-[#3b4cca] mt-2">{service.price}<span className="text-sm text-slate-500 font-normal">/month</span></p>
+                <p className="text-lg font-bold text-[#DC2626] mt-2">{service.price}<span className="text-sm text-slate-500 font-normal">/month</span></p>
                 <Button size="sm" className="w-full mt-3" asChild>
                   <Link href="/register">Sign Up to Book</Link>
                 </Button>

@@ -53,3 +53,63 @@ export function getInitials(name: string): string {
     .toUpperCase()
     .slice(0, 2);
 }
+
+/** "Aug 14, 26" style short date for dense tables. */
+export function formatShortDate(timestamp: number): string {
+  return new Intl.DateTimeFormat("en-IN", {
+    day: "numeric",
+    month: "short",
+    year: "2-digit",
+  }).format(new Date(timestamp));
+}
+
+/** Formats raw enum values into readable labels, e.g. SERVICE_PROVIDER -> "Service Provider". */
+export function formatRole(role?: string): string {
+  if (!role) return "Unknown";
+  return role
+    .split("_")
+    .map((word) => word.charAt(0).toUpperCase() + word.slice(1).toLowerCase())
+    .join(" ");
+}
+
+export type BadgeVariant = "success" | "warning" | "danger" | "indigo" | "purple" | "slate";
+
+/** Soft-tint badge variant for each platform role. */
+export function roleBadgeVariant(role?: string): BadgeVariant {
+  switch (role) {
+    case "STUDENT":
+      return "indigo";
+    case "PARENT":
+      return "purple";
+    case "TRANSPORTER":
+      return "success";
+    case "TEACHER":
+      return "warning";
+    case "SERVICE_PROVIDER":
+      return "slate";
+    case "SUPER_ADMIN":
+      return "danger";
+    default:
+      return "slate";
+  }
+}
+
+/** Soft-tint badge variant for escrow transaction states. */
+export function escrowStatusVariant(status?: string): BadgeVariant {
+  switch (status) {
+    case "RELEASED":
+      return "success";
+    case "HELD":
+      return "warning";
+    case "REFUNDED":
+      return "danger";
+    default:
+      return "slate";
+  }
+}
+
+/** Month-over-month percentage change; returns null when there is no prior baseline. */
+export function percentChange(current: number, previous: number): number | null {
+  if (previous <= 0) return null;
+  return ((current - previous) / previous) * 100;
+}

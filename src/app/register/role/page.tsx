@@ -25,7 +25,7 @@ const ROLES: RoleOption[] = [
     label: "STUDENT",
     description: "Access learning resources, connect with tutors, view assignments.",
     icon: <GraduationCap className="h-8 w-8" />,
-    color: "#3b4cca",
+    color: "#DC2626",
     features: ["Find tutors", "Access resources", "View assignments"],
   },
   {
@@ -110,9 +110,9 @@ export default function RoleSelectionPage() {
 
         <div className="flex items-center justify-center mb-8">
           <div className="flex items-center gap-2">
-            <div className="h-2.5 w-2.5 rounded-full bg-[#3b4cca]"></div>
-            <div className="h-0.5 w-8 bg-[#3b4cca]"></div>
-            <div className="h-2.5 w-2.5 rounded-full bg-[#3b4cca]"></div>
+            <div className="h-2.5 w-2.5 rounded-full bg-[#DC2626]"></div>
+            <div className="h-0.5 w-8 bg-[#DC2626]"></div>
+            <div className="h-2.5 w-2.5 rounded-full bg-[#DC2626]"></div>
             <div className="h-0.5 w-8 bg-slate-200"></div>
             <div className="h-2.5 w-2.5 rounded-full bg-slate-300"></div>
           </div>
@@ -129,7 +129,7 @@ export default function RoleSelectionPage() {
                 onClick={() => handleSelect(role)}
                 className={`relative flex items-start gap-4 p-6 rounded-2xl border-2 text-left transition-all ${
                   isSelected
-                    ? "border-[#3b4cca] bg-[#3b4cca]/5 shadow-md"
+                    ? "border-[#DC2626] bg-[#DC2626]/5 shadow-md"
                     : "border-slate-200 bg-white hover:border-slate-300 hover:shadow-sm"
                 }`}
               >
@@ -141,11 +141,11 @@ export default function RoleSelectionPage() {
                 </div>
                 <div className="flex-1">
                   <div className="flex items-center justify-between">
-                    <h3 className={`text-lg font-bold ${isSelected ? "text-[#3b4cca]" : "text-slate-900"}`}>
+                    <h3 className={`text-lg font-bold ${isSelected ? "text-[#DC2626]" : "text-slate-900"}`}>
                       {role.label}
                     </h3>
                     {isSelected && (
-                      <div className="h-6 w-6 rounded-full bg-[#3b4cca] flex items-center justify-center">
+                      <div className="h-6 w-6 rounded-full bg-[#DC2626] flex items-center justify-center">
                         <Check className="h-4 w-4 text-white" />
                       </div>
                     )}
@@ -172,7 +172,7 @@ export default function RoleSelectionPage() {
             Back
           </button>
           <div className="flex items-center gap-4">
-            <button className="flex items-center gap-1 text-sm text-slate-500 hover:text-[#3b4cca]">
+            <button className="flex items-center gap-1 text-sm text-slate-500 hover:text-[#DC2626]">
               <HelpCircle className="h-4 w-4" /> Help Selecting a Role?
             </button>
             <Button onClick={handleContinue} isLoading={isLoading} size="lg">

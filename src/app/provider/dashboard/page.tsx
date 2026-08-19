@@ -143,7 +143,7 @@ export default function ProviderDashboard() {
           <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-5">
             <Card className="p-5">
               <div className="flex items-center gap-3">
-                <div className="p-3 rounded-xl bg-blue-100 text-[#3b4cca]">
+                <div className="p-3 rounded-xl bg-red-100 text-[#DC2626]">
                   <Briefcase className="h-6 w-6" />
                 </div>
                 <div>
@@ -201,7 +201,7 @@ export default function ProviderDashboard() {
                     {requests.map((request) => (
                       <div key={request.id} className="flex items-center justify-between p-4 rounded-xl border border-slate-200 bg-slate-50">
                         <div className="flex items-center gap-3">
-                          <div className="h-10 w-10 rounded-full bg-[#3b4cca]/10 flex items-center justify-center text-[#3b4cca] font-medium">
+                          <div className="h-10 w-10 rounded-full bg-[#DC2626]/10 flex items-center justify-center text-[#DC2626] font-medium">
                             {request.student?.displayName?.charAt(0) || <Users className="h-5 w-5" />}
                           </div>
                           <div>
@@ -244,7 +244,7 @@ export default function ProviderDashboard() {
                   <div className="relative h-48 bg-slate-100 rounded-xl overflow-hidden mb-4">
                     <div className="absolute inset-0 flex items-center justify-center">
                       <div className="text-center">
-                        <MapPin className="h-10 w-10 text-[#3b4cca] mx-auto mb-2" />
+                        <MapPin className="h-10 w-10 text-[#DC2626] mx-auto mb-2" />
                         <p className="text-slate-600 font-medium">Route Map View</p>
                         <p className="text-sm text-slate-500">Guwahati - School Bus #15</p>
                       </div>
@@ -255,8 +255,8 @@ export default function ProviderDashboard() {
                       <p className="text-2xl font-bold text-emerald-600">12</p>
                       <p className="text-xs text-slate-600">Students</p>
                     </div>
-                    <div className="p-3 rounded-lg bg-blue-50 border border-blue-100 text-center">
-                      <p className="text-2xl font-bold text-[#3b4cca]">8</p>
+                    <div className="p-3 rounded-lg bg-red-50 border border-red-100 text-center">
+                      <p className="text-2xl font-bold text-[#DC2626]">8</p>
                       <p className="text-xs text-slate-600">Checked In</p>
                     </div>
                     <div className="p-3 rounded-lg bg-amber-50 border border-amber-100 text-center">
@@ -344,7 +344,7 @@ export default function ProviderDashboard() {
                       <span className="font-medium text-slate-900">{stats.pendingRequests === 0 ? 100 : Math.round((stats.approvedRequests / (stats.approvedRequests + stats.pendingRequests)) * 100)}%</span>
                     </div>
                     <div className="h-2 bg-slate-100 rounded-full overflow-hidden">
-                      <div className="h-full bg-[#3b4cca] rounded-full" style={{ width: `${stats.pendingRequests === 0 ? 100 : Math.round((stats.approvedRequests / (stats.approvedRequests + stats.pendingRequests)) * 100)}%` }}></div>
+                      <div className="h-full bg-[#DC2626] rounded-full" style={{ width: `${stats.pendingRequests === 0 ? 100 : Math.round((stats.approvedRequests / (stats.approvedRequests + stats.pendingRequests)) * 100)}%` }}></div>
                     </div>
                   </div>
                 </div>

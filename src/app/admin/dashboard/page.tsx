@@ -1,7 +1,24 @@
 "use client";
 
-import React, { useState, useEffect } from "react";
-import { useAuth } from "@/lib/auth-context";
+import React, { useEffect, useMemo, useState } from "react";
+import Link from "next/link";
+import {
+  Area,
+  AreaChart,
+  CartesianGrid,
+  ResponsiveContainer,
+  Tooltip,
+  XAxis,
+  YAxis,
+} from "recharts";
+import {
+  Users,
+  CreditCard,
+  TrendingUp,
+  Wallet,
+  Download,
+  ArrowRight,
+} from "lucide-react";
 import ProtectedRoute from "@/components/auth/ProtectedRoute";
 import DashboardLayout from "@/components/layout/DashboardLayout";
 import { Card } from "@/components/ui/Card";
@@ -9,33 +26,50 @@ import { Button } from "@/components/ui/Button";
 import { Input } from "@/components/ui/Input";
 import { Alert } from "@/components/ui/Alert";
 import { Spinner } from "@/components/ui/Spinner";
+import { Badge } from "@/components/ui/Badge";
+import { Avatar } from "@/components/ui/Avatar";
+import { Toggle } from "@/components/ui/Toggle";
+import { Select } from "@/components/ui/Select";
+import { KpiCard } from "@/components/ui/KpiCard";
 import { db } from "@/lib/firebase";
 import {
   doc,
   getDoc,
   setDoc,
+  updateDoc,
   collection,
   getDocs,
-  deleteDoc,
-  updateDoc,
 } from "firebase/firestore";
-import { AppSettings, UserProfile, EscrowTransaction, SubscriptionConfig } from "@/types";
-import { releaseEscrow, refundEscrow } from "@/lib/services/payments";
-import { Users, Settings, IndianRupee, Shield, Trash2, CheckCircle, XCircle, Clock, TrendingUp, CreditCard, Wallet, Activity, BarChart3, ArrowRight } from "lucide-react";
-import Link from "next/link";
+import { AppSettings, UserProfile, EscrowTransaction } from "@/types";
+import {
+  formatINR,
+  formatRole,
+  formatShortDate,
+  roleBadgeVariant,
+  escrowStatusVariant,
+  percentChange,
+} from "@/lib/utils";
 
 const ADMIN_ROLE = "SUPER_ADMIN";
+const DAY_MS = 24 * 60 * 60 * 1000;
+
+const RANGE_OPTIONS = [
+  { value: "7", label: "Last 7 Days" },
+  { value: "30", label: "Last 30 Days" },
+  { value: "90", label: "Last 90 Days" },
+];
 
 export default function AdminDashboard() {
-  const { user, role } = useAuth();
   const [settings, setSettings] = useState<AppSettings | null>(null);
   const [users, setUsers] = useState<UserProfile[]>([]);
   const [escrowTransactions, setEscrowTransactions] = useState<EscrowTransaction[]>([]);
-  const [subscriptionPlans, setSubscriptionPlans] = useState<SubscriptionConfig[]>([]);
   const [loading, setLoading] = useState(true);
   const [isSaving, setIsSaving] = useState(false);
   const [error, setError] = useState<string | null>(null);
   const [success, setSuccess] = useState(false);
+  const [rangeDays, setRangeDays] = useState(30);
+  /** Timestamp captured when data loads, so render stays pure. */
+  const [loadedAt, setLoadedAt] = useState(0);
 
   const [newFee, setNewFee] = useState<string>("");
   const [newProviderTypes, setNewProviderTypes] = useState<string>("");
@@ -61,6 +95,7 @@ export default function AdminDashboard() {
             maintenanceMode: false,
             adminKey: "ADMIN123",
             platformCommission: 5,
+            instantEscrowRelease: false,
           };
           await setDoc(docRef, defaultSettings);
           setSettings(defaultSettings);
@@ -69,30 +104,18 @@ export default function AdminDashboard() {
           setNewAdminKey("ADMIN123");
         }
 
-        const usersRef = collection(db, "users");
-        const usersSnap = await getDocs(usersRef);
-        const usersData = usersSnap.docs.map((d) => ({
-          uid: d.id,
-          ...d.data(),
-        })) as UserProfile[];
-        setUsers(usersData);
+        const usersSnap = await getDocs(collection(db, "users"));
+        setUsers(usersSnap.docs.map((d) => ({ uid: d.id, ...d.data() })) as UserProfile[]);
 
-        const escrowRef = collection(db, "escrow");
-        const escrowSnap = await getDocs(escrowRef);
-        const escrowData = escrowSnap.docs.map((d) => ({
-          id: d.id,
-          ...d.data(),
-        })) as EscrowTransaction[];
-        setEscrowTransactions(escrowData);
-
-        const plansRef = collection(db, "subscriptionPlans");
-        const plansSnap = await getDocs(plansRef);
-        const plansData = plansSnap.docs.map((d) => d.data() as SubscriptionConfig);
-        setSubscriptionPlans(plansData);
+        const escrowSnap = await getDocs(collection(db, "escrow"));
+        setEscrowTransactions(
+          escrowSnap.docs.map((d) => ({ id: d.id, ...d.data() })) as EscrowTransaction[]
+        );
       } catch (err) {
         console.error("Error fetching data:", err);
         setError("Failed to fetch dashboard data.");
       } finally {
+        setLoadedAt(Date.now());
         setLoading(false);
       }
     };
@@ -117,12 +140,14 @@ export default function AdminDashboard() {
       if (!newAdminKey.trim()) throw new Error("Admin key cannot be empty.");
 
       const commission = parseFloat(platformFee);
-      if (isNaN(commission) || commission < 0 || commission > 100) throw new Error("Invalid platform commission. Must be 0-100.");
+      if (isNaN(commission) || commission < 0 || commission > 100)
+        throw new Error("Invalid platform commission. Must be 0-100.");
 
       const updatedSettings: AppSettings = {
         registrationFee: fee,
         allowedServiceProviderTypes: providerTypes,
         maintenanceMode: settings?.maintenanceMode || false,
+        instantEscrowRelease: settings?.instantEscrowRelease || false,
         adminKey: newAdminKey.trim(),
         platformCommission: commission,
       };
@@ -131,331 +156,479 @@ export default function AdminDashboard() {
       setSettings(updatedSettings);
       setSuccess(true);
       setTimeout(() => setSuccess(false), 3000);
-    } catch (err: any) {
+    } catch (err) {
       console.error("Error saving settings:", err);
-      setError(err.message || "Failed to save settings.");
+      setError(err instanceof Error ? err.message : "Failed to save settings.");
     } finally {
       setIsSaving(false);
     }
   };
 
-  const handleDeleteUser = async (uid: string) => {
-    if (!confirm("Are you sure you want to delete this user?")) return;
+  const handleToggleSetting = async (
+    field: "maintenanceMode" | "instantEscrowRelease",
+    value: boolean
+  ) => {
     try {
-      await deleteDoc(doc(db, "users", uid));
-      setUsers(users.filter((u) => u.uid !== uid));
+      await updateDoc(doc(db, "settings", "app_settings"), { [field]: value });
+      setSettings((prev) => (prev ? { ...prev, [field]: value } : prev));
     } catch (err) {
-      console.error("Error deleting user:", err);
-      setError("Failed to delete user.");
+      console.error("Error updating setting:", err);
+      setError("Failed to update setting.");
     }
   };
 
-  const handleTogglePayment = async (uid: string, currentStatus: string) => {
-    try {
-      const newStatus = currentStatus === "COMPLETED" ? "PENDING" : "COMPLETED";
-      await updateDoc(doc(db, "users", uid), {
-        paymentStatus: newStatus,
-        updatedAt: Date.now(),
-      });
-      setUsers(
-        users.map((u) =>
-          u.uid === uid ? { ...u, paymentStatus: newStatus as any } : u
-        )
+  const usersById = useMemo(() => {
+    const map = new Map<string, UserProfile>();
+    users.forEach((u) => map.set(u.uid, u));
+    return map;
+  }, [users]);
+
+  const nameOf = (uid: string) => usersById.get(uid)?.displayName ?? "Unknown User";
+
+  const metrics = useMemo(() => {
+    const now = loadedAt || 0;
+    const rangeMs = rangeDays * DAY_MS;
+    const inCur = (ts: number) => ts >= now - rangeMs && ts <= now;
+    const inPrev = (ts: number) => ts >= now - 2 * rangeMs && ts < now - rangeMs;
+
+    const usersCur = users.filter((u) => inCur(u.createdAt)).length;
+    const usersPrev = users.filter((u) => inPrev(u.createdAt)).length;
+
+    const commissionCur = escrowTransactions
+      .filter((t) => inCur(t.createdAt))
+      .reduce((s, t) => s + t.commission, 0);
+    const commissionPrev = escrowTransactions
+      .filter((t) => inPrev(t.createdAt))
+      .reduce((s, t) => s + t.commission, 0);
+
+    const activeSubscribers = users.filter((u) => u.paymentStatus === "COMPLETED").length;
+    const conversion = users.length ? Math.round((activeSubscribers / users.length) * 100) : 0;
+
+    const heldTxs = escrowTransactions.filter((t) => t.status === "HELD");
+    const escrowHeld = heldTxs.reduce((s, t) => s + t.amount, 0);
+    const totalCommission = escrowTransactions.reduce((s, t) => s + t.commission, 0);
+
+    return {
+      usersCur,
+      userTrend: percentChange(usersCur, usersPrev),
+      activeSubscribers,
+      conversion,
+      totalCommission,
+      commissionTrend: percentChange(commissionCur, commissionPrev),
+      escrowHeld,
+      heldCount: heldTxs.length,
+    };
+  }, [users, escrowTransactions, rangeDays, loadedAt]);
+
+  const chartData = useMemo(() => {
+    const startOfToday = new Date(loadedAt || 0);
+    startOfToday.setHours(0, 0, 0, 0);
+    const buckets: { label: string; inflow: number; commission: number }[] = [];
+
+    for (let i = rangeDays - 1; i >= 0; i--) {
+      const dayStart = startOfToday.getTime() - i * DAY_MS;
+      const dayEnd = dayStart + DAY_MS;
+      const txs = escrowTransactions.filter(
+        (t) => t.createdAt >= dayStart && t.createdAt < dayEnd
       );
-    } catch (err) {
-      console.error("Error updating payment status:", err);
-      setError("Failed to update payment status.");
+      buckets.push({
+        label: new Date(dayStart).toLocaleDateString("en-IN", {
+          day: "numeric",
+          month: "short",
+        }),
+        inflow: txs.reduce((s, t) => s + t.amount, 0),
+        commission: txs.reduce((s, t) => s + t.commission, 0),
+      });
     }
-  };
+    return buckets;
+  }, [escrowTransactions, rangeDays, loadedAt]);
 
-  const handleReleaseEscrow = async (txId: string) => {
-    try {
-      await releaseEscrow(txId);
-      setEscrowTransactions(escrowTransactions.map((tx) => (tx.id === txId ? { ...tx, status: "RELEASED", releasedAt: Date.now() } : tx)));
-    } catch (err) {
-      console.error("Error releasing escrow:", err);
-      setError("Failed to release escrow.");
-    }
-  };
+  const recentEscrow = useMemo(
+    () => [...escrowTransactions].sort((a, b) => b.createdAt - a.createdAt).slice(0, 6),
+    [escrowTransactions]
+  );
 
-  const handleRefundEscrow = async (txId: string) => {
-    try {
-      await refundEscrow(txId);
-      setEscrowTransactions(escrowTransactions.map((tx) => (tx.id === txId ? { ...tx, status: "REFUNDED", releasedAt: Date.now() } : tx)));
-    } catch (err) {
-      console.error("Error refunding escrow:", err);
-      setError("Failed to refund escrow.");
-    }
-  };
+  const recentUsers = useMemo(
+    () => [...users].sort((a, b) => b.createdAt - a.createdAt).slice(0, 5),
+    [users]
+  );
 
-  const totalUsers = users.length;
-  const activeSubscribers = users.filter((u) => u.paymentStatus === "COMPLETED").length;
-  const totalEscrow = escrowTransactions.reduce((sum, tx) => sum + tx.amount, 0);
-  const totalCommission = escrowTransactions.reduce((sum, tx) => sum + tx.commission, 0);
-  const platformHealth = "Operational";
+  const trendLabel = (pct: number | null) =>
+    pct === null ? null : `${pct >= 0 ? "+" : ""}${pct.toFixed(1)}% vs prev. period`;
+
+  const compactAxis = (v: number) =>
+    v >= 100000 ? `₹${(v / 100000).toFixed(1)}L` : v >= 1000 ? `₹${Math.round(v / 1000)}k` : `₹${v}`;
+
+  const exportReport = () => {
+    const rows: string[][] = [
+      ["OmniStud Admin Report", new Date().toLocaleString("en-IN")],
+      [],
+      ["Metric", "Value"],
+      ["Total Users", String(users.length)],
+      ["Active Subscriptions", String(metrics.activeSubscribers)],
+      ["Conversion Rate", `${metrics.conversion}%`],
+      ["Platform Commission (INR)", String(metrics.totalCommission)],
+      ["Escrow Balance Held (INR)", String(metrics.escrowHeld)],
+      ["Settlements Pending", String(metrics.heldCount)],
+      [],
+      ["Transaction ID", "Service", "Payer", "Payee", "Amount (INR)", "Commission (INR)", "Status", "Date"],
+      ...escrowTransactions.map((t) => [
+        t.id,
+        t.serviceName,
+        nameOf(t.payerId),
+        nameOf(t.providerId),
+        String(t.amount),
+        String(t.commission),
+        t.status,
+        new Date(t.createdAt).toISOString(),
+      ]),
+    ];
+    const csv = rows
+      .map((r) => r.map((c) => `"${String(c ?? "").replace(/"/g, '""')}"`).join(","))
+      .join("\n");
+    const blob = new Blob([csv], { type: "text/csv;charset=utf-8;" });
+    const url = URL.createObjectURL(blob);
+    const a = document.createElement("a");
+    a.href = url;
+    a.download = `omnistud-report-${new Date().toISOString().slice(0, 10)}.csv`;
+    a.click();
+    URL.revokeObjectURL(url);
+  };
 
   if (loading) {
     return (
-      <div className="flex min-h-screen items-center justify-center">
-        <Spinner size="lg" />
-      </div>
+      <ProtectedRoute allowedRoles={[ADMIN_ROLE]}>
+        <div className="flex min-h-screen items-center justify-center">
+          <Spinner size="lg" />
+        </div>
+      </ProtectedRoute>
     );
   }
 
+  const userTrendText = trendLabel(metrics.userTrend);
+  const commissionTrendText = trendLabel(metrics.commissionTrend);
+
   return (
     <ProtectedRoute allowedRoles={[ADMIN_ROLE]}>
-      <DashboardLayout title="Super Admin Control Panel">
+      <DashboardLayout title="Overview">
         <div className="space-y-6">
           {/* Header */}
-          <div>
-            <h2 className="text-2xl font-bold text-slate-900">Super Admin Control Panel</h2>
-            <p className="text-slate-600">Manage users, subscriptions, escrow, and platform settings.</p>
+          <div className="flex flex-col gap-4 sm:flex-row sm:items-center sm:justify-between">
+            <div>
+              <p className="text-xs font-medium text-slate-500">
+                Admin Console <span className="mx-1 text-slate-300">/</span> Overview
+              </p>
+              <h1 className="mt-1 text-xl font-semibold text-slate-900">Executive Dashboard</h1>
+              <p className="mt-0.5 text-sm text-slate-500">
+                Platform health, escrow velocity, and moderation at a glance.
+              </p>
+            </div>
+            <div className="flex items-center gap-3">
+              <Select
+                options={RANGE_OPTIONS}
+                value={String(rangeDays)}
+                onChange={(e) => setRangeDays(Number(e.target.value))}
+                className="w-40"
+                aria-label="Date range"
+              />
+              <Button variant="outline" onClick={exportReport}>
+                <Download className="mr-2 h-4 w-4" /> Export Report
+              </Button>
+            </div>
           </div>
 
           {error && <Alert variant="error">{error}</Alert>}
-          {success && <Alert variant="success">Settings updated successfully!</Alert>}
+          {success && <Alert variant="success">Settings saved successfully.</Alert>}
 
-          {/* System Overview */}
-          <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-5">
-            <Card className="p-5">
-              <div className="flex items-center gap-3">
-                <div className="p-3 rounded-xl bg-blue-100 text-[#3b4cca]">
-                  <Users className="h-6 w-6" />
-                </div>
-                <div>
-                  <p className="text-sm text-slate-500">Total Users</p>
-                  <p className="text-2xl font-bold text-slate-900">{totalUsers}</p>
-                </div>
+          {/* KPI metrics bar */}
+          <div className="grid grid-cols-1 gap-4 sm:grid-cols-2 xl:grid-cols-4">
+            <KpiCard
+              label="Total Users"
+              value={users.length.toLocaleString("en-IN")}
+              icon={<Users className="h-5 w-5" />}
+              iconClassName="bg-[#EEF2FF] text-[#DC2626]"
+              trend={
+                userTrendText
+                  ? {
+                      label: userTrendText,
+                      direction: (metrics.userTrend ?? 0) >= 0 ? "up" : "down",
+                      positive: (metrics.userTrend ?? 0) >= 0,
+                    }
+                  : undefined
+              }
+              subtext={`${metrics.usersCur} new this period`}
+            />
+            <KpiCard
+              label="Active Subscriptions"
+              value={metrics.activeSubscribers.toLocaleString("en-IN")}
+              icon={<CreditCard className="h-5 w-5" />}
+              iconClassName="bg-purple-50 text-purple-600"
+              subtext={`${metrics.conversion}% conversion rate`}
+            />
+            <KpiCard
+              label="Platform Commission"
+              value={formatINR(metrics.totalCommission)}
+              icon={<TrendingUp className="h-5 w-5" />}
+              iconClassName="bg-[#ECFDF5] text-[#047857]"
+              trend={
+                commissionTrendText
+                  ? {
+                      label: commissionTrendText,
+                      direction: (metrics.commissionTrend ?? 0) >= 0 ? "up" : "down",
+                      positive: (metrics.commissionTrend ?? 0) >= 0,
+                    }
+                  : undefined
+              }
+            />
+            <KpiCard
+              label="Escrow Balance"
+              value={formatINR(metrics.escrowHeld)}
+              icon={<Wallet className="h-5 w-5" />}
+              iconClassName="bg-[#FFFBEB] text-[#B45309]"
+              subtext={`${metrics.heldCount} settlements pending`}
+            />
+          </div>
+
+          {/* Revenue chart + live transaction feed */}
+          <div className="grid grid-cols-1 gap-6 xl:grid-cols-3">
+            <Card
+              className="xl:col-span-2"
+              title="Revenue & Escrow Velocity"
+              description={`Escrow inflow vs commission realized — last ${rangeDays} days`}
+            >
+              <div className="h-72">
+                <ResponsiveContainer width="100%" height="100%">
+                  <AreaChart data={chartData} margin={{ top: 8, right: 8, left: 0, bottom: 0 }}>
+                    <defs>
+                      <linearGradient id="gradInflow" x1="0" y1="0" x2="0" y2="1">
+                        <stop offset="0%" stopColor="#DC2626" stopOpacity={0.25} />
+                        <stop offset="100%" stopColor="#DC2626" stopOpacity={0} />
+                      </linearGradient>
+                      <linearGradient id="gradCommission" x1="0" y1="0" x2="0" y2="1">
+                        <stop offset="0%" stopColor="#10B981" stopOpacity={0.25} />
+                        <stop offset="100%" stopColor="#10B981" stopOpacity={0} />
+                      </linearGradient>
+                    </defs>
+                    <CartesianGrid strokeDasharray="3 3" stroke="#E2E8F0" vertical={false} />
+                    <XAxis
+                      dataKey="label"
+                      tick={{ fontSize: 11, fill: "#64748B" }}
+                      tickLine={false}
+                      axisLine={false}
+                      minTickGap={24}
+                    />
+                    <YAxis
+                      tick={{ fontSize: 11, fill: "#64748B" }}
+                      tickLine={false}
+                      axisLine={false}
+                      tickFormatter={compactAxis}
+                      width={56}
+                    />
+                    <Tooltip
+                      formatter={(value) => formatINR(Number(value))}
+                      contentStyle={{
+                        borderRadius: 12,
+                        border: "1px solid #E2E8F0",
+                        fontSize: 13,
+                        boxShadow: "0 4px 12px rgba(0,0,0,0.08)",
+                      }}
+                    />
+                    <Area
+                      type="monotone"
+                      dataKey="inflow"
+                      name="Escrow Inflow"
+                      stroke="#DC2626"
+                      strokeWidth={2}
+                      fill="url(#gradInflow)"
+                    />
+                    <Area
+                      type="monotone"
+                      dataKey="commission"
+                      name="Commission Realized"
+                      stroke="#10B981"
+                      strokeWidth={2}
+                      fill="url(#gradCommission)"
+                    />
+                  </AreaChart>
+                </ResponsiveContainer>
+              </div>
+              <div className="mt-3 flex items-center gap-5 border-t border-slate-100 pt-3">
+                <span className="inline-flex items-center gap-2 text-xs font-medium text-slate-600">
+                  <span className="h-2.5 w-2.5 rounded-full bg-[#DC2626]" /> Escrow Inflow
+                </span>
+                <span className="inline-flex items-center gap-2 text-xs font-medium text-slate-600">
+                  <span className="h-2.5 w-2.5 rounded-full bg-[#10B981]" /> Commission Realized
+                </span>
               </div>
             </Card>
-            <Card className="p-5">
-              <div className="flex items-center gap-3">
-                <div className="p-3 rounded-xl bg-emerald-100 text-emerald-600">
-                  <CreditCard className="h-6 w-6" />
-                </div>
-                <div>
-                  <p className="text-sm text-slate-500">Active Subscribers</p>
-                  <p className="text-2xl font-bold text-slate-900">{activeSubscribers}</p>
-                </div>
+
+            {/* Live transaction feed */}
+            <Card noPadding>
+              <div className="flex items-center justify-between border-b border-slate-100 px-5 py-4">
+                <h3 className="text-base font-semibold text-slate-900">Recent Escrow Movements</h3>
+                <Link
+                  href="/admin/dashboard/escrow"
+                  className="inline-flex items-center gap-1 text-sm font-medium text-[#DC2626] hover:underline"
+                >
+                  View All <ArrowRight className="h-3.5 w-3.5" />
+                </Link>
               </div>
-            </Card>
-            <Card className="p-5">
-              <div className="flex items-center gap-3">
-                <div className="p-3 rounded-xl bg-purple-100 text-purple-600">
-                  <Activity className="h-6 w-6" />
-                </div>
-                <div>
-                  <p className="text-sm text-slate-500">Commission Earned</p>
-                  <p className="text-2xl font-bold text-emerald-600">₹{totalCommission}</p>
-                </div>
-              </div>
-            </Card>
-            <Card className="p-5">
-              <div className="flex items-center gap-3">
-                <div className="p-3 rounded-xl bg-amber-100 text-amber-600">
-                  <Wallet className="h-6 w-6" />
-                </div>
-                <div>
-                  <p className="text-sm text-slate-500">Total Funds in Escrow</p>
-                  <p className="text-2xl font-bold text-slate-900">₹{totalEscrow}</p>
-                </div>
+              <div className="divide-y divide-slate-100">
+                {recentEscrow.map((tx) => (
+                  <div key={tx.id} className="flex items-center justify-between gap-3 px-5 py-3">
+                    <div className="min-w-0">
+                      <p className="truncate text-sm font-medium text-slate-900">{tx.serviceName}</p>
+                      <p className="truncate text-xs text-slate-500">
+                        Parent: {nameOf(tx.payerId)} · {formatShortDate(tx.createdAt)}
+                      </p>
+                    </div>
+                    <div className="flex shrink-0 items-center gap-2.5">
+                      <span className="text-sm font-semibold text-slate-900">
+                        {formatINR(tx.amount)}
+                      </span>
+                      <Badge variant={escrowStatusVariant(tx.status)} dot>
+                        {formatRole(tx.status)}
+                      </Badge>
+                    </div>
+                  </div>
+                ))}
+                {recentEscrow.length === 0 && (
+                  <p className="px-5 py-10 text-center text-sm text-slate-500">
+                    No escrow activity yet.
+                  </p>
+                )}
               </div>
             </Card>
           </div>
 
-          <div className="grid grid-cols-1 xl:grid-cols-3 gap-6">
-            {/* User Management */}
-            <div className="xl:col-span-2 space-y-6">
-              <Card title="User Management" description="Manage all platform users">
-                <div className="mb-4">
-                  <Button asChild variant="outline" size="sm">
-                    <Link href="/admin/dashboard/users">
-                      View All Users <ArrowRight className="ml-2 h-4 w-4" />
-                    </Link>
-                  </Button>
+          {/* Quick moderation + platform settings */}
+          <div className="grid grid-cols-1 gap-6 xl:grid-cols-2">
+            {/* Recent registrations */}
+            <Card noPadding>
+              <div className="flex items-center justify-between border-b border-slate-100 px-5 py-4">
+                <div>
+                  <h3 className="text-base font-semibold text-slate-900">Recent User Registrations</h3>
+                  <p className="text-xs text-slate-500">Latest signups across all roles</p>
                 </div>
-                {users.length === 0 ? (
-                  <p className="text-center text-slate-500">No users found.</p>
-                ) : (
-                  <div className="overflow-x-auto">
-                    <table className="w-full text-sm">
-                      <thead>
-                        <tr className="border-b text-left">
-                          <th className="pb-3 font-medium text-slate-700">User ID</th>
-                          <th className="pb-3 font-medium text-slate-700">Name</th>
-                          <th className="pb-3 font-medium text-slate-700">Role</th>
-                          <th className="pb-3 font-medium text-slate-700">Status</th>
-                          <th className="pb-3 font-medium text-slate-700">Actions</th>
-                        </tr>
-                      </thead>
-                      <tbody>
-                        {users.slice(0, 5).map((u) => (
-                          <tr key={u.uid} className="border-b last:border-0">
-                            <td className="py-3 font-mono text-xs text-slate-500">{u.uid.slice(0, 8)}</td>
-                            <td className="py-3 font-medium text-slate-900">{u.displayName}</td>
-                            <td className="py-3">
-                              <span className="inline-flex items-center rounded-full bg-slate-100 px-2 py-0.5 text-xs font-medium capitalize">
-                                {u.role.toLowerCase().replace("_", " ")}
-                              </span>
-                            </td>
-                            <td className="py-3">
-                              <button
-                                onClick={() => handleTogglePayment(u.uid, u.paymentStatus)}
-                                className={`inline-flex items-center rounded-full px-2 py-0.5 text-xs font-medium ${
-                                  u.paymentStatus === "COMPLETED"
-                                    ? "bg-emerald-100 text-emerald-800"
-                                    : "bg-amber-100 text-amber-800"
-                                }`}
-                              >
-                                {u.paymentStatus === "COMPLETED" ? "Active" : "Pending"}
-                              </button>
-                            </td>
-                            <td className="py-3">
-                              <Button
-                                variant="ghost"
-                                size="icon"
-                                onClick={() => handleDeleteUser(u.uid)}
-                                className="text-red-600 hover:bg-red-50"
-                              >
-                                <Trash2 className="h-4 w-4" />
-                              </Button>
-                            </td>
-                          </tr>
-                        ))}
-                      </tbody>
-                    </table>
-                  </div>
-                )}
-              </Card>
-
-              {/* Escrow Release */}
-              <Card title="Escrow Release & Commission Tracking" description="Manage pending releases to providers">
-                <div className="grid grid-cols-1 md:grid-cols-2 gap-6 mb-6">
-                  <div className="p-4 rounded-xl bg-slate-50">
-                    <p className="text-sm text-slate-600">Total Funds in Escrow</p>
-                    <p className="text-2xl font-bold text-slate-900">₹{totalEscrow}</p>
-                  </div>
-                  <div className="p-4 rounded-xl bg-slate-50">
-                    <p className="text-sm text-slate-600">OmniStud Commission Balance</p>
-                    <p className="text-2xl font-bold text-slate-900">₹{totalCommission}</p>
-                  </div>
-                </div>
-                <div className="space-y-3">
-                  {escrowTransactions.map((tx) => (
-                    <div key={tx.id} className="flex items-center justify-between p-4 rounded-xl border border-slate-200 bg-slate-50">
-                      <div>
-                        <p className="font-medium text-slate-900">{tx.serviceName}</p>
-                        <p className="text-sm text-slate-500">Amount: ₹{tx.amount} • Commission: ₹{tx.commission}</p>
-                        <p className="text-xs text-slate-400">{new Date(tx.createdAt).toLocaleDateString()}</p>
-                      </div>
-                      <div className="flex items-center gap-3">
-                        <span className={`px-3 py-1 rounded-full text-xs font-medium ${
-                          tx.status === "RELEASED" ? "bg-emerald-100 text-emerald-700" : "bg-amber-100 text-amber-700"
-                        }`}>
-                          {tx.status}
-                        </span>
-                        {tx.status === "HELD" && (
-                          <div className="flex gap-2">
-                            <Button size="sm" onClick={() => handleReleaseEscrow(tx.id)}>
-                              Release
-                            </Button>
-                            <Button size="sm" variant="danger" onClick={() => handleRefundEscrow(tx.id)}>
-                              Refund
-                            </Button>
+                <Link
+                  href="/admin/dashboard/users"
+                  className="inline-flex items-center gap-1 text-sm font-medium text-[#DC2626] hover:underline"
+                >
+                  View All <ArrowRight className="h-3.5 w-3.5" />
+                </Link>
+              </div>
+              <div className="overflow-x-auto">
+                <table className="w-full text-sm">
+                  <thead>
+                    <tr className="border-b border-slate-100 text-left text-xs font-medium uppercase tracking-wide text-slate-500">
+                      <th className="px-5 py-3">User</th>
+                      <th className="px-4 py-3">Role</th>
+                      <th className="px-4 py-3">Verification</th>
+                      <th className="px-4 py-3">Joined</th>
+                      <th className="px-5 py-3 text-right">Action</th>
+                    </tr>
+                  </thead>
+                  <tbody className="divide-y divide-slate-100">
+                    {recentUsers.map((u) => (
+                      <tr key={u.uid} className="transition-colors hover:bg-slate-50/60">
+                        <td className="px-5 py-3">
+                          <div className="flex items-center gap-3">
+                            <Avatar name={u.displayName} src={u.photoURL} size="sm" />
+                            <div className="min-w-0">
+                              <p className="truncate font-medium text-slate-900">{u.displayName}</p>
+                              <p className="truncate text-xs text-slate-500">{u.email}</p>
+                            </div>
                           </div>
-                        )}
-                      </div>
-                    </div>
-                  ))}
-                  {escrowTransactions.length === 0 && (
-                    <p className="text-sm text-slate-500 italic">No escrow transactions found.</p>
-                  )}
-                </div>
-              </Card>
-            </div>
+                        </td>
+                        <td className="px-4 py-3">
+                          <Badge variant={roleBadgeVariant(u.role)}>{formatRole(u.role)}</Badge>
+                        </td>
+                        <td className="px-4 py-3">
+                          {u.blocked ? (
+                            <Badge variant="danger" dot>Suspended</Badge>
+                          ) : u.paymentStatus === "COMPLETED" ? (
+                            <Badge variant="success" dot>Verified</Badge>
+                          ) : (
+                            <Badge variant="warning" dot>Pending</Badge>
+                          )}
+                        </td>
+                        <td className="px-4 py-3 text-slate-600">{formatShortDate(u.createdAt)}</td>
+                        <td className="px-5 py-3 text-right">
+                          <Button size="sm" variant="outline" asChild>
+                            <Link href="/admin/dashboard/users">Review</Link>
+                          </Button>
+                        </td>
+                      </tr>
+                    ))}
+                  </tbody>
+                </table>
+                {recentUsers.length === 0 && (
+                  <p className="px-5 py-10 text-center text-sm text-slate-500">No users found.</p>
+                )}
+              </div>
+            </Card>
 
-            {/* Right Column */}
-            <div className="space-y-6">
-              {/* Platform Settings */}
-              <Card title="Platform Settings">
-                <div className="space-y-4">
-                  <div className="space-y-2">
-                    <label className="text-sm font-medium text-slate-700">Registration Fee (₹)</label>
+            {/* System configuration */}
+            <Card title="System Configuration" description="Quick toggles and platform fee controls">
+              <div className="space-y-5">
+                <Toggle
+                  label="Maintenance Mode"
+                  description="Temporarily disable public access to the platform."
+                  checked={settings?.maintenanceMode ?? false}
+                  onChange={(v) => handleToggleSetting("maintenanceMode", v)}
+                />
+                <Toggle
+                  label="Instant Escrow Release"
+                  description="Auto-release funds when a service is marked complete."
+                  checked={settings?.instantEscrowRelease ?? false}
+                  onChange={(v) => handleToggleSetting("instantEscrowRelease", v)}
+                />
+
+                <div className="border-t border-slate-100 pt-5">
+                  <div className="grid grid-cols-1 gap-4 sm:grid-cols-2">
                     <Input
+                      label="Registration Fee (₹)"
                       type="number"
                       value={newFee}
                       onChange={(e) => setNewFee(e.target.value)}
                       placeholder="e.g. 100"
                     />
-                  </div>
-
-                  <div className="space-y-2">
-                    <label className="text-sm font-medium text-slate-700">Allowed Service Provider Types</label>
                     <Input
-                      type="text"
-                      value={newProviderTypes}
-                      onChange={(e) => setNewProviderTypes(e.target.value)}
-                      placeholder="e.g. teacher, driver, tutor"
-                    />
-                    <p className="text-xs text-slate-500">Enter types separated by commas.</p>
-                  </div>
-
-                  <div className="space-y-2">
-                    <label className="text-sm font-medium text-slate-700">Admin Registration Key</label>
-                    <Input
-                      type="text"
-                      value={newAdminKey}
-                      onChange={(e) => setNewAdminKey(e.target.value)}
-                      placeholder="e.g. ADMIN123"
-                    />
-                  </div>
-
-                  <div className="space-y-2">
-                    <label className="text-sm font-medium text-slate-700">Platform Escrow Commission Fee (%)</label>
-                    <Input
+                      label="Platform Commission (%)"
                       type="number"
                       value={platformFee}
                       onChange={(e) => setPlatformFee(e.target.value)}
                       placeholder="e.g. 5"
                     />
                   </div>
+                  <div className="mt-4 space-y-4">
+                    <Input
+                      label="Allowed Service Provider Types"
+                      type="text"
+                      value={newProviderTypes}
+                      onChange={(e) => setNewProviderTypes(e.target.value)}
+                      placeholder="e.g. teacher, driver, tutor"
+                    />
+                    <Input
+                      label="Admin Registration Key"
+                      type="text"
+                      value={newAdminKey}
+                      onChange={(e) => setNewAdminKey(e.target.value)}
+                      placeholder="e.g. ADMIN123"
+                    />
+                  </div>
+                </div>
 
-                  <Button className="w-full" onClick={handleSaveSettings} isLoading={isSaving}>
+                <div className="flex items-center gap-3">
+                  <Button className="flex-1" onClick={handleSaveSettings} isLoading={isSaving}>
                     Save Settings
                   </Button>
-                </div>
-              </Card>
-
-              {/* Subscription Plans */}
-              <Card title="Subscription Plan Configuration">
-                <div className="space-y-3">
-                  {subscriptionPlans.map((plan) => (
-                    <div key={plan.plan} className="p-4 rounded-xl border border-slate-200">
-                      <div className="flex justify-between items-start mb-2">
-                        <div>
-                          <p className="font-medium text-slate-900">{plan.name}</p>
-                          <p className="text-xs text-slate-500">{plan.plan}</p>
-                        </div>
-                        <span className="text-lg font-bold text-[#3b4cca]">₹{plan.monthlyPrice}/mo</span>
-                      </div>
-                      <ul className="text-xs text-slate-600 space-y-1">
-                        {plan.features.slice(0, 3).map((f) => (
-                          <li key={f}>• {f}</li>
-                        ))}
-                      </ul>
-                    </div>
-                  ))}
-                </div>
-                <div className="flex gap-2 mt-4">
-                  <Button size="sm" variant="outline" className="flex-1" asChild>
+                  <Button variant="outline" asChild>
                     <Link href="/admin/dashboard/subscriptions">Manage Plans</Link>
                   </Button>
-                  <Button size="sm" variant="outline" className="flex-1" asChild>
-                    <Link href="/admin/dashboard/escrow">Escrow</Link>
-                  </Button>
                 </div>
-              </Card>
-            </div>
+              </div>
+            </Card>
           </div>
         </div>
       </DashboardLayout>

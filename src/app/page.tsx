@@ -65,8 +65,8 @@ const stats = [
 const roleCards = [
   {
     icon: GraduationCap,
-    bg: "bg-blue-100",
-    color: "text-[#3b4cca]",
+    bg: "bg-red-100",
+    color: "text-[#DC2626]",
     title: "Student",
     desc: "Find tutors, access learning resources, browse marketplace, and track school transport.",
   },
@@ -114,7 +114,7 @@ export default function HomePage() {
       {/* ============================ Navbar + Hero ============================ */}
       <header className="relative overflow-hidden bg-[#0b1e3a]">
         {/* Ambient glows */}
-        <div className="pointer-events-none absolute -top-40 -left-40 h-[500px] w-[500px] rounded-full bg-[#3b4cca]/30 blur-3xl" />
+        <div className="pointer-events-none absolute -top-40 -left-40 h-[500px] w-[500px] rounded-full bg-[#DC2626]/30 blur-3xl" />
         <div className="pointer-events-none absolute -bottom-52 -right-32 h-[520px] w-[520px] rounded-full bg-[#f59e0b]/20 blur-3xl" />
         <div className="pointer-events-none absolute top-1/3 left-1/2 h-72 w-72 -translate-x-1/2 rounded-full bg-[#10b981]/10 blur-3xl" />
 
@@ -226,7 +226,7 @@ export default function HomePage() {
           {/* Right: collage */}
           <div className="relative">
             <div className="grid grid-cols-2 gap-4">
-              <div className="flex h-44 flex-col justify-between rounded-3xl bg-gradient-to-br from-[#3b4cca] to-[#6a76ff] p-5 sm:h-52">
+              <div className="flex h-44 flex-col justify-between rounded-3xl bg-gradient-to-br from-[#DC2626] to-[#6a76ff] p-5 sm:h-52">
                 <GraduationCap className="h-9 w-9 text-white/90" />
                 <div>
                   <p className="text-2xl font-bold text-white">50K+</p>
@@ -267,8 +267,8 @@ export default function HomePage() {
               </div>
             </div>
             <div className="absolute -right-3 top-6 hidden items-center gap-3 rounded-2xl bg-white px-4 py-3 shadow-xl shadow-black/20 md:flex">
-              <span className="flex h-9 w-9 items-center justify-center rounded-full bg-blue-100">
-                <MapPin className="h-5 w-5 text-[#3b4cca]" />
+              <span className="flex h-9 w-9 items-center justify-center rounded-full bg-red-100">
+                <MapPin className="h-5 w-5 text-[#DC2626]" />
               </span>
               <div>
                 <p className="text-sm font-semibold text-slate-900">Bus #12 arriving</p>
@@ -329,7 +329,7 @@ export default function HomePage() {
               <div className="mx-auto max-w-md rounded-2xl bg-white p-6 shadow-xl shadow-slate-900/5">
                 <div className="mb-4 flex items-center justify-between">
                   <p className="text-sm font-semibold text-slate-900">Academic Insights</p>
-                  <span className="rounded-full bg-blue-50 px-3 py-1 text-[11px] font-medium text-[#3b4cca]">
+                  <span className="rounded-full bg-red-50 px-3 py-1 text-[11px] font-medium text-[#DC2626]">
                     This week
                   </span>
                 </div>
@@ -339,7 +339,7 @@ export default function HomePage() {
                     <p className="text-[11px] text-slate-500">Notices</p>
                   </div>
                   <div className="rounded-xl bg-slate-50 py-3">
-                    <p className="text-lg font-bold text-[#3b4cca]">140</p>
+                    <p className="text-lg font-bold text-[#DC2626]">140</p>
                     <p className="text-[11px] text-slate-500">Students</p>
                   </div>
                   <div className="rounded-xl bg-slate-50 py-3">
@@ -352,7 +352,7 @@ export default function HomePage() {
                   {[40, 65, 50, 85, 60, 95, 72].map((h, i) => (
                     <div key={i} className="flex w-full flex-col items-center gap-1">
                       <div
-                        className={`w-full rounded-t-md ${i === 5 ? "bg-[#3b4cca]" : "bg-[#3b4cca]/25"}`}
+                        className={`w-full rounded-t-md ${i === 5 ? "bg-[#DC2626]" : "bg-[#DC2626]/25"}`}
                         style={{ height: `${h}%` }}
                       />
                       <span className="text-[10px] text-slate-400">
@@ -383,7 +383,7 @@ export default function HomePage() {
                 <div className="grid grid-cols-3 gap-3">
                   {[
                     { icon: Wallet, label: "Fees", bg: "bg-emerald-100", color: "text-emerald-600" },
-                    { icon: CalendarDays, label: "Timetable", bg: "bg-blue-100", color: "text-[#3b4cca]" },
+                    { icon: CalendarDays, label: "Timetable", bg: "bg-red-100", color: "text-[#DC2626]" },
                     { icon: ClipboardCheck, label: "Attendance", bg: "bg-amber-100", color: "text-amber-600" },
                     { icon: Bus, label: "Transport", bg: "bg-orange-100", color: "text-orange-600" },
                     { icon: BookOpen, label: "Marketplace", bg: "bg-rose-100", color: "text-rose-600" },
@@ -417,7 +417,7 @@ export default function HomePage() {
       <section id="showcase" className="bg-[#f4f4f2] pb-24">
         <div className="mx-auto max-w-6xl px-6">
           <div className="relative overflow-hidden rounded-3xl bg-gradient-to-br from-[#0b1e3a] via-[#12294d] to-[#0b1e3a] px-6 py-24 sm:py-32">
-            <div className="pointer-events-none absolute -top-24 left-1/4 h-72 w-72 rounded-full bg-[#3b4cca]/25 blur-3xl" />
+            <div className="pointer-events-none absolute -top-24 left-1/4 h-72 w-72 rounded-full bg-[#DC2626]/25 blur-3xl" />
             <div className="pointer-events-none absolute -bottom-24 right-1/4 h-72 w-72 rounded-full bg-[#f59e0b]/15 blur-3xl" />
 
             {/* Play button */}
@@ -427,7 +427,7 @@ export default function HomePage() {
                 aria-label="Watch OmniStud in action"
                 className="group flex h-24 w-24 items-center justify-center rounded-full bg-white shadow-2xl shadow-black/40 transition-transform hover:scale-105"
               >
-                <Play className="h-10 w-10 translate-x-0.5 fill-slate-900 text-slate-900 transition-colors group-hover:fill-[#3b4cca] group-hover:text-[#3b4cca]" />
+                <Play className="h-10 w-10 translate-x-0.5 fill-slate-900 text-slate-900 transition-colors group-hover:fill-[#DC2626] group-hover:text-[#DC2626]" />
               </button>
             </div>
             <p className="relative z-10 mt-6 text-center text-sm font-medium text-slate-300">
@@ -437,7 +437,7 @@ export default function HomePage() {
             {/* Floating notification cards */}
             <div className="absolute left-6 top-10 hidden w-64 rounded-2xl bg-white/95 p-4 shadow-xl lg:block">
               <div className="flex items-center gap-2">
-                <BellRing className="h-4 w-4 text-[#3b4cca]" />
+                <BellRing className="h-4 w-4 text-[#DC2626]" />
                 <p className="text-xs font-semibold text-slate-900">New assignment posted</p>
               </div>
               <p className="mt-1 text-[11px] text-slate-500">Mathematics · Due Friday</p>
@@ -494,7 +494,7 @@ export default function HomePage() {
       <section id="roles" className="bg-white py-24">
         <div className="mx-auto max-w-7xl px-6">
           <div className="mx-auto max-w-2xl text-center">
-            <p className="text-base font-semibold text-[#3b4cca]">Tailored for you</p>
+            <p className="text-base font-semibold text-[#DC2626]">Tailored for you</p>
             <h2 className="mt-2 text-3xl font-bold tracking-tight text-slate-900 sm:text-4xl">
               Roles designed to meet your specific needs
             </h2>
@@ -519,13 +519,13 @@ export default function HomePage() {
       {/* ================================ CTA band ============================== */}
       <section className="bg-white pb-24">
         <div className="mx-auto max-w-7xl px-6">
-          <div className="relative overflow-hidden rounded-3xl bg-gradient-to-r from-[#3b4cca] to-[#5a63e8] px-8 py-16 text-center sm:px-16">
+          <div className="relative overflow-hidden rounded-3xl bg-gradient-to-r from-[#DC2626] to-[#5a63e8] px-8 py-16 text-center sm:px-16">
             <div className="pointer-events-none absolute -top-20 -right-20 h-64 w-64 rounded-full bg-white/10 blur-2xl" />
             <div className="pointer-events-none absolute -bottom-24 -left-16 h-64 w-64 rounded-full bg-[#ffc529]/20 blur-2xl" />
             <h2 className="relative text-3xl font-bold tracking-tight text-white sm:text-4xl">
               Ready to transform your institution?
             </h2>
-            <p className="relative mx-auto mt-4 max-w-xl text-base leading-7 text-blue-100">
+            <p className="relative mx-auto mt-4 max-w-xl text-base leading-7 text-red-100">
               Join hundreds of institutions already running their entire education
               ecosystem on OmniStud.
             </p>

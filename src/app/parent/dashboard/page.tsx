@@ -157,7 +157,7 @@ export default function ParentDashboard() {
                 <div className="space-y-3">
                   {children.map((child) => (
                     <div key={child.uid} className="flex items-center gap-3 p-3 rounded-lg bg-slate-50">
-                      <div className="h-10 w-10 rounded-full bg-[#3b4cca]/10 flex items-center justify-center text-[#3b4cca] font-medium">
+                      <div className="h-10 w-10 rounded-full bg-[#DC2626]/10 flex items-center justify-center text-[#DC2626] font-medium">
                         {child.displayName?.charAt(0)}
                       </div>
                       <div className="flex-1">
@@ -191,9 +191,9 @@ export default function ParentDashboard() {
               {/* Upcoming Payments */}
               <Card title="My Subscription">
                 <div className="space-y-3">
-                  <div className="p-3 rounded-lg bg-blue-50 border border-blue-100">
+                  <div className="p-3 rounded-lg bg-red-50 border border-red-100">
                     <p className="font-medium text-slate-900">Current Plan</p>
-                    <p className="text-[#3b4cca] font-bold">{user?.subscriptionPlan || "BASIC"}</p>
+                    <p className="text-[#DC2626] font-bold">{user?.subscriptionPlan || "BASIC"}</p>
                     <p className="text-xs text-slate-500 capitalize">{user?.subscriptionBilling || "MONTHLY"} Billing</p>
                   </div>
                   <div className="space-y-2">
@@ -228,7 +228,7 @@ export default function ParentDashboard() {
                         <Button size="sm" variant="outline" className="mt-2 w-full text-xs">Services</Button>
                       </div>
                     ))}
-                    <button className="p-3 rounded-xl border-2 border-dashed border-slate-300 flex flex-col items-center justify-center text-slate-500 hover:border-[#3b4cca] hover:text-[#3b4cca] transition-colors min-h-[120px]">
+                    <button className="p-3 rounded-xl border-2 border-dashed border-slate-300 flex flex-col items-center justify-center text-slate-500 hover:border-[#DC2626] hover:text-[#DC2626] transition-colors min-h-[120px]">
                       <UserPlus className="h-6 w-6 mb-1" />
                       <span className="text-xs font-medium">Add Child</span>
                     </button>
@@ -244,12 +244,12 @@ export default function ParentDashboard() {
                         <button
                           key={notification.id}
                           onClick={() => handleMarkRead(notification.id)}
-                          className={`w-full flex items-start gap-3 p-3 rounded-lg text-left transition-colors ${notification.read ? "bg-slate-50 opacity-70" : "bg-blue-50"}`}
+                          className={`w-full flex items-start gap-3 p-3 rounded-lg text-left transition-colors ${notification.read ? "bg-slate-50 opacity-70" : "bg-red-50"}`}
                         >
                           {notification.type === "SUCCESS" && <CheckCircle className="h-5 w-5 text-emerald-500 flex-shrink-0" />}
                           {notification.type === "WARNING" && <Clock3 className="h-5 w-5 text-amber-500 flex-shrink-0" />}
                           {notification.type === "ALERT" && <AlertTriangle className="h-5 w-5 text-red-500 flex-shrink-0" />}
-                          {notification.type === "INFO" && <Bell className="h-5 w-5 text-[#3b4cca] flex-shrink-0" />}
+                          {notification.type === "INFO" && <Bell className="h-5 w-5 text-[#DC2626] flex-shrink-0" />}
                           <div className="flex-1">
                             <p className="text-xs font-medium text-slate-500">{new Date(notification.createdAt).toLocaleString()}</p>
                             <p className="text-sm font-bold text-slate-800">{notification.title}</p>
@@ -271,7 +271,7 @@ export default function ParentDashboard() {
                     services.map((service) => (
                       <div key={`${childId}-${service.id}`} className="flex items-center justify-between p-3 rounded-lg bg-slate-50">
                         <div className="flex items-center gap-3">
-                          <div className={`p-2 rounded-lg ${service.providerType === "TRANSPORTER" ? "bg-amber-100 text-amber-600" : "bg-blue-100 text-[#3b4cca]"}`}>
+                          <div className={`p-2 rounded-lg ${service.providerType === "TRANSPORTER" ? "bg-amber-100 text-amber-600" : "bg-red-100 text-[#DC2626]"}`}>
                             {service.providerType === "TRANSPORTER" ? <Bus className="h-4 w-4" /> : <Clock className="h-4 w-4" />}
                           </div>
                           <div>
