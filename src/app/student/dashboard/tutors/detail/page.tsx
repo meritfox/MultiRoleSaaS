@@ -154,7 +154,7 @@ function TeacherDetailContent() {
                 )}
               </div>
 
-              <div className="rounded-lg bg-slate-50 p-4">
+              <div className="rounded-xl bg-slate-50/70 p-4">
                 <p className="text-sm text-slate-700">{service.description}</p>
                 {provider && (provider as { bio?: string }).bio && (
                   <p className="mt-2 text-sm text-slate-500">
@@ -208,7 +208,7 @@ function TeacherDetailContent() {
                     onChange={(e) => setNote(e.target.value)}
                     rows={3}
                     placeholder="e.g. I need Math tuition for Grade 5, evenings preferred."
-                    className="mt-1 w-full rounded-lg border border-slate-300 bg-white px-3 py-2 text-sm focus:outline-none focus:ring-2 focus:ring-[#DC2626]"
+                    className="mt-1 w-full rounded-xl border border-slate-200 bg-slate-50/60 px-3 py-2 text-sm focus:outline-none focus:border-[#DC2626]/40 focus:bg-white focus:shadow-glow transition-all duration-200"
                   />
                 </div>
                 <Button type="submit" isLoading={requesting} className="w-full">

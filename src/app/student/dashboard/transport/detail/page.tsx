@@ -139,12 +139,12 @@ function TransporterDetailContent() {
                 )}
               </div>
 
-              <div className="rounded-lg bg-slate-50 p-4">
+              <div className="rounded-xl bg-slate-50/70 p-4">
                 <p className="text-sm text-slate-700">{service.description}</p>
               </div>
 
               {(provider?.vehicleNumber || provider?.licenseNumber || service.school) && (
-                <div className="grid gap-2 rounded-lg border border-slate-200 p-4 text-sm sm:grid-cols-3">
+                <div className="grid gap-2 rounded-lg border border-slate-200/60 p-4 text-sm sm:grid-cols-3">
                   {service.school && (
                     <div>
                       <p className="text-xs text-slate-400">Serves School</p>
@@ -192,7 +192,7 @@ function TransporterDetailContent() {
                     value={startingPoint}
                     onChange={(e) => setStartingPoint(e.target.value)}
                     placeholder="e.g. Ulubari Bus Stop"
-                    className="mt-1 w-full rounded-lg border border-slate-300 bg-white px-3 py-2 text-sm focus:outline-none focus:ring-2 focus:ring-[#DC2626]"
+                    className="mt-1 w-full rounded-xl border border-slate-200 bg-slate-50/60 px-3 py-2 text-sm focus:outline-none focus:border-[#DC2626]/40 focus:bg-white focus:shadow-glow transition-all duration-200"
                   />
                 </div>
                 <Button type="submit" isLoading={requesting} className="w-full">

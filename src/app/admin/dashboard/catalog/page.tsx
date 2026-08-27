@@ -150,7 +150,7 @@ export default function AdminCatalogPage() {
                 {items.map((item) => (
                   <div
                     key={item.id}
-                    className="flex items-center justify-between gap-3 rounded-lg border border-slate-200 p-3"
+                    className="flex items-center justify-between gap-3 rounded-lg border border-slate-200/60 p-3"
                   >
                     <div className="min-w-0">
                       <p className="font-medium text-slate-900 truncate">{item.name}</p>

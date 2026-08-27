@@ -16,13 +16,13 @@ interface ButtonProps extends React.ButtonHTMLAttributes<HTMLButtonElement> {
 const Button = React.forwardRef<HTMLButtonElement, ButtonProps>(
   ({ className, variant = "primary", size = "md", isLoading, asChild, children, ...props }, ref) => {
     const variants = {
-      primary: "bg-[#DC2626] text-white hover:bg-[#B91C1C] shadow-sm",
-      secondary: "bg-slate-600 text-white hover:bg-slate-700 shadow-sm",
-      outline: "border border-slate-300 bg-white hover:bg-slate-50 text-slate-700",
+      primary: "bg-gradient-to-b from-[#ef4444] to-[#DC2626] text-white hover:to-[#B91C1C] shadow-soft hover:shadow-lift",
+      secondary: "bg-gradient-to-b from-slate-500 to-slate-600 text-white hover:to-slate-700 shadow-soft hover:shadow-lift",
+      outline: "border border-slate-200 bg-white hover:bg-slate-50 hover:border-slate-300 text-slate-700 shadow-soft",
       ghost: "bg-transparent hover:bg-slate-100 text-slate-700",
-      danger: "bg-red-600 text-white hover:bg-red-700 shadow-sm",
-      success: "bg-emerald-600 text-white hover:bg-emerald-700 shadow-sm",
-      warning: "bg-amber-500 text-white hover:bg-amber-600 shadow-sm",
+      danger: "bg-gradient-to-b from-red-500 to-red-600 text-white hover:to-red-700 shadow-soft hover:shadow-lift",
+      success: "bg-gradient-to-b from-emerald-500 to-emerald-600 text-white hover:to-emerald-700 shadow-soft hover:shadow-lift",
+      warning: "bg-gradient-to-b from-amber-400 to-amber-500 text-white hover:to-amber-600 shadow-soft hover:shadow-lift",
     };
 
     const sizes = {
@@ -33,7 +33,7 @@ const Button = React.forwardRef<HTMLButtonElement, ButtonProps>(
     };
 
     const combinedClassName = cn(
-      "inline-flex items-center justify-center rounded-lg font-medium transition-all duration-200 focus:outline-none focus:ring-2 focus:ring-[#DC2626] focus:ring-offset-2 disabled:opacity-50 disabled:pointer-events-none active:scale-[0.98]",
+      "inline-flex items-center justify-center rounded-xl font-medium transition-all duration-200 focus:outline-none disabled:opacity-50 disabled:pointer-events-none active:scale-[0.97]",
       variants[variant],
       sizes[size],
       className

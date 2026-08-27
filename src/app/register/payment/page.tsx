@@ -11,6 +11,7 @@ import { db } from "@/lib/firebase";
 import { doc, getDoc, updateDoc } from "firebase/firestore";
 import { AppSettings } from "@/types";
 import { createRegistrationPayment } from "@/lib/services/payments";
+import { AuthShell } from "@/components/layout/AuthShell";
 import Image from "next/image";
 
 export default function PaymentPage() {
@@ -81,19 +82,19 @@ export default function PaymentPage() {
 
   if (loading) {
     return (
-      <div className="flex min-h-screen items-center justify-center bg-gray-50 px-4">
+      <div className="flex min-h-screen items-center justify-center bg-[#f4f4f2] px-4">
         <Spinner size="lg" />
       </div>
     );
   }
 
   return (
-    <div className="flex min-h-screen items-center justify-center bg-gray-50 px-4 py-12">
-      <Card className="w-full max-w-md text-center">
+    <AuthShell maxWidth="max-w-md">
+      <Card className="w-full text-center">
         <div className="space-y-6">
-          <div className="mx-auto flex h-12 w-12 items-center justify-center rounded-full bg-red-100">
+          <div className="mx-auto flex h-14 w-14 items-center justify-center rounded-2xl bg-gradient-to-br from-[#ef4444] to-[#B91C1C] shadow-soft">
             <svg
-              className="h-6 w-6 text-red-600"
+              className="h-7 w-7 text-white"
               fill="none"
               stroke="currentColor"
               viewBox="0 0 24 24"
@@ -107,24 +108,24 @@ export default function PaymentPage() {
             </svg>
           </div>
           <div className="space-y-2">
-            <h2 className="text-2xl font-bold text-gray-900">
+            <h2 className="text-2xl font-bold tracking-tight text-slate-900">
               Complete Registration
             </h2>
-            <p className="text-sm text-gray-600">
+            <p className="text-sm text-slate-600">
               To activate your account, please complete the registration fee
               payment of{" "}
-              <span className="font-semibold text-gray-900">
+              <span className="font-semibold text-slate-900">
                 ₹{registrationFee}
               </span>
               .
             </p>
           </div>
 
-          <div className="rounded-lg border border-dashed border-gray-300 bg-gray-50 p-6">
-            <p className="mb-4 text-sm font-medium text-gray-700">
+          <div className="rounded-2xl border border-dashed border-slate-300 bg-slate-50/60 p-6">
+            <p className="mb-4 text-sm font-medium text-slate-700">
               Scan this demo Razorpay QR code with any UPI app
             </p>
-            <div className="relative mx-auto h-[250px] w-[250px] overflow-hidden rounded-lg bg-white">
+            <div className="relative mx-auto h-[250px] w-[250px] overflow-hidden rounded-xl bg-white shadow-soft">
               <Image
                 src={qrImageUrl}
                 alt="Demo Razorpay QR Code"
@@ -133,7 +134,7 @@ export default function PaymentPage() {
                 unoptimized
               />
             </div>
-            <div className="mt-4 space-y-1 text-xs text-gray-500">
+            <div className="mt-4 space-y-1 text-xs text-slate-500">
               <p>UPI ID: {upiId}</p>
               <p>Amount: ₹{registrationFee}</p>
               <p>This is a demo payment - no real money will be deducted.</p>
@@ -150,12 +151,12 @@ export default function PaymentPage() {
             I Have Completed the Demo Payment
           </Button>
 
-          <p className="text-xs text-gray-400">
+          <p className="text-xs text-slate-400">
             For demo purposes, clicking the button above simulates a successful
             payment.
           </p>
         </div>
       </Card>
-    </div>
+    </AuthShell>
   );
 }

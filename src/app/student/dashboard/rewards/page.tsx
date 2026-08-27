@@ -184,7 +184,7 @@ export default function StudentRewardsPage() {
               <div>
                 <p className="mb-2 text-sm font-medium text-slate-700">Commission tracker</p>
                 {referrals.length === 0 ? (
-                  <p className="rounded-lg bg-slate-50 py-6 text-center text-sm text-slate-500">
+                  <p className="rounded-xl bg-slate-50/70 py-6 text-center text-sm text-slate-500">
                     No referrals yet. Share your link to start earning.
                   </p>
                 ) : (
@@ -192,7 +192,7 @@ export default function StudentRewardsPage() {
                     {referrals.map((r) => (
                       <div
                         key={r.id}
-                        className="flex items-center justify-between rounded-lg bg-slate-50 p-3 text-sm"
+                        className="flex items-center justify-between rounded-xl bg-slate-50/70 p-3 text-sm"
                       >
                         <div>
                           <p className="font-medium text-slate-900">
@@ -253,7 +253,7 @@ export default function StudentRewardsPage() {
                   onChange={(e) => setMessage(e.target.value)}
                   rows={3}
                   placeholder="e.g. Please add weekend doubt-clearing sessions."
-                  className="mt-1 w-full rounded-lg border border-slate-300 bg-white px-3 py-2 text-sm focus:outline-none focus:ring-2 focus:ring-[#DC2626]"
+                  className="mt-1 w-full rounded-xl border border-slate-200 bg-slate-50/60 px-3 py-2 text-sm focus:outline-none focus:border-[#DC2626]/40 focus:bg-white focus:shadow-glow transition-all duration-200"
                 />
               </div>
               <Button type="submit" isLoading={sending} disabled={!message.trim()} className="w-full">
@@ -266,7 +266,7 @@ export default function StudentRewardsPage() {
                 <p className="mb-2 text-sm font-medium text-slate-700">My previous feedback</p>
                 <div className="space-y-2">
                   {feedbackList.map((f) => (
-                    <div key={f.id} className="rounded-lg bg-slate-50 p-3 text-sm">
+                    <div key={f.id} className="rounded-xl bg-slate-50/70 p-3 text-sm">
                       <div className="flex items-center justify-between">
                         <span className="inline-flex items-center gap-1 text-xs text-slate-500">
                           <Star className="h-3.5 w-3.5 fill-amber-400 text-amber-400" />
@@ -301,7 +301,7 @@ export default function StudentRewardsPage() {
               </div>
 
               {entries.length === 0 ? (
-                <p className="rounded-lg bg-slate-50 py-6 text-center text-sm text-slate-500">
+                <p className="rounded-xl bg-slate-50/70 py-6 text-center text-sm text-slate-500">
                   No coupons yet this month. Submit feedback above to enter the draw.
                 </p>
               ) : (

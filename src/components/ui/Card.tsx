@@ -18,13 +18,13 @@ const Card = React.forwardRef<HTMLDivElement, CardProps>(
       <div
         ref={ref}
         className={cn(
-          "rounded-xl border border-slate-200 bg-white text-slate-950 shadow-sm transition-shadow hover:shadow-md",
+          "rounded-2xl border border-slate-200/60 bg-white text-slate-950 shadow-soft transition-all duration-300 hover:shadow-lift",
           className
         )}
         {...props}
       >
         {(title || description) && (
-          <div className="flex flex-col space-y-1.5 p-6 border-b border-slate-100">
+          <div className="flex flex-col space-y-1.5 p-6 border-b border-slate-100/80">
             {title && (
               <h3 className="text-xl font-semibold leading-none tracking-tight text-slate-900">
                 {title}

@@ -123,7 +123,7 @@ export default function StudentTransportPage() {
               {filtered.map((service) => (
                 <div
                   key={service.id}
-                  className="flex flex-col rounded-xl border border-slate-200 bg-white p-4 shadow-sm transition-shadow hover:shadow-md"
+                  className="flex flex-col rounded-xl border border-slate-200/60 bg-white p-4 shadow-soft transition-all duration-200 hover:shadow-lift"
                 >
                   <div className="mb-2 flex items-start justify-between gap-2">
                     <div className="flex items-center gap-2">

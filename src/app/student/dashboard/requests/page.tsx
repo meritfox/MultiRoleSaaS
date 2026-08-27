@@ -50,7 +50,7 @@ export default function StudentRequestsPage() {
             ) : (
               <div className="space-y-3">
                 {requests.map((r) => (
-                  <div key={r.id} className="flex items-center justify-between p-4 rounded-lg bg-slate-50">
+                  <div key={r.id} className="flex items-center justify-between p-4 rounded-xl bg-slate-50/70">
                     <div className="flex items-start gap-3">
                       <div className={`p-2 rounded-lg ${r.status === "APPROVED" ? "bg-emerald-100 text-emerald-600" : r.status === "REJECTED" ? "bg-red-100 text-red-600" : "bg-amber-100 text-amber-600"}`}>
                         {r.status === "APPROVED" ? <CheckCircle className="h-4 w-4" /> : r.status === "REJECTED" ? <XCircle className="h-4 w-4" /> : <Clock className="h-4 w-4" />}

@@ -92,7 +92,7 @@ export default function PostItemPage() {
                   onChange={(e) => setDescription(e.target.value)}
                   rows={3}
                   placeholder="Describe the item, its condition, and where buyers can collect it."
-                  className="mt-1 w-full rounded-lg border border-slate-300 bg-white px-3 py-2 text-sm focus:outline-none focus:ring-2 focus:ring-[#DC2626]"
+                  className="mt-1 w-full rounded-xl border border-slate-200 bg-slate-50/60 px-3 py-2 text-sm focus:outline-none focus:border-[#DC2626]/40 focus:bg-white focus:shadow-glow transition-all duration-200"
                 />
               </div>
               <div className="grid gap-4 sm:grid-cols-3">

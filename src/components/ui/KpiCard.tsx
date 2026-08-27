@@ -29,7 +29,7 @@ export function KpiCard({ label, value, icon, iconClassName, trend, subtext, cla
           <p className="text-sm font-medium text-slate-500">{label}</p>
           <p className="mt-1.5 text-2xl font-bold tracking-tight text-slate-900">{value}</p>
         </div>
-        <div className={cn("flex h-11 w-11 shrink-0 items-center justify-center rounded-xl", iconClassName)}>
+        <div className={cn("flex h-11 w-11 shrink-0 items-center justify-center rounded-2xl shadow-soft", iconClassName)}>
           {icon}
         </div>
       </div>

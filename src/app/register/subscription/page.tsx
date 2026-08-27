@@ -1,6 +1,7 @@
 "use client";
 
 import React, { useState, useEffect } from "react";
+import Link from "next/link";
 import { useRouter } from "next/navigation";
 import { useAuth } from "@/lib/auth-context";
 import { Button } from "@/components/ui/Button";
@@ -10,7 +11,7 @@ import { updateSubscription } from "@/lib/auth-utils";
 import { db } from "@/lib/firebase";
 import { collection, getDocs } from "firebase/firestore";
 import { SubscriptionConfig, SubscriptionBilling } from "@/types";
-import { Check, Sparkles, CreditCard, Calendar, HelpCircle } from "lucide-react";
+import { Check, Sparkles, CreditCard, HelpCircle, GraduationCap } from "lucide-react";
 
 export default function SubscriptionPage() {
   const { firebaseUser, refreshUser } = useAuth();
@@ -97,10 +98,21 @@ export default function SubscriptionPage() {
   };
 
   return (
-    <div className="flex min-h-screen items-center justify-center bg-slate-50 px-4 py-12">
-      <div className="w-full max-w-6xl animate-fade-in">
+    <div className="relative flex min-h-screen items-center justify-center overflow-hidden bg-[#f4f4f2] px-4 py-12">
+      {/* Ambient glows */}
+      <div className="pointer-events-none absolute -top-32 -left-32 h-96 w-96 rounded-full bg-[#DC2626]/[0.06] blur-3xl" />
+      <div className="pointer-events-none absolute -bottom-32 -right-32 h-96 w-96 rounded-full bg-[#0b1e3a]/[0.06] blur-3xl" />
+      <div className="relative w-full max-w-6xl animate-fade-up">
+        <Link href="/" className="mb-10 flex items-center justify-center gap-2.5">
+          <span className="flex h-9 w-9 items-center justify-center rounded-xl bg-gradient-to-br from-[#ef4444] to-[#B91C1C] shadow-soft">
+            <GraduationCap className="h-5 w-5 text-white" />
+          </span>
+          <span className="text-lg font-bold text-slate-900">
+            Omni<span className="text-[#DC2626]">Stud</span>
+          </span>
+        </Link>
         <div className="text-center mb-8">
-          <h1 className="text-3xl font-bold text-slate-900">Select Your Subscription Plan</h1>
+          <h1 className="text-3xl font-bold tracking-tight text-slate-900">Select Your Subscription Plan</h1>
           <p className="mt-2 text-slate-600">Choose the plan that fits your needs</p>
         </div>
 
@@ -116,7 +128,7 @@ export default function SubscriptionPage() {
 
         {/* Billing toggle */}
         <div className="flex justify-center mb-10">
-          <div className="inline-flex items-center bg-white rounded-full p-1 border border-slate-200 shadow-sm">
+          <div className="inline-flex items-center bg-white rounded-full p-1 border border-slate-200/60 shadow-soft">
             <button
               onClick={() => setBilling("MONTHLY")}
               className={`px-6 py-2 rounded-full text-sm font-medium transition-all ${
@@ -150,10 +162,10 @@ export default function SubscriptionPage() {
                 return (
                   <div
                     key={plan.plan}
-                    className={`relative rounded-2xl border-2 bg-white p-6 transition-all ${
+                    className={`relative rounded-2xl border-2 bg-white p-6 transition-all duration-300 ${
                       isSelected
-                        ? "border-[#DC2626] shadow-lg scale-[1.02]"
-                        : "border-slate-200 hover:border-slate-300 hover:shadow-md"
+                        ? "border-[#DC2626]/60 shadow-lift scale-[1.02]"
+                        : "border-slate-200/60 shadow-soft hover:border-slate-300 hover:shadow-lift"
                     } ${plan.popular ? "ring-2 ring-[#f59e0b]/20" : ""}`}
                   >
                     {plan.popular && (
@@ -216,7 +228,7 @@ export default function SubscriptionPage() {
               </p>
             </div>
 
-            <div className="bg-slate-50 rounded-lg p-4 mb-6">
+            <div className="bg-slate-50/80 rounded-xl p-4 mb-6">
               <div className="flex justify-between items-center mb-2">
                 <span className="text-sm text-slate-600">Plan</span>
                 <span className="font-medium text-slate-900">{plans.find((p) => p.plan === selectedPlan)?.name}</span>
@@ -225,7 +237,7 @@ export default function SubscriptionPage() {
                 <span className="text-sm text-slate-600">Billing</span>
                 <span className="font-medium text-slate-900 capitalize">{billing.toLowerCase()}</span>
               </div>
-              <div className="border-t border-slate-200 my-2"></div>
+              <div className="border-t border-slate-200/60 my-2"></div>
               <div className="flex justify-between items-center">
                 <span className="font-medium text-slate-900">Total</span>
                 <span className="text-xl font-bold text-[#DC2626]">
@@ -235,8 +247,8 @@ export default function SubscriptionPage() {
             </div>
 
             <div className="space-y-3 mb-6">
-              <div className="p-3 border border-slate-200 rounded-lg flex items-center gap-3">
-                <div className="h-8 w-12 bg-slate-200 rounded"></div>
+              <div className="p-3 border border-slate-200/70 rounded-xl flex items-center gap-3">
+                <div className="h-8 w-12 bg-gradient-to-br from-slate-300 to-slate-400 rounded-md"></div>
                 <div className="flex-1">
                   <p className="text-sm font-medium text-slate-900">Demo Card</p>
                   <p className="text-xs text-slate-500">**** **** **** 4242</p>

@@ -401,7 +401,7 @@ export default function AdminEscrowPage() {
               role="dialog"
               aria-modal="true"
               aria-label={`Invoice ${txRef(invoiceTx.id)}`}
-              className="w-full max-w-md rounded-xl border border-slate-200 bg-white p-6 shadow-xl"
+              className="w-full max-w-md rounded-xl border border-slate-200/60 bg-white p-6 shadow-xl"
               onClick={(e) => e.stopPropagation()}
             >
               <div className="flex items-start justify-between">
@@ -423,7 +423,7 @@ export default function AdminEscrowPage() {
                 </button>
               </div>
 
-              <div className="mt-4 space-y-2.5 rounded-lg bg-slate-50 p-4 text-sm">
+              <div className="mt-4 space-y-2.5 rounded-xl bg-slate-50/70 p-4 text-sm">
                 <div className="flex justify-between">
                   <span className="text-slate-500">Service</span>
                   <span className="font-medium text-slate-900">{invoiceTx.serviceName}</span>
@@ -436,7 +436,7 @@ export default function AdminEscrowPage() {
                   <span className="text-slate-500">Payee</span>
                   <span className="font-medium text-slate-900">{nameOf(invoiceTx.providerId)}</span>
                 </div>
-                <div className="flex justify-between border-t border-slate-200 pt-2.5">
+                <div className="flex justify-between border-t border-slate-200/60 pt-2.5">
                   <span className="text-slate-500">Gross Amount</span>
                   <span className="font-semibold text-slate-900">{formatINR(invoiceTx.amount)}</span>
                 </div>
@@ -446,7 +446,7 @@ export default function AdminEscrowPage() {
                     -{formatINR(invoiceTx.commission)}
                   </span>
                 </div>
-                <div className="flex justify-between border-t border-slate-200 pt-2.5">
+                <div className="flex justify-between border-t border-slate-200/60 pt-2.5">
                   <span className="font-medium text-slate-900">Net to Provider</span>
                   <span className="font-semibold text-[#047857]">
                     {formatINR(invoiceTx.amount - invoiceTx.commission)}

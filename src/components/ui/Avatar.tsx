@@ -30,7 +30,7 @@ export function Avatar({ name, src, size = "md", className }: AvatarProps) {
   }
 
   return (
-    <span className={cn(base, "bg-[#EEF2FF] text-[#4338CA]")}>
+    <span className={cn(base, "bg-gradient-to-br from-[#ef4444] to-[#B91C1C] text-white")}>
       {getInitials(name || "?")}
     </span>
   );

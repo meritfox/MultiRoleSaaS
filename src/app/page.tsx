@@ -289,7 +289,7 @@ export default function HomePage() {
       </header>
 
       {/* ========================== Recognition strip ========================== */}
-      <section className="border-b border-slate-200 bg-[#f4f4f2] py-14">
+      <section className="border-b border-slate-200/60 bg-[#f4f4f2] py-14">
         <div className="mx-auto max-w-7xl px-6">
           <p className="mb-8 text-center text-xs font-semibold uppercase tracking-[0.2em] text-slate-400">
             Recognised &amp; awarded
@@ -298,7 +298,7 @@ export default function HomePage() {
             {awards.map((award) => (
               <div
                 key={award.title}
-                className="flex flex-col items-center gap-2 rounded-2xl border border-slate-200 bg-white px-3 py-5 text-center opacity-70 grayscale transition-all hover:opacity-100 hover:grayscale-0"
+                className="flex flex-col items-center gap-2 rounded-2xl border border-slate-200/60 bg-white px-3 py-5 text-center opacity-70 grayscale transition-all hover:opacity-100 hover:grayscale-0"
               >
                 <Trophy className="h-6 w-6 text-slate-700" />
                 <p className="text-xs font-bold text-slate-800">{award.title}</p>

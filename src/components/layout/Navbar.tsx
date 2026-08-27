@@ -6,7 +6,7 @@ import { useRouter } from "next/navigation";
 import { useAuth } from "@/lib/auth-context";
 import { Button } from "@/components/ui/Button";
 import { logout } from "@/lib/auth-utils";
-import { LogOut, User, Menu, X, Bell, Settings, ChevronDown } from "lucide-react";
+import { LogOut, User, Menu, X, Bell, Settings, GraduationCap } from "lucide-react";
 
 interface NavbarProps {
   title?: string;
@@ -34,18 +34,20 @@ const Navbar = ({ title, showNav = true }: NavbarProps) => {
   };
 
   return (
-    <nav className="sticky top-0 z-50 w-full border-b border-slate-200 bg-white/95 backdrop-blur supports-[backdrop-filter]:bg-white/80">
-      <div className="container mx-auto flex h-16 items-center justify-between px-4">
+    <nav className="sticky top-0 z-50 w-full border-b border-slate-200/60 bg-white/80 backdrop-blur-md shadow-soft">
+      <div className="container mx-auto flex h-16 items-center justify-between px-4 max-w-7xl">
         <div className="flex items-center gap-4">
-          <Link href={getDashboardLink()} className="flex items-center space-x-2">
-            <div className="flex h-8 w-8 items-center justify-center rounded-lg bg-gradient-to-br from-[#DC2626] to-[#ef4444]">
-              <span className="text-lg font-bold text-white">O</span>
+          <Link href={getDashboardLink()} className="flex items-center space-x-2.5">
+            <div className="flex h-9 w-9 items-center justify-center rounded-xl bg-gradient-to-br from-[#ef4444] to-[#B91C1C] shadow-soft">
+              <GraduationCap className="h-5 w-5 text-white" />
             </div>
-            <span className="text-xl font-bold text-[#DC2626]">OmniStud</span>
+            <span className="text-xl font-bold text-slate-900">
+              Omni<span className="text-[#DC2626]">Stud</span>
+            </span>
           </Link>
           {title && (
             <>
-              <div className="h-6 w-[1px] bg-slate-200 mx-2 hidden sm:block" />
+              <div className="h-6 w-[1px] bg-slate-200 mx-1 hidden sm:block" />
               <h1 className="text-sm font-medium text-slate-500 hidden sm:block">
                 {title}
               </h1>
@@ -57,12 +59,12 @@ const Navbar = ({ title, showNav = true }: NavbarProps) => {
           <div className="hidden md:flex items-center gap-4">
             {user ? (
               <>
-                <Button variant="ghost" size="icon" className="relative">
+                <Button variant="ghost" size="icon" className="relative rounded-xl">
                   <Bell className="h-5 w-5 text-slate-600" />
-                  <span className="absolute top-1 right-1 h-2 w-2 rounded-full bg-red-500"></span>
+                  <span className="absolute top-1.5 right-1.5 h-2 w-2 rounded-full bg-gradient-to-br from-[#ef4444] to-[#DC2626] ring-2 ring-white"></span>
                 </Button>
-                <div className="flex items-center gap-3 pl-3 border-l border-slate-200">
-                  <div className="h-9 w-9 rounded-full bg-gradient-to-br from-[#DC2626] to-[#ef4444] flex items-center justify-center text-white font-medium">
+                <div className="flex items-center gap-3 pl-3 border-l border-slate-200/70">
+                  <div className="h-9 w-9 rounded-full bg-gradient-to-br from-[#ef4444] to-[#B91C1C] flex items-center justify-center text-white font-medium shadow-soft">
                     {user.displayName?.charAt(0).toUpperCase() || <User className="h-4 w-4" />}
                   </div>
                   <div className="hidden lg:flex flex-col items-start">
@@ -99,11 +101,11 @@ const Navbar = ({ title, showNav = true }: NavbarProps) => {
 
       {/* Mobile menu */}
       {showNav && mobileMenuOpen && (
-        <div className="md:hidden border-t border-slate-200 bg-white px-4 py-4">
+        <div className="md:hidden border-t border-slate-200/60 bg-white px-4 py-4">
           {user ? (
             <div className="space-y-3">
               <div className="flex items-center gap-3 pb-3 border-b border-slate-100">
-                <div className="h-10 w-10 rounded-full bg-gradient-to-br from-[#DC2626] to-[#ef4444] flex items-center justify-center text-white font-medium">
+                <div className="h-10 w-10 rounded-full bg-gradient-to-br from-[#ef4444] to-[#B91C1C] flex items-center justify-center text-white font-medium shadow-soft">
                   {user.displayName?.charAt(0).toUpperCase()}
                 </div>
                 <div>

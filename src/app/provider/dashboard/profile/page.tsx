@@ -88,11 +88,11 @@ export default function ProviderProfilePage() {
   if (!profile) {
     return (
       <ProtectedRoute allowedRoles={[PROVIDER_ROLE]}>
-        <div className="flex min-h-screen items-center justify-center bg-gray-50 px-4">
+        <div className="flex min-h-screen items-center justify-center bg-slate-50 px-4">
           <Card className="w-full max-w-md text-center">
             <div className="space-y-4">
-              <h2 className="text-2xl font-bold text-gray-900">Profile Incomplete</h2>
-              <p className="text-sm text-gray-600">Please complete your profile to continue.</p>
+              <h2 className="text-2xl font-bold text-slate-900">Profile Incomplete</h2>
+              <p className="text-sm text-slate-600">Please complete your profile to continue.</p>
               <Alert variant="error">Profile information is missing.</Alert>
             </div>
           </Card>
@@ -103,11 +103,11 @@ export default function ProviderProfilePage() {
 
   return (
     <ProtectedRoute allowedRoles={[PROVIDER_ROLE]}>
-      <div className="min-h-screen bg-gray-50">
+      <div className="min-h-screen bg-slate-50">
         <Navbar title="Edit Profile" />
         <main className="container mx-auto px-4 py-8">
           <div className="max-w-2xl mx-auto space-y-6">
-            <h2 className="text-2xl font-bold text-gray-900">Your Profile</h2>
+            <h2 className="text-2xl font-bold text-slate-900">Your Profile</h2>
 
             {error && <Alert variant="error">{error}</Alert>}
             {success && <Alert variant="success">Profile updated successfully!</Alert>}
@@ -115,7 +115,7 @@ export default function ProviderProfilePage() {
             <Card>
               <div className="space-y-6">
                 <div className="space-y-2">
-                  <label className="text-sm font-medium text-gray-700">
+                  <label className="text-sm font-medium text-slate-700">
                     Service Type
                   </label>
                   <Input
@@ -127,7 +127,7 @@ export default function ProviderProfilePage() {
                 </div>
 
                 <div className="space-y-2">
-                  <label className="text-sm font-medium text-gray-700">
+                  <label className="text-sm font-medium text-slate-700">
                     Phone Number
                   </label>
                   <Input
@@ -139,9 +139,9 @@ export default function ProviderProfilePage() {
                 </div>
 
                 <div className="space-y-2">
-                  <label className="text-sm font-medium text-gray-700">Bio</label>
+                  <label className="text-sm font-medium text-slate-700">Bio</label>
                   <textarea
-                    className="flex w-full rounded-md border border-gray-300 bg-white px-3 py-2 text-sm focus:outline-none focus:ring-2 focus:ring-red-500"
+                    className="flex w-full rounded-xl border border-slate-200 bg-slate-50/60 px-3 py-2 text-sm focus:outline-none focus:border-[#DC2626]/40 focus:bg-white focus:shadow-glow transition-all duration-200 resize-none"
                     rows={4}
                     value={bio}
                     onChange={(e) => setBio(e.target.value)}
@@ -159,23 +159,23 @@ export default function ProviderProfilePage() {
               <h3 className="text-lg font-semibold mb-4">Profile Summary</h3>
               <div className="space-y-3 text-sm">
                 <div className="flex justify-between border-b pb-2">
-                  <span className="text-gray-500">Name:</span>
+                  <span className="text-slate-500">Name:</span>
                   <span className="font-medium">{profile.displayName}</span>
                 </div>
                 <div className="flex justify-between border-b pb-2">
-                  <span className="text-gray-500">Email:</span>
+                  <span className="text-slate-500">Email:</span>
                   <span className="font-medium">{profile.email}</span>
                 </div>
                 <div className="flex justify-between border-b pb-2">
-                  <span className="text-gray-500">Provider Type:</span>
+                  <span className="text-slate-500">Provider Type:</span>
                   <span className="font-medium capitalize">{profile.providerType}</span>
                 </div>
                 <div className="flex justify-between border-b pb-2">
-                  <span className="text-gray-500">Phone:</span>
+                  <span className="text-slate-500">Phone:</span>
                   <span className="font-medium">{profile.phoneNumber || "Not provided"}</span>
                 </div>
                 <div className="flex justify-between border-b pb-2">
-                  <span className="text-gray-500">Rating:</span>
+                  <span className="text-slate-500">Rating:</span>
                   <span className="font-medium">{profile.rating || 0} / 5</span>
                 </div>
               </div>

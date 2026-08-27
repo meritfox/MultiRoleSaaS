@@ -53,7 +53,7 @@ export function DropdownMenu({ items, trigger, align = "right", label = "Open ac
             aria-label={label}
             aria-haspopup="menu"
             aria-expanded={open}
-            className="inline-flex h-8 w-8 items-center justify-center rounded-lg text-slate-500 transition-colors hover:bg-slate-100 hover:text-slate-700 focus:outline-none focus:ring-2 focus:ring-[#DC2626]/30"
+            className="inline-flex h-8 w-8 items-center justify-center rounded-xl text-slate-500 transition-colors hover:bg-slate-100 hover:text-slate-700 focus:outline-none focus:shadow-glow"
           >
             <MoreHorizontal className="h-4 w-4" />
           </button>
@@ -64,7 +64,7 @@ export function DropdownMenu({ items, trigger, align = "right", label = "Open ac
         <div
           role="menu"
           className={cn(
-            "absolute z-50 mt-1 w-48 overflow-hidden rounded-xl border border-slate-200 bg-white py-1 shadow-lg animate-fade-in",
+            "absolute z-50 mt-1 w-48 overflow-hidden rounded-xl border border-slate-200/60 bg-white py-1 shadow-lift animate-fade-in",
             align === "right" ? "right-0" : "left-0"
           )}
         >

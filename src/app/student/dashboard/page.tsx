@@ -99,13 +99,13 @@ export default function StudentDashboard() {
               <p className="text-slate-600">What would you like to do today?</p>
             </div>
             <div className="relative max-w-md w-full md:w-96">
-              <Search className="absolute left-3 top-1/2 h-5 w-5 -translate-y-1/2 text-slate-400" />
+              <Search className="absolute left-3.5 top-1/2 h-5 w-5 -translate-y-1/2 text-slate-400" />
               <input
                 type="text"
                 placeholder="Search tutors, transport, marketplace..."
                 value={searchTerm}
                 onChange={(e) => setSearchTerm(e.target.value)}
-                className="w-full rounded-lg border border-slate-300 bg-white py-2.5 pl-10 pr-4 text-sm focus:outline-none focus:ring-2 focus:ring-[#DC2626]"
+                className="w-full rounded-xl border border-slate-200 bg-white py-2.5 pl-11 pr-4 text-sm shadow-soft focus:outline-none focus:border-[#DC2626]/40 focus:bg-white focus:shadow-glow transition-all duration-200 transition-all duration-200"
               />
             </div>
           </div>
@@ -116,7 +116,7 @@ export default function StudentDashboard() {
           {/* Quick Actions Grid */}
           <div className="grid grid-cols-1 md:grid-cols-2 xl:grid-cols-3 gap-5">
             {/* Find Tutor */}
-            <Card className="hover:shadow-md transition-shadow">
+            <Card className="hover:shadow-lift transition-shadow">
               <div className="flex items-start gap-4">
                 <div className="p-3 rounded-xl bg-red-100 text-[#DC2626]">
                   <BookOpen className="h-6 w-6" />
@@ -130,7 +130,7 @@ export default function StudentDashboard() {
                   <div className="mt-3 space-y-2">
                     {tutorServices.length > 0 ? (
                       tutorServices.map((service) => (
-                        <div key={service.id} className="flex items-center justify-between text-sm p-2 bg-slate-50 rounded-lg">
+                        <div key={service.id} className="flex items-center justify-between text-sm p-2 bg-slate-50/70 rounded-xl">
                           <span className="text-slate-700">{service.name}</span>
                           <span className="font-medium text-[#DC2626]">₹{service.price}</span>
                         </div>
@@ -143,7 +143,7 @@ export default function StudentDashboard() {
                     <input
                       type="text"
                       placeholder="Math Tutor, Science Class..."
-                      className="flex-1 rounded-lg border border-slate-300 px-3 py-1.5 text-sm focus:outline-none focus:ring-2 focus:ring-[#DC2626]"
+                      className="flex-1 rounded-xl border border-slate-200 bg-slate-50/60 px-3 py-1.5 text-sm focus:outline-none focus:border-[#DC2626]/40 focus:bg-white focus:shadow-glow transition-all duration-200"
                     />
                     <Button size="sm" asChild>
                       <Link href="/student/dashboard/tutors">Search</Link>
@@ -154,7 +154,7 @@ export default function StudentDashboard() {
             </Card>
 
             {/* School Transport */}
-            <Card className="hover:shadow-md transition-shadow">
+            <Card className="hover:shadow-lift transition-shadow">
               <div className="flex items-start gap-4">
                 <div className="p-3 rounded-xl bg-amber-100 text-amber-600">
                   <Bus className="h-6 w-6" />
@@ -168,7 +168,7 @@ export default function StudentDashboard() {
                   <div className="mt-3 space-y-2">
                     {transportServices.length > 0 ? (
                       transportServices.map((service) => (
-                        <div key={service.id} className="flex items-center justify-between text-sm p-2 bg-slate-50 rounded-lg">
+                        <div key={service.id} className="flex items-center justify-between text-sm p-2 bg-slate-50/70 rounded-xl">
                           <span className="text-slate-700">{service.name}</span>
                           <span className="font-medium text-amber-600">₹{service.price}</span>
                         </div>
@@ -185,7 +185,7 @@ export default function StudentDashboard() {
             </Card>
 
             {/* Marketplace */}
-            <Card className="hover:shadow-md transition-shadow">
+            <Card className="hover:shadow-lift transition-shadow">
               <div className="flex items-start gap-4">
                 <div className="p-3 rounded-xl bg-emerald-100 text-emerald-600">
                   <ShoppingCart className="h-6 w-6" />
@@ -205,7 +205,7 @@ export default function StudentDashboard() {
             </Card>
 
             {/* Job Board */}
-            <Card className="hover:shadow-md transition-shadow">
+            <Card className="hover:shadow-lift transition-shadow">
               <div className="flex items-start gap-4">
                 <div className="p-3 rounded-xl bg-purple-100 text-purple-600">
                   <Briefcase className="h-6 w-6" />
@@ -225,7 +225,7 @@ export default function StudentDashboard() {
             </Card>
 
             {/* Linked Services */}
-            <Card className="hover:shadow-md transition-shadow">
+            <Card className="hover:shadow-lift transition-shadow">
               <div className="flex items-start gap-4">
                 <div className="p-3 rounded-xl bg-red-100 text-red-600">
                   <MapPin className="h-6 w-6" />
@@ -245,7 +245,7 @@ export default function StudentDashboard() {
             </Card>
 
             {/* Escrow Payments */}
-            <Card className="hover:shadow-md transition-shadow">
+            <Card className="hover:shadow-lift transition-shadow">
               <div className="flex items-start gap-4">
                 <div className="p-3 rounded-xl bg-cyan-100 text-cyan-600">
                   <Wallet className="h-6 w-6" />
@@ -254,11 +254,11 @@ export default function StudentDashboard() {
                   <h3 className="font-bold text-slate-900">OmniStud Escrow Payments</h3>
                   <p className="text-sm text-slate-600 mt-1">Manage secure payments (% commission detail).</p>
                   <div className="mt-3 space-y-1 text-sm">
-                    <div className="flex justify-between p-2 bg-slate-50 rounded-lg">
+                    <div className="flex justify-between p-2 bg-slate-50/70 rounded-xl">
                       <span className="text-slate-600">Transactions</span>
                       <span className="font-medium text-slate-900">3 Active</span>
                     </div>
-                    <div className="flex justify-between p-2 bg-slate-50 rounded-lg">
+                    <div className="flex justify-between p-2 bg-slate-50/70 rounded-xl">
                       <span className="text-slate-600">Status</span>
                       <span className="font-medium text-emerald-600">Secured</span>
                     </div>
@@ -283,7 +283,7 @@ export default function StudentDashboard() {
                 {filteredServices.map((service) => {
                   const requestStatus = getRequestStatus(service.id);
                   return (
-                    <div key={service.id} className="rounded-xl border border-slate-200 p-4 hover:shadow-md transition-shadow">
+                    <div key={service.id} className="rounded-xl border border-slate-200/60 p-4 hover:shadow-lift transition-shadow">
                       <div className="mb-3 flex items-center justify-between">
                         <span className="inline-flex items-center rounded-full bg-red-100 px-2.5 py-0.5 text-xs font-medium text-red-800 capitalize">
                           {service.providerType}

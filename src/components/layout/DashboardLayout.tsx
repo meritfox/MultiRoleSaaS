@@ -11,12 +11,12 @@ interface DashboardLayoutProps {
 
 const DashboardLayout = ({ children, title }: DashboardLayoutProps) => {
   return (
-    <div className="min-h-screen bg-slate-50">
+    <div className="min-h-screen bg-[#f4f4f2]">
       <Navbar title={title} />
       <div className="flex">
         <Sidebar />
         <main className="flex-1 min-w-0">
-          <div className="container mx-auto px-4 py-6 lg:py-8">
+          <div className="container mx-auto px-4 py-6 lg:py-8 max-w-7xl">
             {children}
           </div>
         </main>

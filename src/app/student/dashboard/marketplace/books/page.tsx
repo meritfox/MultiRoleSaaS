@@ -117,7 +117,7 @@ export default function OldBooksPage() {
               {filtered.map((item) => (
                 <div
                   key={item.id}
-                  className="flex flex-col rounded-xl border border-slate-200 bg-white p-4 shadow-sm transition-shadow hover:shadow-md"
+                  className="flex flex-col rounded-xl border border-slate-200/60 bg-white p-4 shadow-soft transition-all duration-200 hover:shadow-lift"
                 >
                   <div className="mb-2 flex items-center gap-2">
                     <BookOpen className="h-5 w-5 text-[#DC2626]" />

@@ -85,7 +85,7 @@ export default function AdminSubscriptionsPage() {
                       rows={4}
                       value={plan.features.join("\n")}
                       onChange={(e) => handleUpdate(plan.plan, "features", e.target.value.split("\n").filter((f) => f.trim()))}
-                      className="mt-1 block w-full rounded-lg border border-slate-300 bg-white px-3 py-2 text-sm focus:border-[#DC2626] focus:outline-none focus:ring-1 focus:ring-[#DC2626]"
+                      className="mt-1 block w-full rounded-xl border border-slate-200 bg-slate-50/60 px-3 py-2 text-sm focus:border-[#DC2626] focus:outline-none focus:ring-1 focus:ring-[#DC2626]"
                     />
                   </div>
                   <Button className="w-full" onClick={() => handleSave(plan)}>Save Plan</Button>

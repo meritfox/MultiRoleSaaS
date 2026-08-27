@@ -7,6 +7,7 @@ import { Button } from "@/components/ui/Button";
 import { Input } from "@/components/ui/Input";
 import { Card } from "@/components/ui/Card";
 import { Alert } from "@/components/ui/Alert";
+import { AuthShell } from "@/components/layout/AuthShell";
 import { updateUserProfile } from "@/lib/auth-utils";
 import { User, Phone, MapPin, Building2, GraduationCap, Bus, CreditCard } from "lucide-react";
 
@@ -99,17 +100,17 @@ export default function ProfileSetupPage() {
   };
 
   return (
-    <div className="flex min-h-screen items-center justify-center bg-slate-50 px-4 py-12">
-      <div className="w-full max-w-2xl animate-fade-in">
-        <div className="text-center mb-8">
-          <div className="inline-flex h-16 w-16 items-center justify-center rounded-2xl bg-gradient-to-br from-[#DC2626] to-[#ef4444] mb-4">
-            <User className="h-8 w-8 text-white" />
+    <AuthShell maxWidth="max-w-xl">
+      <div className="w-full">
+        <div className="mb-8">
+          <div className="mb-4 inline-flex h-14 w-14 items-center justify-center rounded-2xl bg-gradient-to-br from-[#ef4444] to-[#B91C1C] shadow-soft">
+            <User className="h-7 w-7 text-white" />
           </div>
-          <h1 className="text-3xl font-bold text-slate-900">Complete Your Profile</h1>
-          <p className="mt-2 text-slate-600">Tell us a bit more about yourself</p>
+          <h1 className="text-3xl font-bold tracking-tight text-slate-900">Complete Your Profile</h1>
+          <p className="mt-2 text-slate-600">Tell us a bit more about yourself.</p>
         </div>
 
-        <div className="flex items-center justify-center mb-8">
+        <div className="flex items-center mb-8">
           <div className="flex items-center gap-2">
             <div className="h-2.5 w-2.5 rounded-full bg-[#DC2626]"></div>
             <div className="h-0.5 w-8 bg-[#DC2626]"></div>
@@ -192,7 +193,7 @@ export default function ProfileSetupPage() {
                     <select
                       value={formData.board}
                       onChange={(e) => handleChange("board", e.target.value)}
-                      className="flex h-11 w-full rounded-lg border border-slate-300 bg-white px-3 py-2 text-sm focus:outline-none focus:ring-2 focus:ring-[#DC2626]"
+                      className="flex h-11 w-full rounded-xl border border-slate-200/60 bg-slate-50/60 px-3 py-2 text-sm focus:outline-none focus:border-[#DC2626]/40 focus:bg-white focus:shadow-glow transition-all duration-200"
                     >
                       <option value="CBSE">CBSE</option>
                       <option value="ICSE">ICSE</option>
@@ -224,7 +225,7 @@ export default function ProfileSetupPage() {
                       onChange={(e) => handleChange("bio", e.target.value)}
                       placeholder="Tell us about your services..."
                       rows={3}
-                      className="flex w-full rounded-lg border border-slate-300 bg-white px-3 py-2 text-sm focus:outline-none focus:ring-2 focus:ring-[#DC2626] resize-none"
+                      className="flex w-full rounded-xl border border-slate-200 bg-slate-50/60 px-3 py-2 text-sm focus:outline-none focus:border-[#DC2626]/40 focus:bg-white focus:shadow-glow transition-all duration-200 resize-none"
                     />
                   </div>
                   <div className="grid grid-cols-1 md:grid-cols-3 gap-5">
@@ -268,6 +269,6 @@ export default function ProfileSetupPage() {
           </form>
         </Card>
       </div>
-    </div>
+    </AuthShell>
   );
 }

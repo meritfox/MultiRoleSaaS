@@ -13,17 +13,17 @@ interface AlertProps extends React.HTMLAttributes<HTMLDivElement> {
 const Alert = React.forwardRef<HTMLDivElement, AlertProps>(
   ({ className, variant = "info", ...props }, ref) => {
     const variants = {
-      success: "bg-green-50 text-green-800 border-green-200",
-      error: "bg-red-50 text-red-800 border-red-200",
-      warning: "bg-yellow-50 text-yellow-800 border-yellow-200",
-      info: "bg-slate-50 text-slate-800 border-slate-200",
+      success: "bg-emerald-50/80 text-emerald-800 border-emerald-200/70",
+      error: "bg-red-50/80 text-red-800 border-red-200/70",
+      warning: "bg-amber-50/80 text-amber-800 border-amber-200/70",
+      info: "bg-slate-50/80 text-slate-700 border-slate-200/70",
     };
 
     return (
       <div
         ref={ref}
         className={cn(
-          "rounded-md border p-4 text-sm",
+          "rounded-xl border p-4 text-sm leading-relaxed",
           variants[variant],
           className
         )}

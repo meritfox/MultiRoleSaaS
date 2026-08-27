@@ -122,7 +122,7 @@ export default function JobBoardPage() {
                 return (
                   <div
                     key={job.id}
-                    className="flex flex-col gap-2 rounded-xl border border-slate-200 bg-white p-4 shadow-sm transition-shadow hover:shadow-md sm:flex-row sm:items-start"
+                    className="flex flex-col gap-2 rounded-xl border border-slate-200/60 bg-white p-4 shadow-soft transition-all duration-200 hover:shadow-lift sm:flex-row sm:items-start"
                   >
                     <div className="flex h-10 w-10 shrink-0 items-center justify-center rounded-lg bg-red-100 text-[#DC2626]">
                       <Briefcase className="h-5 w-5" />

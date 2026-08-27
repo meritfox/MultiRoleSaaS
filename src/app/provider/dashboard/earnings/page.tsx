@@ -100,7 +100,7 @@ export default function ProviderEarningsPage() {
             ) : (
               <div className="space-y-3">
                 {transactions.map((t) => (
-                  <div key={t.id} className="flex items-center justify-between p-4 rounded-lg bg-slate-50">
+                  <div key={t.id} className="flex items-center justify-between p-4 rounded-xl bg-slate-50/70">
                     <div>
                       <p className="font-medium text-slate-900">{t.serviceName}</p>
                       <p className="text-xs text-slate-500">{new Date(t.createdAt).toLocaleDateString()}</p>

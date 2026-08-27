@@ -1,10 +1,10 @@
 "use client";
 
 import React, { useState } from "react";
+import Link from "next/link";
 import { useRouter } from "next/navigation";
 import { useAuth } from "@/lib/auth-context";
 import { Button } from "@/components/ui/Button";
-import { Card } from "@/components/ui/Card";
 import { Alert } from "@/components/ui/Alert";
 import { updateUserProfile } from "@/lib/auth-utils";
 import { UserRole } from "@/types";
@@ -101,10 +101,21 @@ export default function RoleSelectionPage() {
   };
 
   return (
-    <div className="flex min-h-screen items-center justify-center bg-slate-50 px-4 py-12">
-      <div className="w-full max-w-4xl animate-fade-in">
+    <div className="relative flex min-h-screen items-center justify-center overflow-hidden bg-[#f4f4f2] px-4 py-12">
+      {/* Ambient glows */}
+      <div className="pointer-events-none absolute -top-32 -left-32 h-96 w-96 rounded-full bg-[#DC2626]/[0.06] blur-3xl" />
+      <div className="pointer-events-none absolute -bottom-32 -right-32 h-96 w-96 rounded-full bg-[#0b1e3a]/[0.06] blur-3xl" />
+      <div className="relative w-full max-w-4xl animate-fade-up">
+        <Link href="/" className="mb-10 flex items-center justify-center gap-2.5">
+          <span className="flex h-9 w-9 items-center justify-center rounded-xl bg-gradient-to-br from-[#ef4444] to-[#B91C1C] shadow-soft">
+            <GraduationCap className="h-5 w-5 text-white" />
+          </span>
+          <span className="text-lg font-bold text-slate-900">
+            Omni<span className="text-[#DC2626]">Stud</span>
+          </span>
+        </Link>
         <div className="text-center mb-8">
-          <h1 className="text-3xl font-bold text-slate-900">Select Your Role</h1>
+          <h1 className="text-3xl font-bold tracking-tight text-slate-900">Select Your Role</h1>
           <p className="mt-2 text-slate-600">Choose how you'll use OmniStud to tailor your experience</p>
         </div>
 
@@ -127,10 +138,10 @@ export default function RoleSelectionPage() {
               <button
                 key={role.label}
                 onClick={() => handleSelect(role)}
-                className={`relative flex items-start gap-4 p-6 rounded-2xl border-2 text-left transition-all ${
+                className={`relative flex items-start gap-4 p-6 rounded-2xl border-2 text-left transition-all duration-200 ${
                   isSelected
-                    ? "border-[#DC2626] bg-[#DC2626]/5 shadow-md"
-                    : "border-slate-200 bg-white hover:border-slate-300 hover:shadow-sm"
+                    ? "border-[#DC2626]/60 bg-[#DC2626]/[0.04] shadow-lift"
+                    : "border-slate-200/60 bg-white shadow-soft hover:border-slate-300 hover:shadow-lift"
                 }`}
               >
                 <div

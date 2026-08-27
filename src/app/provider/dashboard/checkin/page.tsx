@@ -155,7 +155,7 @@ export default function ProviderCheckInPage() {
                     required
                     value={studentId}
                     onChange={(e) => setStudentId(e.target.value)}
-                    className="w-full rounded-lg border border-slate-300 bg-white px-3 py-2 text-sm focus:outline-none focus:ring-2 focus:ring-[#DC2626]"
+                    className="w-full rounded-xl border border-slate-200 bg-slate-50/60 px-3 py-2 text-sm focus:outline-none focus:border-[#DC2626]/40 focus:bg-white focus:shadow-glow transition-all duration-200"
                   >
                     <option value="">-- Select student --</option>
                     {roster.map((s) => (
@@ -189,7 +189,7 @@ export default function ProviderCheckInPage() {
                 {checkIns.map((ci) => {
                   const student = roster.find((s) => s.studentId === ci.studentId);
                   return (
-                    <div key={ci.id} className="flex items-start gap-3 p-3 rounded-lg bg-slate-50">
+                    <div key={ci.id} className="flex items-start gap-3 p-3 rounded-xl bg-slate-50/70">
                       <div className={`p-2 rounded-lg ${ci.type === "CHECK_IN" ? "bg-emerald-100 text-emerald-600" : "bg-amber-100 text-amber-600"}`}>
                         {ci.type === "CHECK_IN" ? <CheckCircle className="h-4 w-4" /> : <Clock className="h-4 w-4" />}
                       </div>

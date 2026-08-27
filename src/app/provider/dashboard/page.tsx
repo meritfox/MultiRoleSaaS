@@ -199,7 +199,7 @@ export default function ProviderDashboard() {
                 ) : (
                   <div className="space-y-3">
                     {requests.map((request) => (
-                      <div key={request.id} className="flex items-center justify-between p-4 rounded-xl border border-slate-200 bg-slate-50">
+                      <div key={request.id} className="flex items-center justify-between p-4 rounded-xl border border-slate-200/60 bg-slate-50">
                         <div className="flex items-center gap-3">
                           <div className="h-10 w-10 rounded-full bg-[#DC2626]/10 flex items-center justify-center text-[#DC2626] font-medium">
                             {request.student?.displayName?.charAt(0) || <Users className="h-5 w-5" />}

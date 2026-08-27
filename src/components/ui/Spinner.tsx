@@ -22,7 +22,7 @@ const Spinner = React.forwardRef<HTMLDivElement, SpinnerProps>(
       <div
         ref={ref}
         className={cn(
-          "animate-spin rounded-full border-gray-300 border-t-red-600",
+          "animate-spin rounded-full border-slate-200 border-t-[#DC2626]",
           sizes[size],
           className
         )}

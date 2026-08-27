@@ -265,7 +265,7 @@ export default function AdminUsersPage() {
                     setPage(1);
                   }}
                   placeholder="Search by name, email, phone..."
-                  className="h-10 w-full rounded-lg border border-slate-300 bg-white pl-9 pr-3 text-sm transition-colors placeholder:text-slate-400 hover:border-slate-400 focus:border-[#DC2626] focus:outline-none focus:ring-2 focus:ring-[#DC2626]/20"
+                  className="h-10 w-full rounded-xl border border-slate-200 bg-slate-50/60 pl-9 pr-3 text-sm placeholder:text-slate-400 hover:border-slate-300 focus:outline-none focus:border-[#DC2626]/40 focus:bg-white focus:shadow-glow transition-all duration-200"
                 />
               </div>
               <div className="grid grid-cols-2 gap-3 sm:grid-cols-4 lg:flex lg:items-center">

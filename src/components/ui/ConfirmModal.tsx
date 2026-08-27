@@ -52,7 +52,7 @@ export function ConfirmModal({
         role="dialog"
         aria-modal="true"
         aria-label={title}
-        className="w-full max-w-md rounded-xl border border-slate-200 bg-white p-6 shadow-xl"
+        className="w-full max-w-md rounded-2xl border border-slate-200/60 bg-white p-6 shadow-lift"
         onClick={(e) => e.stopPropagation()}
       >
         <div className="flex items-start gap-3">

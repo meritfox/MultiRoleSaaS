@@ -19,6 +19,7 @@ import { Card } from "@/components/ui/Card";
 import { Alert } from "@/components/ui/Alert";
 import { Spinner } from "@/components/ui/Spinner";
 import { UserRole } from "@/types";
+import { AuthShell } from "@/components/layout/AuthShell";
 import { recordReferralSignup } from "@/lib/services/engagement";
 import { db } from "@/lib/firebase";
 import { doc, getDoc } from "firebase/firestore";
@@ -285,8 +286,8 @@ export default function RegisterPage() {
 
   if (success) {
     return (
-      <div className="flex min-h-screen items-center justify-center bg-slate-50 px-4 py-12">
-        <Card className="w-full max-w-md text-center animate-fade-in">
+      <AuthShell maxWidth="max-w-md">
+        <Card className="w-full text-center">
           <div className="space-y-4">
             <div className="mx-auto flex h-16 w-16 items-center justify-center rounded-full bg-emerald-100">
               <svg className="h-8 w-8 text-emerald-600" fill="none" stroke="currentColor" viewBox="0 0 24 24">
@@ -300,29 +301,26 @@ export default function RegisterPage() {
             </Button>
           </div>
         </Card>
-      </div>
+      </AuthShell>
     );
   }
 
   return (
-    <div className="flex min-h-screen items-center justify-center bg-slate-50 px-4 py-12 sm:px-6 lg:px-8">
-      <div className="w-full max-w-lg animate-fade-in">
-        <div className="text-center mb-8">
-          <div className="inline-flex h-16 w-16 items-center justify-center rounded-2xl bg-gradient-to-br from-[#DC2626] to-[#ef4444] mb-4">
-            <span className="text-2xl font-bold text-white">O</span>
-          </div>
-          <h1 className="text-3xl font-bold text-slate-900">Create your account</h1>
-          <p className="mt-2 text-slate-600">Join the OmniStud education ecosystem</p>
+    <AuthShell maxWidth="max-w-lg">
+      <div className="w-full">
+        <div className="mb-8">
+          <h1 className="text-3xl font-bold tracking-tight text-slate-900">Create your account</h1>
+          <p className="mt-2 text-slate-600">Join the OmniStud education ecosystem.</p>
         </div>
 
         {/* Step indicator */}
-        <div className="flex items-center justify-center mb-8">
+        <div className="flex items-center mb-8">
           <div className="flex items-center gap-2">
-            <div className={`h-2.5 w-2.5 rounded-full ${step >= 1 ? "bg-[#DC2626]" : "bg-slate-300"}`}></div>
+            <div className={`h-2.5 w-2.5 rounded-full transition-colors ${step >= 1 ? "bg-[#DC2626]" : "bg-slate-300"}`}></div>
             <div className="h-0.5 w-8 bg-slate-200"></div>
-            <div className={`h-2.5 w-2.5 rounded-full ${step >= 2 ? "bg-[#DC2626]" : "bg-slate-300"}`}></div>
+            <div className={`h-2.5 w-2.5 rounded-full transition-colors ${step >= 2 ? "bg-[#DC2626]" : "bg-slate-300"}`}></div>
             <div className="h-0.5 w-8 bg-slate-200"></div>
-            <div className={`h-2.5 w-2.5 rounded-full ${step >= 3 ? "bg-[#DC2626]" : "bg-slate-300"}`}></div>
+            <div className={`h-2.5 w-2.5 rounded-full transition-colors ${step >= 3 ? "bg-[#DC2626]" : "bg-slate-300"}`}></div>
           </div>
         </div>
 
@@ -406,7 +404,7 @@ export default function RegisterPage() {
                       className={`flex items-start gap-3 p-4 rounded-xl border-2 text-left transition-all ${
                         role === r.value
                           ? "border-[#DC2626] bg-[#DC2626]/5"
-                          : "border-slate-200 hover:border-slate-300"
+                          : "border-slate-200/60 hover:border-slate-300"
                       }`}
                     >
                       <div className={`p-2 rounded-lg ${role === r.value ? "bg-[#DC2626] text-white" : "bg-slate-100 text-slate-600"}`}>
@@ -433,7 +431,7 @@ export default function RegisterPage() {
                         className={`flex flex-col items-center gap-2 p-3 rounded-lg border-2 text-sm transition-all ${
                           providerType === type.value
                             ? "border-[#DC2626] bg-[#DC2626]/5 text-[#DC2626]"
-                            : "border-slate-200 hover:border-slate-300 text-slate-600"
+                            : "border-slate-200/60 hover:border-slate-300 text-slate-600"
                         }`}
                       >
                         {type.icon}
@@ -527,6 +525,6 @@ export default function RegisterPage() {
           )}
         </Card>
       </div>
-    </div>
+    </AuthShell>
   );
 }

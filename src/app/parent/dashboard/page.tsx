@@ -156,7 +156,7 @@ export default function ParentDashboard() {
               <Card title="Family Members">
                 <div className="space-y-3">
                   {children.map((child) => (
-                    <div key={child.uid} className="flex items-center gap-3 p-3 rounded-lg bg-slate-50">
+                    <div key={child.uid} className="flex items-center gap-3 p-3 rounded-xl bg-slate-50/70">
                       <div className="h-10 w-10 rounded-full bg-[#DC2626]/10 flex items-center justify-center text-[#DC2626] font-medium">
                         {child.displayName?.charAt(0)}
                       </div>
@@ -197,15 +197,15 @@ export default function ParentDashboard() {
                     <p className="text-xs text-slate-500 capitalize">{user?.subscriptionBilling || "MONTHLY"} Billing</p>
                   </div>
                   <div className="space-y-2">
-                    <div className="flex justify-between text-sm p-2 bg-slate-50 rounded-lg">
+                    <div className="flex justify-between text-sm p-2 bg-slate-50/70 rounded-xl">
                       <span className="text-slate-600">Payment Status</span>
                       <span className={`font-medium ${user?.paymentStatus === "COMPLETED" ? "text-emerald-600" : "text-amber-600"}`}>{user?.paymentStatus}</span>
                     </div>
-                    <div className="flex justify-between text-sm p-2 bg-slate-50 rounded-lg">
+                    <div className="flex justify-between text-sm p-2 bg-slate-50/70 rounded-xl">
                       <span className="text-slate-600">Active Children</span>
                       <span className="font-medium">{children.length}</span>
                     </div>
-                    <div className="flex justify-between text-sm p-2 bg-slate-50 rounded-lg">
+                    <div className="flex justify-between text-sm p-2 bg-slate-50/70 rounded-xl">
                       <span className="text-slate-600">Tracked Services</span>
                       <span className="font-medium">{Object.values(childServices).flat().length}</span>
                     </div>
@@ -221,7 +221,7 @@ export default function ParentDashboard() {
                 <Card title="My Linked Children">
                   <div className="grid grid-cols-2 gap-3">
                     {children.map((child) => (
-                      <div key={child.uid} className="p-3 rounded-xl border border-slate-200 bg-slate-50">
+                      <div key={child.uid} className="p-3 rounded-xl border border-slate-200/60 bg-slate-50">
                         <p className="font-medium text-slate-900 text-sm">{child.displayName}</p>
                         <p className="text-xs text-slate-500">{child.grade || "Grade 5"}</p>
                         <p className="text-xs text-slate-500">{child.school || "Guwahati Prep"}</p>
@@ -269,7 +269,7 @@ export default function ParentDashboard() {
                   <p className="text-sm text-slate-600">All active services across all children.</p>
                   {Object.entries(childServices).map(([childId, services]) =>
                     services.map((service) => (
-                      <div key={`${childId}-${service.id}`} className="flex items-center justify-between p-3 rounded-lg bg-slate-50">
+                      <div key={`${childId}-${service.id}`} className="flex items-center justify-between p-3 rounded-xl bg-slate-50/70">
                         <div className="flex items-center gap-3">
                           <div className={`p-2 rounded-lg ${service.providerType === "TRANSPORTER" ? "bg-amber-100 text-amber-600" : "bg-red-100 text-[#DC2626]"}`}>
                             {service.providerType === "TRANSPORTER" ? <Bus className="h-4 w-4" /> : <Clock className="h-4 w-4" />}
@@ -302,7 +302,7 @@ export default function ParentDashboard() {
                     </div>
                   ) : (
                     checkIns.slice(0, 5).map((ci) => (
-                      <div key={ci.id} className="flex items-start gap-3 p-3 rounded-lg bg-slate-50">
+                      <div key={ci.id} className="flex items-start gap-3 p-3 rounded-xl bg-slate-50/70">
                         <div className={`p-2 rounded-lg ${ci.type === "CHECK_IN" ? "bg-emerald-100 text-emerald-600" : "bg-amber-100 text-amber-600"}`}>
                           <MapPin className="h-4 w-4" />
                         </div>

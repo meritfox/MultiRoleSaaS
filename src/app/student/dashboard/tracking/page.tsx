@@ -116,7 +116,7 @@ export default function StudentTrackingPage() {
 
           {providerId ? (
             <Card title="Live Vehicle Location (OpenStreetMap)">
-              <TransportMap markers={markers} className="h-96 w-full rounded-xl border border-slate-200" />
+              <TransportMap markers={markers} className="h-96 w-full rounded-xl border border-slate-200/60" />
               <p className="mt-2 text-xs text-slate-400">
                 🚌 current position · green dots: pickups · amber dots: drops
               </p>
@@ -182,7 +182,7 @@ export default function StudentTrackingPage() {
             ) : (
               <div className="space-y-2">
                 {checkIns.map((ci) => (
-                  <div key={ci.id} className="flex items-start gap-3 rounded-lg bg-slate-50 p-3">
+                  <div key={ci.id} className="flex items-start gap-3 rounded-xl bg-slate-50/70 p-3">
                     <div
                       className={`p-2 rounded-lg ${
                         ci.type === "CHECK_IN"

@@ -294,7 +294,7 @@ export default function TransportConsolePage() {
           </Card>
 
           <Card title="Route Visualisation (OpenStreetMap)">
-            <TransportMap markers={markers} route={trail} className="h-96 w-full rounded-xl border border-slate-200" />
+            <TransportMap markers={markers} route={trail} className="h-96 w-full rounded-xl border border-slate-200/60" />
             <p className="mt-2 text-xs text-slate-400">
               🚌 current position · green dots: pickups · amber dots: drops
             </p>
@@ -309,7 +309,7 @@ export default function TransportConsolePage() {
               ) : (
                 <div className="space-y-3">
                   {students.map((s) => (
-                    <div key={s.studentId} className="flex items-center gap-3 rounded-lg border border-slate-200 p-3">
+                    <div key={s.studentId} className="flex items-center gap-3 rounded-lg border border-slate-200/60 p-3">
                       <div className="flex h-9 w-9 items-center justify-center rounded-full bg-[#DC2626]/10 text-[#DC2626]">
                         <Users className="h-4 w-4" />
                       </div>
@@ -342,7 +342,7 @@ export default function TransportConsolePage() {
               ) : (
                 <div className="space-y-2 max-h-72 overflow-y-auto">
                   {checkIns.map((ci) => (
-                    <div key={ci.id} className="flex items-start gap-3 rounded-lg bg-slate-50 p-3">
+                    <div key={ci.id} className="flex items-start gap-3 rounded-xl bg-slate-50/70 p-3">
                       <div
                         className={`p-2 rounded-lg ${
                           ci.type === "CHECK_IN"

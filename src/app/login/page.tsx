@@ -22,6 +22,7 @@ import { Input } from "@/components/ui/Input";
 import { Card } from "@/components/ui/Card";
 import { Alert } from "@/components/ui/Alert";
 import { DEMO_CREDENTIALS } from "@/lib/demo-data";
+import { AuthShell } from "@/components/layout/AuthShell";
 import { Mail, Lock, Eye, EyeOff, Smartphone, Phone, KeyRound } from "lucide-react";
 
 const getDashboardPath = (role: UserRole | null | undefined): string => {
@@ -177,24 +178,21 @@ function LoginForm() {
   };
 
   return (
-    <div className="w-full max-w-md animate-fade-in">
-      <div className="text-center mb-8">
-        <div className="inline-flex h-16 w-16 items-center justify-center rounded-2xl bg-gradient-to-br from-[#DC2626] to-[#ef4444] mb-4">
-          <span className="text-2xl font-bold text-white">O</span>
-        </div>
-        <h1 className="text-3xl font-bold text-slate-900">Welcome back</h1>
-        <p className="mt-2 text-slate-600">Log in to your OmniStud account</p>
+    <div className="w-full">
+      <div className="mb-8">
+        <h1 className="text-3xl font-bold tracking-tight text-slate-900">Welcome back</h1>
+        <p className="mt-2 text-slate-600">Log in to your OmniStud account to continue.</p>
       </div>
 
       <Card className="w-full">
         {/* Login method toggle */}
-        <div className="mb-6 grid grid-cols-2 gap-1 rounded-xl bg-slate-100 p-1">
+        <div className="mb-6 grid grid-cols-2 gap-1 rounded-xl bg-slate-100/80 p-1">
           <button
             type="button"
             onClick={() => switchLoginMethod("email")}
-            className={`flex items-center justify-center gap-2 rounded-lg px-3 py-2 text-sm font-medium transition-all ${
+            className={`flex items-center justify-center gap-2 rounded-lg px-3 py-2 text-sm font-medium transition-all duration-200 ${
               loginMethod === "email"
-                ? "bg-white text-[#DC2626] shadow-sm"
+                ? "bg-white text-[#DC2626] shadow-soft"
                 : "text-slate-500 hover:text-slate-700"
             }`}
           >
@@ -204,9 +202,9 @@ function LoginForm() {
           <button
             type="button"
             onClick={() => switchLoginMethod("phone")}
-            className={`flex items-center justify-center gap-2 rounded-lg px-3 py-2 text-sm font-medium transition-all ${
+            className={`flex items-center justify-center gap-2 rounded-lg px-3 py-2 text-sm font-medium transition-all duration-200 ${
               loginMethod === "phone"
-                ? "bg-white text-[#DC2626] shadow-sm"
+                ? "bg-white text-[#DC2626] shadow-soft"
                 : "text-slate-500 hover:text-slate-700"
             }`}
           >
@@ -246,7 +244,7 @@ function LoginForm() {
             <button
               type="button"
               onClick={() => setShowPassword(!showPassword)}
-              className="absolute right-3 top-[34px] text-slate-400 hover:text-slate-600"
+              className="absolute right-3 top-[38px] text-slate-400 transition-colors hover:text-slate-600"
             >
               {showPassword ? <EyeOff className="h-4 w-4" /> : <Eye className="h-4 w-4" />}
             </button>
@@ -339,30 +337,29 @@ function LoginForm() {
           </Link>
         </div>
 
-        <div className="mt-6 pt-6 border-t border-slate-100">
-          <p className="mb-3 text-center text-xs font-semibold uppercase tracking-wider text-slate-500">
+        <div className="mt-6 pt-6 border-t border-slate-100/80">
+          <p className="mb-3 text-center text-xs font-semibold uppercase tracking-wider text-slate-400">
             Quick Demo Login
           </p>
-          <div className="grid grid-cols-2 gap-2">
+          <div className="flex flex-wrap justify-center gap-2">
             {(Object.keys(DEMO_CREDENTIALS) as Array<keyof typeof DEMO_CREDENTIALS>).map(
               (role) => (
-                <Button
+                <button
                   key={role}
                   type="button"
-                  variant="outline"
-                  size="sm"
                   onClick={() => fillDemoCredentials(role)}
+                  className="rounded-full border border-slate-200/60 bg-white px-4 py-1.5 text-xs font-medium text-slate-600 shadow-soft transition-all duration-200 hover:border-[#DC2626]/30 hover:text-[#DC2626] hover:shadow-lift active:scale-95"
                 >
                   {role === "admin" && "Admin"}
                   {role === "teacher" && "Teacher"}
                   {role === "transporter" && "Transporter"}
                   {role === "student" && "Student"}
                   {role === "parent" && "Parent"}
-                </Button>
+                </button>
               )
             )}
           </div>
-          <p className="mt-2 text-center text-xs text-slate-400">
+          <p className="mt-3 text-center text-xs text-slate-400">
             Click any role to auto-fill. Password: demo123
           </p>
         </div>
@@ -373,10 +370,10 @@ function LoginForm() {
 
 export default function LoginPage() {
   return (
-    <div className="flex min-h-screen items-center justify-center bg-slate-50 px-4 py-12 sm:px-6 lg:px-8">
-      <Suspense fallback={<Card className="w-full max-w-md p-8 text-center">Loading...</Card>}>
+    <AuthShell>
+      <Suspense fallback={<Card className="w-full p-8 text-center text-slate-500">Loading...</Card>}>
         <LoginForm />
       </Suspense>
-    </div>
+    </AuthShell>
   );
 }

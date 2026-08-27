@@ -10,10 +10,12 @@ interface PaginationProps {
   total: number;
   onPageChange: (page: number) => void;
   className?: string;
+  /** Noun shown in the "Showing … of N" label. Defaults to "results". */
+  itemLabel?: string;
 }
 
 /** Table footer pagination: "Showing 1-10 of N" + numbered controls. */
-export function Pagination({ page, pageSize, total, onPageChange, className }: PaginationProps) {
+export function Pagination({ page, pageSize, total, onPageChange, className, itemLabel = "results" }: PaginationProps) {
   const pageCount = Math.max(1, Math.ceil(total / pageSize));
   const start = total === 0 ? 0 : (page - 1) * pageSize + 1;
   const end = Math.min(page * pageSize, total);
@@ -31,7 +33,7 @@ export function Pagination({ page, pageSize, total, onPageChange, className }: P
       <p className="text-sm text-slate-500">
         Showing <span className="font-medium text-slate-900">{start}</span>-
         <span className="font-medium text-slate-900">{end}</span> of{" "}
-        <span className="font-medium text-slate-900">{total.toLocaleString("en-IN")}</span> results
+        <span className="font-medium text-slate-900">{total.toLocaleString("en-IN")}</span> {itemLabel}
       </p>
 
       <div className="flex items-center gap-1">
@@ -39,7 +41,7 @@ export function Pagination({ page, pageSize, total, onPageChange, className }: P
           type="button"
           onClick={() => onPageChange(page - 1)}
           disabled={page <= 1}
-          className="inline-flex h-8 items-center gap-1 rounded-lg border border-slate-300 bg-white px-2.5 text-sm font-medium text-slate-600 transition-colors hover:bg-slate-50 disabled:cursor-not-allowed disabled:opacity-50"
+          className="inline-flex h-8 items-center gap-1 rounded-xl border border-slate-200 bg-white px-2.5 text-sm font-medium text-slate-600 shadow-soft transition-all hover:bg-slate-50 hover:border-slate-300 disabled:cursor-not-allowed disabled:opacity-50"
         >
           <ChevronLeft className="h-4 w-4" /> Prev
         </button>
@@ -54,10 +56,10 @@ export function Pagination({ page, pageSize, total, onPageChange, className }: P
               onClick={() => onPageChange(p)}
               aria-current={p === page ? "page" : undefined}
               className={cn(
-                "inline-flex h-8 w-8 items-center justify-center rounded-lg text-sm font-medium transition-colors",
+                "inline-flex h-8 w-8 items-center justify-center rounded-xl text-sm font-medium transition-all",
                 p === page
-                  ? "bg-[#DC2626] text-white shadow-sm"
-                  : "border border-slate-300 bg-white text-slate-600 hover:bg-slate-50"
+                  ? "bg-gradient-to-b from-[#ef4444] to-[#DC2626] text-white shadow-soft"
+                  : "border border-slate-200 bg-white text-slate-600 hover:bg-slate-50 hover:border-slate-300"
               )}
             >
               {p}
@@ -69,7 +71,7 @@ export function Pagination({ page, pageSize, total, onPageChange, className }: P
           type="button"
           onClick={() => onPageChange(page + 1)}
           disabled={page >= pageCount}
-          className="inline-flex h-8 items-center gap-1 rounded-lg border border-slate-300 bg-white px-2.5 text-sm font-medium text-slate-600 transition-colors hover:bg-slate-50 disabled:cursor-not-allowed disabled:opacity-50"
+          className="inline-flex h-8 items-center gap-1 rounded-xl border border-slate-200 bg-white px-2.5 text-sm font-medium text-slate-600 shadow-soft transition-all hover:bg-slate-50 hover:border-slate-300 disabled:cursor-not-allowed disabled:opacity-50"
         >
           Next <ChevronRight className="h-4 w-4" />
         </button>

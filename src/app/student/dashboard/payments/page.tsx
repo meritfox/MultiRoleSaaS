@@ -149,7 +149,7 @@ export default function StudentPaymentsPage() {
                     platform commission included. Funds release on service completion.
                   </p>
                 </Alert>
-                <div className="rounded-lg bg-slate-50 p-4 text-sm space-y-1">
+                <div className="rounded-xl bg-slate-50/70 p-4 text-sm space-y-1">
                   <p className="flex justify-between"><span>Transaction ID</span><span className="font-mono text-xs">{confirmedTx.id}</span></p>
                   <p className="flex justify-between"><span>Service</span><span className="font-medium">{confirmedTx.serviceName}</span></p>
                   <p className="flex justify-between"><span>Amount</span><span className="font-medium">₹{confirmedTx.amount}</span></p>
@@ -169,7 +169,7 @@ export default function StudentPaymentsPage() {
           ) : stage === "review" && selectedService ? (
             <Card title="Review & Confirm Payment">
               <div className="space-y-4">
-                <div className="rounded-lg border border-slate-200 p-4 text-sm space-y-1">
+                <div className="rounded-lg border border-slate-200/60 p-4 text-sm space-y-1">
                   <p className="flex justify-between"><span>Service</span><span className="font-medium">{selectedService.name}</span></p>
                   <p className="flex justify-between">
                     <span>Amount</span>
@@ -204,7 +204,7 @@ export default function StudentPaymentsPage() {
                   <select
                     value={selectedServiceId}
                     onChange={(e) => setSelectedServiceId(e.target.value)}
-                    className="mt-1 block w-full rounded-lg border border-slate-300 bg-white px-3 py-2 text-sm focus:outline-none focus:ring-2 focus:ring-[#DC2626]"
+                    className="mt-1 block w-full rounded-xl border border-slate-200 bg-slate-50/60 px-3 py-2 text-sm focus:outline-none focus:border-[#DC2626]/40 focus:bg-white focus:shadow-glow transition-all duration-200"
                   >
                     <option value="">-- Select a service --</option>
                     {services.map((s) => (
@@ -228,7 +228,7 @@ export default function StudentPaymentsPage() {
             ) : (
               <div className="space-y-3">
                 {transactions.map((t) => (
-                  <div key={t.id} className="flex items-center justify-between p-4 rounded-lg bg-slate-50">
+                  <div key={t.id} className="flex items-center justify-between p-4 rounded-xl bg-slate-50/70">
                     <div>
                       <p className="font-medium text-slate-900">{t.serviceName}</p>
                       <p className="text-xs text-slate-500">

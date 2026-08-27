@@ -24,9 +24,9 @@ export function Toggle({ checked, onChange, disabled, label, description, classN
       onClick={() => onChange(!checked)}
       className={cn(
         "relative inline-flex h-6 w-11 shrink-0 items-center rounded-full transition-colors duration-200",
-        "focus:outline-none focus:ring-2 focus:ring-[#DC2626]/40 focus:ring-offset-2",
+        "focus:outline-none focus:shadow-glow",
         "disabled:cursor-not-allowed disabled:opacity-50",
-        checked ? "bg-[#DC2626]" : "bg-slate-300"
+        checked ? "bg-gradient-to-r from-[#ef4444] to-[#DC2626]" : "bg-slate-300"
       )}
     >
       <span

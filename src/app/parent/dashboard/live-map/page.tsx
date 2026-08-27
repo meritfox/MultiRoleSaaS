@@ -171,7 +171,7 @@ export default function ParentLiveMapPage() {
                   {t.providerId ? (
                     <TransportMap
                       markers={markers}
-                      className="h-80 w-full rounded-xl border border-slate-200"
+                      className="h-80 w-full rounded-xl border border-slate-200/60"
                     />
                   ) : (
                     <p className="text-sm text-slate-500 py-4 text-center">
@@ -185,7 +185,7 @@ export default function ParentLiveMapPage() {
                   ) : (
                     <div className="space-y-2 max-h-48 overflow-y-auto">
                       {t.checkIns.map((ci) => (
-                        <div key={ci.id} className="flex items-start gap-3 rounded-lg bg-slate-50 p-2.5">
+                        <div key={ci.id} className="flex items-start gap-3 rounded-xl bg-slate-50/70 p-2.5">
                           <div
                             className={`p-1.5 rounded-lg ${
                               ci.type === "CHECK_IN"
