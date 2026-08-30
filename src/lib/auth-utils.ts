@@ -8,7 +8,10 @@ import {
   linkWithPhoneNumber,
   RecaptchaVerifier,
   PhoneAuthProvider,
-  signInWithCredential
+  signInWithCredential,
+  signInWithPopup,
+  GoogleAuthProvider,
+  User as FirebaseUser
 } from "firebase/auth";
 import { doc, setDoc, getDoc, updateDoc } from "firebase/firestore";
 import { UserProfile, PaymentStatus } from "@/types";
@@ -16,6 +19,85 @@ import { UserProfile, PaymentStatus } from "@/types";
 export const login = async (email: string, pass: string) => {
   if (!ensureFirebaseInit()) throw new Error("Firebase is not initialized. Check your environment variables.");
   return await signInWithEmailAndPassword(auth, email, pass);
+};
+
+// ---------------------------------------------------------------------------
+// Google sign-in
+// ---------------------------------------------------------------------------
+
+export const loginWithGoogle = async () => {
+  if (!ensureFirebaseInit()) throw new Error("Firebase is not initialized. Check your environment variables.");
+  const provider = new GoogleAuthProvider();
+  provider.setCustomParameters({ prompt: "select_account" });
+  return await signInWithPopup(auth, provider);
+};
+
+/**
+ * Creates a base Firestore profile for a first-time Google user so the
+ * onboarding flow (/register/role -> subscription -> payment) can update it.
+ * Defaults to the STUDENT role; the user picks their real role on the next
+ * screen. Optional fields are only written when present because Firestore
+ * rejects `undefined` values.
+ */
+export const createGoogleUserProfile = async (user: FirebaseUser): Promise<void> => {
+  if (!ensureFirebaseInit()) throw new Error("Firebase is not initialized. Check your environment variables.");
+  const profile: Record<string, unknown> = {
+    uid: user.uid,
+    email: user.email ?? "",
+    displayName: user.displayName?.trim() || "New User",
+    role: "STUDENT",
+    paymentStatus: "PENDING",
+    createdAt: Date.now(),
+    updatedAt: Date.now(),
+  };
+  if (user.photoURL) profile.photoURL = user.photoURL;
+  if (user.phoneNumber) profile.phoneNumber = user.phoneNumber;
+  await setDoc(doc(db, "users", user.uid), profile);
+};
+
+/** Maps Firebase email/password sign-in error codes to friendly messages. */
+export const getEmailAuthErrorMessage = (err: unknown): string => {
+  const code = (err as { code?: string })?.code || "";
+  switch (code) {
+    case "auth/invalid-credential":
+    case "auth/wrong-password":
+    case "auth/user-not-found":
+      return "Invalid email or password. Please try again.";
+    case "auth/invalid-email":
+      return "The email address is not valid.";
+    case "auth/user-disabled":
+      return "This account has been disabled. Please contact support.";
+    case "auth/too-many-requests":
+      return "Too many failed attempts. Please wait a moment and try again.";
+    case "auth/network-request-failed":
+      return "Network error. Check your connection and try again.";
+    default:
+      return "Unable to log in. Please try again.";
+  }
+};
+
+/**
+ * Maps Firebase Google sign-in error codes to friendly messages.
+ * Returns an empty string when the user simply cancelled the popup so the
+ * caller can fail silently.
+ */
+export const getGoogleAuthErrorMessage = (err: unknown): string => {
+  const code = (err as { code?: string })?.code || "";
+  switch (code) {
+    case "auth/popup-closed-by-user":
+    case "auth/cancelled-popup-request":
+      return "";
+    case "auth/popup-blocked":
+      return "The sign-in popup was blocked. Please allow popups for this site and try again.";
+    case "auth/account-exists-with-different-credential":
+      return "An account already exists with this email using a different sign-in method.";
+    case "auth/unauthorized-domain":
+      return "This domain is not authorized for Google sign-in. Add it in the Firebase Console (Authentication > Settings > Authorized domains).";
+    case "auth/network-request-failed":
+      return "Network error. Check your connection and try again.";
+    default:
+      return "Google sign-in failed. Please try again.";
+  }
 };
 
 export const logout = async () => {

@@ -219,7 +219,7 @@ export default function ParentDashboard() {
               {/* Linked Children & Notifications */}
               <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
                 <Card title="My Linked Children">
-                  <div className="grid grid-cols-2 gap-3">
+                  <div className="grid grid-cols-1 gap-3 sm:grid-cols-2">
                     {children.map((child) => (
                       <div key={child.uid} className="p-3 rounded-xl border border-slate-200/60 bg-slate-50">
                         <p className="font-medium text-slate-900 text-sm">{child.displayName}</p>

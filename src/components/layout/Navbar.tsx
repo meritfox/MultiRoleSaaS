@@ -6,7 +6,8 @@ import { useRouter } from "next/navigation";
 import { useAuth } from "@/lib/auth-context";
 import { Button } from "@/components/ui/Button";
 import { logout } from "@/lib/auth-utils";
-import { LogOut, User, Menu, X, Bell, Settings, GraduationCap } from "lucide-react";
+import { getNavItems, getDashboardLink } from "./nav-items";
+import { LogOut, User, Menu, X, Bell, GraduationCap } from "lucide-react";
 
 interface NavbarProps {
   title?: string;
@@ -14,9 +15,10 @@ interface NavbarProps {
 }
 
 const Navbar = ({ title, showNav = true }: NavbarProps) => {
-  const { user, role, loading } = useAuth();
+  const { user, role } = useAuth();
   const router = useRouter();
   const [mobileMenuOpen, setMobileMenuOpen] = useState(false);
+  const navItems = getNavItems(role);
 
   const handleLogout = async () => {
     await logout();
@@ -25,19 +27,11 @@ const Navbar = ({ title, showNav = true }: NavbarProps) => {
     router.replace("/");
   };
 
-  const getDashboardLink = () => {
-    if (role === "SUPER_ADMIN") return "/admin/dashboard";
-    if (role === "SERVICE_PROVIDER") return "/provider/dashboard";
-    if (role === "STUDENT") return "/student/dashboard";
-    if (role === "PARENT") return "/parent/dashboard";
-    return "/";
-  };
-
   return (
     <nav className="sticky top-0 z-50 w-full border-b border-slate-200/60 bg-white/80 backdrop-blur-md shadow-soft">
       <div className="container mx-auto flex h-16 items-center justify-between px-4 max-w-7xl">
         <div className="flex items-center gap-4">
-          <Link href={getDashboardLink()} className="flex items-center space-x-2.5">
+          <Link href={getDashboardLink(role)} className="flex items-center space-x-2.5">
             <div className="flex h-9 w-9 items-center justify-center rounded-xl bg-gradient-to-br from-[#ef4444] to-[#B91C1C] shadow-soft">
               <GraduationCap className="h-5 w-5 text-white" />
             </div>
@@ -105,24 +99,36 @@ const Navbar = ({ title, showNav = true }: NavbarProps) => {
           {user ? (
             <div className="space-y-3">
               <div className="flex items-center gap-3 pb-3 border-b border-slate-100">
-                <div className="h-10 w-10 rounded-full bg-gradient-to-br from-[#ef4444] to-[#B91C1C] flex items-center justify-center text-white font-medium shadow-soft">
-                  {user.displayName?.charAt(0).toUpperCase()}
-                </div>
+                {user.photoURL ? (
+                  // eslint-disable-next-line @next/next/no-img-element -- external auth-provider avatar URL
+                  <img
+                    src={user.photoURL}
+                    alt={user.displayName || "User avatar"}
+                    className="h-10 w-10 rounded-full object-cover shadow-soft"
+                  />
+                ) : (
+                  <div className="h-10 w-10 rounded-full bg-gradient-to-br from-[#ef4444] to-[#B91C1C] flex items-center justify-center text-white font-medium shadow-soft">
+                    {user.displayName?.charAt(0).toUpperCase()}
+                  </div>
+                )}
                 <div>
                   <p className="font-medium text-slate-900">{user.displayName}</p>
                   <p className="text-xs text-slate-500 capitalize">{role?.toLowerCase().replace("_", " ")}</p>
                 </div>
               </div>
-              <Button variant="outline" className="w-full justify-start" asChild>
-                <Link href={getDashboardLink()}>
-                  <User className="mr-2 h-4 w-4" /> Dashboard
-                </Link>
-              </Button>
-              <Button variant="outline" className="w-full justify-start" asChild>
-                <Link href="/settings">
-                  <Settings className="mr-2 h-4 w-4" /> Settings
-                </Link>
-              </Button>
+              <div className="space-y-1">
+                {navItems.map((item) => (
+                  <Link
+                    key={item.href}
+                    href={item.href}
+                    onClick={() => setMobileMenuOpen(false)}
+                    className="flex items-center gap-3 rounded-xl px-3 py-2.5 text-sm font-medium text-slate-600 transition-colors hover:bg-slate-50 hover:text-slate-900"
+                  >
+                    <item.icon className="h-4 w-4 text-slate-400" />
+                    {item.label}
+                  </Link>
+                ))}
+              </div>
               <Button variant="danger" className="w-full" onClick={handleLogout}>
                 <LogOut className="mr-2 h-4 w-4" /> Logout
               </Button>

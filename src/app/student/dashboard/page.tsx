@@ -11,8 +11,12 @@ import { Spinner } from "@/components/ui/Spinner";
 import { EmptyState } from "@/components/ui/EmptyState";
 import { FilterPills, FilterPillOption } from "@/components/ui/FilterPills";
 import { ServiceCard } from "@/components/student/ServiceCard";
-import { Service, ServiceRequest } from "@/types";
+import { ActivitySummary } from "@/components/student/ActivitySummary";
+import { Service, ServiceRequest, MarketplaceItem, Job, EscrowTransaction } from "@/types";
 import { getAllServices, createServiceRequest, getRequestsByStudent } from "@/lib/services/services";
+import { getMarketplaceItems } from "@/lib/services/marketplace";
+import { getJobs } from "@/lib/services/jobs";
+import { getEscrowByPayer } from "@/lib/services/payments";
 import { formatShortDate, requestStatusVariant } from "@/lib/utils";
 import {
   Search,
@@ -64,7 +68,10 @@ const REQUEST_LABELS: Record<ServiceRequest["status"], string> = {
 export default function StudentDashboard() {
   const { user } = useAuth();
   const [services, setServices] = useState<Service[]>([]);
-  const [myRequests, setMyRequests] = useState<ServiceRequest[]>([]);
+  const [myRequests, setMyRequests] = useState<(ServiceRequest & { service?: Service })[]>([]);
+  const [marketplaceItems, setMarketplaceItems] = useState<MarketplaceItem[]>([]);
+  const [jobs, setJobs] = useState<Job[]>([]);
+  const [escrowTransactions, setEscrowTransactions] = useState<EscrowTransaction[]>([]);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState<string | null>(null);
   const [success, setSuccess] = useState<string | null>(null);
@@ -79,8 +86,16 @@ export default function StudentDashboard() {
         setServices(servicesData);
 
         if (user) {
-          const requestsData = await getRequestsByStudent(user.uid);
+          const [requestsData, itemsData, jobsData, escrowData] = await Promise.all([
+            getRequestsByStudent(user.uid),
+            getMarketplaceItems().catch(() => [] as MarketplaceItem[]),
+            getJobs().catch(() => [] as Job[]),
+            getEscrowByPayer(user.uid).catch(() => [] as EscrowTransaction[]),
+          ]);
           setMyRequests(requestsData);
+          setMarketplaceItems(itemsData);
+          setJobs(jobsData);
+          setEscrowTransactions(escrowData);
         }
       } catch (err) {
         console.error("Error fetching services:", err);
@@ -170,7 +185,9 @@ export default function StudentDashboard() {
   return (
     <ProtectedRoute allowedRoles={[STUDENT_ROLE]}>
       <DashboardLayout title="Student Dashboard">
-        <div className="space-y-6">
+        <div className="grid grid-cols-1 gap-6 lg:grid-cols-[1fr_330px]">
+          {/* ===== Main content column ===== */}
+          <div className="min-w-0 space-y-6">
           {/* Greeting */}
           <div>
             <h2 className="text-2xl font-bold tracking-tight text-slate-900">
@@ -241,7 +258,7 @@ export default function StudentDashboard() {
           )}
 
           {/* Quick actions */}
-          <div className="grid grid-cols-1 gap-4 sm:grid-cols-2 lg:grid-cols-4">
+          <div className="grid grid-cols-1 gap-4 sm:grid-cols-2 xl:grid-cols-4">
             {QUICK_ACTIONS.map((action) => (
               <Link
                 key={action.href}
@@ -279,7 +296,7 @@ export default function StudentDashboard() {
                 description="Try adjusting your search or picking a different category."
               />
             ) : (
-              <div className="grid gap-4 sm:grid-cols-2 lg:grid-cols-3">
+              <div className="grid gap-4 sm:grid-cols-2 xl:grid-cols-3">
                 {visibleServices.map((service) => {
                   const status = getRequestStatus(service.id);
                   return (
@@ -295,6 +312,18 @@ export default function StudentDashboard() {
               </div>
             )}
           </div>
+          </div>
+
+          {/* ===== Right rail: Activity Summary ===== */}
+          <aside className="min-w-0 lg:sticky lg:top-24 lg:self-start">
+            <ActivitySummary
+              userName={user?.displayName ?? "Student"}
+              requests={myRequests}
+              marketplaceItems={marketplaceItems}
+              jobs={jobs}
+              escrowTransactions={escrowTransactions}
+            />
+          </aside>
         </div>
       </DashboardLayout>
     </ProtectedRoute>

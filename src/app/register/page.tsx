@@ -12,6 +12,13 @@ import {
   clearRecaptcha,
   getPhoneAuthErrorMessage,
 } from "@/lib/auth-utils";
+import {
+  validateEmail,
+  validatePassword,
+  validateConfirmPassword,
+  validateDisplayName,
+  validatePhone,
+} from "@/lib/validation";
 import { ConfirmationResult, RecaptchaVerifier } from "firebase/auth";
 import { Button } from "@/components/ui/Button";
 import { Input } from "@/components/ui/Input";
@@ -115,15 +122,28 @@ export default function RegisterPage() {
     fetchSettings();
   }, []);
 
+  // Inline field-level validation: errors appear on blur and on submit.
+  const [fieldErrors, setFieldErrors] = useState<Record<string, string | null>>({});
+  const validators: Record<string, () => string | null> = {
+    displayName: () => validateDisplayName(displayName),
+    email: () => validateEmail(email),
+    phone: () => validatePhone(phoneNumber, isValidPhoneNumber),
+    password: () => validatePassword(password),
+    confirmPassword: () => validateConfirmPassword(password, confirmPassword),
+  };
+  const validateField = (field: keyof typeof validators) =>
+    setFieldErrors((prev) => ({ ...prev, [field]: validators[field]() }));
+
   const validateStep1 = () => {
-    if (!displayName.trim()) return "Full name is required";
-    if (!email.trim()) return "Email is required";
-    if (!phoneNumber.trim()) return "Phone number is required";
-    if (!isValidPhoneNumber(phoneNumber)) return "Enter a valid phone number (e.g. +91 98765 43210)";
-    if (!password) return "Password is required";
-    if (password.length < 6) return "Password must be at least 6 characters";
-    if (password !== confirmPassword) return "Passwords do not match";
-    return null;
+    const errors: Record<string, string | null> = {
+      displayName: validators.displayName(),
+      email: validators.email(),
+      phone: validators.phone(),
+      password: validators.password(),
+      confirmPassword: validators.confirmPassword(),
+    };
+    setFieldErrors(errors);
+    return Object.values(errors).find((msg) => msg) ?? null;
   };
 
   const handleNext = () => {
@@ -328,7 +348,7 @@ export default function RegisterPage() {
           {error && <Alert variant="error" className="mb-6">{error}</Alert>}
 
           {step === 1 ? (
-            <form onSubmit={(e) => { e.preventDefault(); handleNext(); }} className="space-y-5">
+            <form onSubmit={(e) => { e.preventDefault(); handleNext(); }} className="space-y-5" noValidate>
               {referrerId && (
                 <Alert variant="success">
                   You were referred by a friend — welcome to OmniStud!
@@ -340,7 +360,10 @@ export default function RegisterPage() {
                 required
                 value={displayName}
                 onChange={(e) => setDisplayName(e.target.value)}
+                onBlur={() => validateField("displayName")}
+                error={fieldErrors.displayName ?? undefined}
                 placeholder="John Doe"
+                autoComplete="name"
                 icon={<User className="h-4 w-4" />}
               />
               <Input
@@ -349,7 +372,10 @@ export default function RegisterPage() {
                 required
                 value={email}
                 onChange={(e) => setEmail(e.target.value)}
+                onBlur={() => validateField("email")}
+                error={fieldErrors.email ?? undefined}
                 placeholder="you@example.com"
+                autoComplete="email"
                 icon={<Mail className="h-4 w-4" />}
               />
               <Input
@@ -358,7 +384,10 @@ export default function RegisterPage() {
                 required
                 value={phoneNumber}
                 onChange={(e) => setPhoneNumber(e.target.value)}
+                onBlur={() => validateField("phone")}
+                error={fieldErrors.phone ?? undefined}
                 placeholder="+91 98765 43210"
+                autoComplete="tel"
                 icon={<Phone className="h-4 w-4" />}
               />
               <Input
@@ -367,7 +396,10 @@ export default function RegisterPage() {
                 required
                 value={password}
                 onChange={(e) => setPassword(e.target.value)}
-                placeholder="••••••••"
+                onBlur={() => validateField("password")}
+                error={fieldErrors.password ?? undefined}
+                placeholder="Minimum 8 characters"
+                autoComplete="new-password"
                 icon={<Lock className="h-4 w-4" />}
               />
               <Input
@@ -376,7 +408,10 @@ export default function RegisterPage() {
                 required
                 value={confirmPassword}
                 onChange={(e) => setConfirmPassword(e.target.value)}
-                placeholder="••••••••"
+                onBlur={() => validateField("confirmPassword")}
+                error={fieldErrors.confirmPassword ?? undefined}
+                placeholder="Re-enter your password"
+                autoComplete="new-password"
                 icon={<Lock className="h-4 w-4" />}
               />
 
@@ -422,7 +457,7 @@ export default function RegisterPage() {
               {role === "SERVICE_PROVIDER" && (
                 <div className="space-y-2">
                   <label className="text-sm font-medium text-slate-700">Service Provider Type</label>
-                  <div className="grid grid-cols-3 gap-2">
+                  <div className="grid grid-cols-1 sm:grid-cols-3 gap-2">
                     {PROVIDER_TYPES.map((type) => (
                       <button
                         key={type.value}

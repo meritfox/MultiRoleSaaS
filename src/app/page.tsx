@@ -550,18 +550,10 @@ export default function HomePage() {
       {/* =========================== Footer + demo info ========================= */}
       <footer className="bg-slate-900 py-14">
         <div className="mx-auto max-w-4xl px-6 text-center">
-          <div className="mb-4 flex items-center justify-center gap-2">
-            <IndianRupee className="h-5 w-5 text-emerald-400" />
-            <span className="font-medium text-emerald-400">Demo Payment Enabled</span>
-          </div>
           <p className="text-sm leading-7 text-slate-300">
-            Use demo accounts to explore all roles. Email:{" "}
-            <span className="font-medium text-white">student@omnistud.com</span>,{" "}
-            <span className="font-medium text-white">parent@omnistud.com</span>,{" "}
-            <span className="font-medium text-white">teacher@omnistud.com</span>,{" "}
-            <span className="font-medium text-white">transporter@omnistud.com</span>, or{" "}
-            <span className="font-medium text-white">admin@omnistud.com</span> — Password
-            for all: <span className="font-medium text-white">demo123</span>
+            Create an account to explore every role — students, parents,
+            teachers, institutions and transporters all get a tailored
+            dashboard with secure, escrow-protected payments.
           </p>
           <div className="mt-10 flex flex-col items-center justify-between gap-4 border-t border-slate-800 pt-8 sm:flex-row">
             <div className="flex items-center gap-2">
