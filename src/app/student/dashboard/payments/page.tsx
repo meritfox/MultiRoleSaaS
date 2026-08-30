@@ -7,7 +7,11 @@ import DashboardLayout from "@/components/layout/DashboardLayout";
 import { Card } from "@/components/ui/Card";
 import { Button } from "@/components/ui/Button";
 import { Alert } from "@/components/ui/Alert";
+import { Badge } from "@/components/ui/Badge";
 import { Spinner } from "@/components/ui/Spinner";
+import { PageHeader } from "@/components/ui/PageHeader";
+import { KpiCard } from "@/components/ui/KpiCard";
+import { escrowStatusVariant } from "@/lib/utils";
 import {
   getEscrowByPayer,
   createEscrowTransaction,
@@ -111,29 +115,26 @@ export default function StudentPaymentsPage() {
     <ProtectedRoute allowedRoles={[STUDENT_ROLE]}>
       <DashboardLayout title="OmniStud Payment Engine">
         <div className="max-w-3xl mx-auto space-y-6">
-          <h2 className="text-2xl font-bold text-slate-900">Payments & Escrow</h2>
+          <PageHeader
+            title="Payments and escrow"
+            description="Secure payments for your services, held in OmniStud Escrow."
+          />
 
           {error && <Alert variant="error">{error}</Alert>}
 
           <div className="grid gap-4 sm:grid-cols-2">
-            <Card>
-              <div className="flex items-center gap-3">
-                <div className="p-2 rounded-lg bg-red-100 text-[#DC2626]"><CreditCard className="h-5 w-5" /></div>
-                <div>
-                  <p className="text-sm text-slate-500">Total Paid</p>
-                  <p className="text-xl font-bold text-slate-900">₹{totalPaid}</p>
-                </div>
-              </div>
-            </Card>
-            <Card>
-              <div className="flex items-center gap-3">
-                <div className="p-2 rounded-lg bg-emerald-100 text-emerald-600"><Wallet className="h-5 w-5" /></div>
-                <div>
-                  <p className="text-sm text-slate-500">Active Escrows</p>
-                  <p className="text-xl font-bold text-slate-900">{heldCount}</p>
-                </div>
-              </div>
-            </Card>
+            <KpiCard
+              label="Total Paid"
+              value={`₹${totalPaid}`}
+              icon={<CreditCard className="h-5 w-5" />}
+              iconClassName="bg-red-100/70 text-[#DC2626]"
+            />
+            <KpiCard
+              label="Active Escrows"
+              value={String(heldCount)}
+              icon={<Wallet className="h-5 w-5" />}
+              iconClassName="bg-emerald-100/70 text-emerald-600"
+            />
           </div>
 
           {stage === "confirmed" && confirmedTx ? (
@@ -156,9 +157,9 @@ export default function StudentPaymentsPage() {
                   <p className="flex justify-between"><span>Commission</span><span className="font-medium">₹{confirmedTx.commission}</span></p>
                   <p className="flex justify-between">
                     <span>Status</span>
-                    <span className="rounded-full bg-amber-100 px-2 py-0.5 text-xs font-medium text-amber-700">
+                    <Badge variant="warning" dot>
                       HELD IN ESCROW
-                    </span>
+                    </Badge>
                   </p>
                 </div>
                 <Button variant="outline" onClick={resetFlow} className="w-full">
@@ -237,9 +238,9 @@ export default function StudentPaymentsPage() {
                     </div>
                     <div className="text-right">
                       <p className="font-bold text-slate-900">₹{t.amount}</p>
-                      <span className={`text-xs px-2 py-0.5 rounded-full ${t.status === "RELEASED" ? "bg-emerald-100 text-emerald-700" : t.status === "HELD" ? "bg-amber-100 text-amber-700" : "bg-red-100 text-red-700"}`}>
+                      <Badge variant={escrowStatusVariant(t.status)} dot>
                         {t.status}
-                      </span>
+                      </Badge>
                     </div>
                   </div>
                 ))}

@@ -9,6 +9,7 @@ import DashboardLayout from "@/components/layout/DashboardLayout";
 import { Card } from "@/components/ui/Card";
 import { Button } from "@/components/ui/Button";
 import { Alert } from "@/components/ui/Alert";
+import { Badge } from "@/components/ui/Badge";
 import { Spinner } from "@/components/ui/Spinner";
 import { getServiceById, createServiceRequest } from "@/lib/services/services";
 import { getUserById } from "@/lib/services/users";
@@ -121,22 +122,16 @@ function TeacherDetailContent() {
                     <p className="text-sm text-slate-500">by {provider.displayName}</p>
                   )}
                 </div>
-                <span
-                  className={`rounded-full px-3 py-1 text-xs font-medium ${
-                    service.providerType === "INSTITUTION"
-                      ? "bg-purple-100 text-purple-700"
-                      : "bg-red-100 text-[#DC2626]"
-                  }`}
-                >
+                <Badge variant={service.providerType === "INSTITUTION" ? "purple" : "indigo"}>
                   {service.providerType === "INSTITUTION" ? "Institution" : "Teacher"}
-                </span>
+                </Badge>
               </div>
 
               {service.teacherCategory && (
-                <span className="inline-flex rounded-full bg-slate-100 px-3 py-1 text-xs font-medium text-slate-700">
+                <Badge variant="slate">
                   {TEACHER_CATEGORY_LABELS[service.teacherCategory as TeacherCategory] ??
                     service.teacherCategory}
-                </span>
+                </Badge>
               )}
 
               <div className="flex flex-wrap items-center gap-4 text-sm text-slate-600">
@@ -165,21 +160,15 @@ function TeacherDetailContent() {
 
               <div className="flex flex-wrap gap-2">
                 {service.subject && (
-                  <span className="inline-flex items-center gap-1 rounded-full bg-red-100 px-3 py-1 text-xs font-medium text-[#DC2626]">
-                    <GraduationCap className="h-3.5 w-3.5" />
-                    Subject: {service.subject}
-                  </span>
+                  <Badge variant="indigo">
+                    <span className="inline-flex items-center gap-1">
+                      <GraduationCap className="h-3.5 w-3.5" />
+                      Subject: {service.subject}
+                    </span>
+                  </Badge>
                 )}
-                {service.hobby && (
-                  <span className="rounded-full bg-slate-100 px-3 py-1 text-xs font-medium text-slate-700">
-                    Hobby: {service.hobby}
-                  </span>
-                )}
-                {service.school && (
-                  <span className="rounded-full bg-slate-100 px-3 py-1 text-xs font-medium text-slate-700">
-                    School: {service.school}
-                  </span>
-                )}
+                {service.hobby && <Badge variant="slate">Hobby: {service.hobby}</Badge>}
+                {service.school && <Badge variant="slate">School: {service.school}</Badge>}
               </div>
 
               <p className="text-2xl font-bold text-[#DC2626]">

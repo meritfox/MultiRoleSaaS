@@ -9,6 +9,8 @@ import { Button } from "@/components/ui/Button";
 import { Alert } from "@/components/ui/Alert";
 import { Spinner } from "@/components/ui/Spinner";
 import { Badge } from "@/components/ui/Badge";
+import { PageHeader } from "@/components/ui/PageHeader";
+import { KpiCard } from "@/components/ui/KpiCard";
 import {
   getReferralCode,
   getReferralLink,
@@ -128,38 +130,32 @@ export default function StudentRewardsPage() {
     <ProtectedRoute allowedRoles={[STUDENT_ROLE]}>
       <DashboardLayout title="Engagement & Rewards">
         <div className="max-w-3xl mx-auto space-y-6">
-          <h2 className="text-2xl font-bold text-slate-900">Engagement & Rewards</h2>
+          <PageHeader
+            title="Rewards and referral program"
+            description="Refer friends, earn coupons and join the monthly draw."
+          />
 
           {error && <Alert variant="error">{error}</Alert>}
 
           <div className="grid gap-4 sm:grid-cols-3">
-            <Card>
-              <div className="flex items-center gap-3">
-                <div className="p-2 rounded-lg bg-red-100 text-[#DC2626]"><Users className="h-5 w-5" /></div>
-                <div>
-                  <p className="text-sm text-slate-500">Referrals</p>
-                  <p className="text-xl font-bold text-slate-900">{referrals.length}</p>
-                </div>
-              </div>
-            </Card>
-            <Card>
-              <div className="flex items-center gap-3">
-                <div className="p-2 rounded-lg bg-emerald-100 text-emerald-600"><IndianRupee className="h-5 w-5" /></div>
-                <div>
-                  <p className="text-sm text-slate-500">Rewards Earned</p>
-                  <p className="text-xl font-bold text-slate-900">₹{totalEarned}</p>
-                </div>
-              </div>
-            </Card>
-            <Card>
-              <div className="flex items-center gap-3">
-                <div className="p-2 rounded-lg bg-amber-100 text-amber-600"><Ticket className="h-5 w-5" /></div>
-                <div>
-                  <p className="text-sm text-slate-500">Coupons this month</p>
-                  <p className="text-xl font-bold text-slate-900">{entries.length}</p>
-                </div>
-              </div>
-            </Card>
+            <KpiCard
+              label="Referrals"
+              value={String(referrals.length)}
+              icon={<Users className="h-5 w-5" />}
+              iconClassName="bg-red-100/70 text-[#DC2626]"
+            />
+            <KpiCard
+              label="Rewards Earned"
+              value={`₹${totalEarned}`}
+              icon={<IndianRupee className="h-5 w-5" />}
+              iconClassName="bg-emerald-100/70 text-emerald-600"
+            />
+            <KpiCard
+              label="Coupons this month"
+              value={String(entries.length)}
+              icon={<Ticket className="h-5 w-5" />}
+              iconClassName="bg-amber-100/70 text-amber-600"
+            />
           </div>
 
           {/* Screen 22: Refer & Earn */}

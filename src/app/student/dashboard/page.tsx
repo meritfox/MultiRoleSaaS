@@ -1,19 +1,65 @@
 "use client";
 
-import React, { useState, useEffect } from "react";
+import React, { useState, useEffect, useMemo } from "react";
+import Link from "next/link";
 import { useAuth } from "@/lib/auth-context";
 import ProtectedRoute from "@/components/auth/ProtectedRoute";
 import DashboardLayout from "@/components/layout/DashboardLayout";
-import { Card } from "@/components/ui/Card";
-import { Button } from "@/components/ui/Button";
 import { Alert } from "@/components/ui/Alert";
+import { Badge } from "@/components/ui/Badge";
 import { Spinner } from "@/components/ui/Spinner";
+import { EmptyState } from "@/components/ui/EmptyState";
+import { FilterPills, FilterPillOption } from "@/components/ui/FilterPills";
+import { ServiceCard } from "@/components/student/ServiceCard";
 import { Service, ServiceRequest } from "@/types";
 import { getAllServices, createServiceRequest, getRequestsByStudent } from "@/lib/services/services";
-import { Search, BookOpen, Bus, ShoppingCart, Briefcase, MapPin, Star, Wallet } from "lucide-react";
-import Link from "next/link";
+import { formatShortDate, requestStatusVariant } from "@/lib/utils";
+import {
+  Search,
+  GraduationCap,
+  Bus,
+  ShoppingCart,
+  Briefcase,
+  BookOpen,
+  ArrowRight,
+} from "lucide-react";
 
 const STUDENT_ROLE = "STUDENT" as const;
+
+type CategoryFilter = "ALL" | "TEACHER" | "TRANSPORTER" | "INSTITUTION";
+
+const QUICK_ACTIONS = [
+  {
+    title: "Find Tutors",
+    description: "Teachers & institutions by subject or school",
+    href: "/student/dashboard/tutors",
+    icon: <GraduationCap className="h-5 w-5" />,
+  },
+  {
+    title: "School Transport",
+    description: "Buses & vans with live GPS tracking",
+    href: "/student/dashboard/transport",
+    icon: <Bus className="h-5 w-5" />,
+  },
+  {
+    title: "Marketplace",
+    description: "Buy & sell books and school items",
+    href: "/student/dashboard/marketplace",
+    icon: <ShoppingCart className="h-5 w-5" />,
+  },
+  {
+    title: "Job Board",
+    description: "Local gigs & student requests",
+    href: "/student/dashboard/jobs",
+    icon: <Briefcase className="h-5 w-5" />,
+  },
+];
+
+const REQUEST_LABELS: Record<ServiceRequest["status"], string> = {
+  PENDING: "Pending",
+  APPROVED: "Approved",
+  REJECTED: "Rejected",
+};
 
 export default function StudentDashboard() {
   const { user } = useAuth();
@@ -23,6 +69,7 @@ export default function StudentDashboard() {
   const [error, setError] = useState<string | null>(null);
   const [success, setSuccess] = useState<string | null>(null);
   const [searchTerm, setSearchTerm] = useState("");
+  const [categoryFilter, setCategoryFilter] = useState<CategoryFilter>("ALL");
   const [requestingId, setRequestingId] = useState<string | null>(null);
 
   useEffect(() => {
@@ -65,20 +112,52 @@ export default function StudentDashboard() {
     }
   };
 
-  const filteredServices = services.filter(
-    (service) =>
-      service.name.toLowerCase().includes(searchTerm.toLowerCase()) ||
-      service.providerType.toLowerCase().includes(searchTerm.toLowerCase()) ||
-      service.description.toLowerCase().includes(searchTerm.toLowerCase())
-  );
+  const counts = useMemo(() => {
+    const base: Record<CategoryFilter, number> = {
+      ALL: services.length,
+      TEACHER: 0,
+      TRANSPORTER: 0,
+      INSTITUTION: 0,
+    };
+    for (const s of services) {
+      const key = s.providerType as CategoryFilter;
+      if (key in base) base[key] += 1;
+    }
+    return base;
+  }, [services]);
+
+  const filterOptions: FilterPillOption<CategoryFilter>[] = [
+    { value: "ALL", label: "All", count: counts.ALL },
+    { value: "TEACHER", label: "Tutors", count: counts.TEACHER, icon: <GraduationCap className="h-3.5 w-3.5" /> },
+    { value: "TRANSPORTER", label: "Transport", count: counts.TRANSPORTER, icon: <Bus className="h-3.5 w-3.5" /> },
+    { value: "INSTITUTION", label: "Institutions", count: counts.INSTITUTION },
+  ];
+
+  const visibleServices = useMemo(() => {
+    const needle = searchTerm.trim().toLowerCase();
+    return services.filter((service) => {
+      if (categoryFilter !== "ALL" && service.providerType !== categoryFilter) return false;
+      if (!needle) return true;
+      return (
+        service.name.toLowerCase().includes(needle) ||
+        service.providerType.toLowerCase().includes(needle) ||
+        service.description.toLowerCase().includes(needle)
+      );
+    });
+  }, [services, searchTerm, categoryFilter]);
 
   const getRequestStatus = (serviceId: string) => {
     const request = myRequests.find((r) => r.serviceId === serviceId);
     return request?.status;
   };
 
-  const tutorServices = filteredServices.filter((s) => s.providerType === "TEACHER").slice(0, 2);
-  const transportServices = filteredServices.filter((s) => s.providerType === "TRANSPORTER").slice(0, 2);
+  const recentRequests = useMemo(
+    () => [...myRequests].sort((a, b) => b.createdAt - a.createdAt).slice(0, 3),
+    [myRequests]
+  );
+
+  const firstName = user?.displayName?.split(" ")[0] ?? "there";
+  const isFiltered = searchTerm.trim() !== "" || categoryFilter !== "ALL";
 
   if (loading) {
     return (
@@ -92,244 +171,130 @@ export default function StudentDashboard() {
     <ProtectedRoute allowedRoles={[STUDENT_ROLE]}>
       <DashboardLayout title="Student Dashboard">
         <div className="space-y-6">
-          {/* Header */}
-          <div className="flex flex-col md:flex-row md:items-center md:justify-between gap-4">
-            <div>
-              <h2 className="text-2xl font-bold text-slate-900">Welcome back, {user?.displayName?.split(" ")[0]}!</h2>
-              <p className="text-slate-600">What would you like to do today?</p>
-            </div>
-            <div className="relative max-w-md w-full md:w-96">
-              <Search className="absolute left-3.5 top-1/2 h-5 w-5 -translate-y-1/2 text-slate-400" />
-              <input
-                type="text"
-                placeholder="Search tutors, transport, marketplace..."
-                value={searchTerm}
-                onChange={(e) => setSearchTerm(e.target.value)}
-                className="w-full rounded-xl border border-slate-200 bg-white py-2.5 pl-11 pr-4 text-sm shadow-soft focus:outline-none focus:border-[#DC2626]/40 focus:bg-white focus:shadow-glow transition-all duration-200 transition-all duration-200"
-              />
-            </div>
+          {/* Greeting */}
+          <div>
+            <h2 className="text-2xl font-bold tracking-tight text-slate-900">
+              Hi, {firstName}!
+            </h2>
+            <p className="mt-1 text-sm text-slate-500">
+              Search and request services - everything starts here.
+            </p>
           </div>
 
           {error && <Alert variant="error">{error}</Alert>}
           {success && <Alert variant="success">{success}</Alert>}
 
-          {/* Quick Actions Grid */}
-          <div className="grid grid-cols-1 md:grid-cols-2 xl:grid-cols-3 gap-5">
-            {/* Find Tutor */}
-            <Card className="hover:shadow-lift transition-shadow">
-              <div className="flex items-start gap-4">
-                <div className="p-3 rounded-xl bg-red-100 text-[#DC2626]">
-                  <BookOpen className="h-6 w-6" />
-                </div>
-                <div className="flex-1">
-                  <div className="flex items-center gap-2 mb-1">
-                    <span className="text-xs font-semibold px-2 py-0.5 rounded-full bg-red-100 text-[#DC2626]">Discovery - Tutor</span>
-                  </div>
-                  <h3 className="font-bold text-slate-900">Find a Tutor / Institution</h3>
-                  <p className="text-sm text-slate-600 mt-1">Subject, Area, Hobby, Review search.</p>
-                  <div className="mt-3 space-y-2">
-                    {tutorServices.length > 0 ? (
-                      tutorServices.map((service) => (
-                        <div key={service.id} className="flex items-center justify-between text-sm p-2 bg-slate-50/70 rounded-xl">
-                          <span className="text-slate-700">{service.name}</span>
-                          <span className="font-medium text-[#DC2626]">₹{service.price}</span>
-                        </div>
-                      ))
-                    ) : (
-                      <p className="text-sm text-slate-500 italic">No tutors available</p>
-                    )}
-                  </div>
-                  <div className="mt-3 flex gap-2">
-                    <input
-                      type="text"
-                      placeholder="Math Tutor, Science Class..."
-                      className="flex-1 rounded-xl border border-slate-200 bg-slate-50/60 px-3 py-1.5 text-sm focus:outline-none focus:border-[#DC2626]/40 focus:bg-white focus:shadow-glow transition-all duration-200"
-                    />
-                    <Button size="sm" asChild>
-                      <Link href="/student/dashboard/tutors">Search</Link>
-                    </Button>
-                  </div>
-                </div>
-              </div>
-            </Card>
-
-            {/* School Transport */}
-            <Card className="hover:shadow-lift transition-shadow">
-              <div className="flex items-start gap-4">
-                <div className="p-3 rounded-xl bg-amber-100 text-amber-600">
-                  <Bus className="h-6 w-6" />
-                </div>
-                <div className="flex-1">
-                  <div className="flex items-center gap-2 mb-1">
-                    <span className="text-xs font-semibold px-2 py-0.5 rounded-full bg-amber-100 text-amber-700">Discovery - Transport</span>
-                  </div>
-                  <h3 className="font-bold text-slate-900">School Transportation</h3>
-                  <p className="text-sm text-slate-600 mt-1">Search for Bus, Car, Van, Auto with reviews.</p>
-                  <div className="mt-3 space-y-2">
-                    {transportServices.length > 0 ? (
-                      transportServices.map((service) => (
-                        <div key={service.id} className="flex items-center justify-between text-sm p-2 bg-slate-50/70 rounded-xl">
-                          <span className="text-slate-700">{service.name}</span>
-                          <span className="font-medium text-amber-600">₹{service.price}</span>
-                        </div>
-                      ))
-                    ) : (
-                      <p className="text-sm text-slate-500 italic">No transport available</p>
-                    )}
-                  </div>
-                  <Button size="sm" variant="outline" className="mt-3" asChild>
-                    <Link href="/student/dashboard/transport">View Map</Link>
-                  </Button>
-                </div>
-              </div>
-            </Card>
-
-            {/* Marketplace */}
-            <Card className="hover:shadow-lift transition-shadow">
-              <div className="flex items-start gap-4">
-                <div className="p-3 rounded-xl bg-emerald-100 text-emerald-600">
-                  <ShoppingCart className="h-6 w-6" />
-                </div>
-                <div className="flex-1">
-                  <h3 className="font-bold text-slate-900">Marketplace & Book Resale</h3>
-                  <p className="text-sm text-slate-600 mt-1">Sell & Buy old textbooks and needed items.</p>
-                  <ul className="mt-3 space-y-1 text-sm text-slate-600">
-                    <li className="flex items-center gap-2"><span className="h-1.5 w-1.5 rounded-full bg-emerald-500"></span> Algebra 1 Textbook</li>
-                    <li className="flex items-center gap-2"><span className="h-1.5 w-1.5 rounded-full bg-emerald-500"></span> School Bag, Guwahati</li>
-                  </ul>
-                  <Button size="sm" variant="outline" className="mt-3" asChild>
-                    <Link href="/student/dashboard/marketplace">Browse Items</Link>
-                  </Button>
-                </div>
-              </div>
-            </Card>
-
-            {/* Job Board */}
-            <Card className="hover:shadow-lift transition-shadow">
-              <div className="flex items-start gap-4">
-                <div className="p-3 rounded-xl bg-purple-100 text-purple-600">
-                  <Briefcase className="h-6 w-6" />
-                </div>
-                <div className="flex-1">
-                  <h3 className="font-bold text-slate-900">Job Board & Gig Requests</h3>
-                  <p className="text-sm text-slate-600 mt-1">Find local student jobs and requests.</p>
-                  <ul className="mt-3 space-y-1 text-sm text-slate-600">
-                    <li className="flex items-center gap-2"><span className="h-1.5 w-1.5 rounded-full bg-purple-500"></span> GhyPrep Delivery Gig</li>
-                    <li className="flex items-center gap-2"><span className="h-1.5 w-1.5 rounded-full bg-purple-500"></span> Tutor request, GuwahatiPrep</li>
-                  </ul>
-                  <Button size="sm" variant="outline" className="mt-3" asChild>
-                    <Link href="/student/dashboard/jobs">View Gigs</Link>
-                  </Button>
-                </div>
-              </div>
-            </Card>
-
-            {/* Linked Services */}
-            <Card className="hover:shadow-lift transition-shadow">
-              <div className="flex items-start gap-4">
-                <div className="p-3 rounded-xl bg-red-100 text-red-600">
-                  <MapPin className="h-6 w-6" />
-                </div>
-                <div className="flex-1">
-                  <h3 className="font-bold text-slate-900">My Linked Services (Tracking)</h3>
-                  <p className="text-sm text-slate-600 mt-1">Follow your linked students and services.</p>
-                  <ul className="mt-3 space-y-1 text-sm text-slate-600">
-                    <li className="flex items-center gap-2"><span className="h-1.5 w-1.5 rounded-full bg-red-500"></span> Unique link: omnis.st/99</li>
-                    <li className="flex items-center gap-2"><span className="h-1.5 w-1.5 rounded-full bg-red-500"></span> Contest entry confirmed.</li>
-                  </ul>
-                  <Button size="sm" variant="outline" className="mt-3" asChild>
-                    <Link href="/student/dashboard/tracking">Track Now</Link>
-                  </Button>
-                </div>
-              </div>
-            </Card>
-
-            {/* Escrow Payments */}
-            <Card className="hover:shadow-lift transition-shadow">
-              <div className="flex items-start gap-4">
-                <div className="p-3 rounded-xl bg-cyan-100 text-cyan-600">
-                  <Wallet className="h-6 w-6" />
-                </div>
-                <div className="flex-1">
-                  <h3 className="font-bold text-slate-900">OmniStud Escrow Payments</h3>
-                  <p className="text-sm text-slate-600 mt-1">Manage secure payments (% commission detail).</p>
-                  <div className="mt-3 space-y-1 text-sm">
-                    <div className="flex justify-between p-2 bg-slate-50/70 rounded-xl">
-                      <span className="text-slate-600">Transactions</span>
-                      <span className="font-medium text-slate-900">3 Active</span>
-                    </div>
-                    <div className="flex justify-between p-2 bg-slate-50/70 rounded-xl">
-                      <span className="text-slate-600">Status</span>
-                      <span className="font-medium text-emerald-600">Secured</span>
-                    </div>
-                  </div>
-                  <Button size="sm" variant="outline" className="mt-3" asChild>
-                    <Link href="/student/dashboard/payments">View Payments</Link>
-                  </Button>
-                </div>
-              </div>
-            </Card>
+          {/* Unified search + category filters */}
+          <div className="rounded-2xl border border-slate-200/60 bg-white p-4 shadow-soft">
+            <div className="relative">
+              <Search className="absolute left-3.5 top-1/2 h-4 w-4 -translate-y-1/2 text-slate-400" />
+              <input
+                type="text"
+                placeholder="Search tutors, transport, institutions..."
+                value={searchTerm}
+                onChange={(e) => setSearchTerm(e.target.value)}
+                className="w-full rounded-xl border border-slate-200 bg-slate-50/60 py-2.5 pl-10 pr-4 text-sm transition-all duration-200 focus:outline-none focus:border-[#DC2626]/40 focus:bg-white focus:shadow-glow"
+              />
+            </div>
+            <FilterPills
+              className="mt-3"
+              options={filterOptions}
+              value={categoryFilter}
+              onChange={setCategoryFilter}
+            />
           </div>
 
-          {/* All Services */}
-          <Card title="All Available Services" description="Browse and request services">
-            {filteredServices.length === 0 ? (
-              <div className="text-center py-8">
-                <BookOpen className="mx-auto h-12 w-12 text-slate-300" />
-                <p className="mt-4 text-slate-500">No services available at the moment.</p>
+          {/* My activity strip - only shows when the student has requests */}
+          {recentRequests.length > 0 && (
+            <div className="rounded-2xl border border-slate-200/60 bg-white p-5 shadow-soft">
+              <div className="flex items-center justify-between">
+                <h3 className="text-sm font-semibold text-slate-900">My recent requests</h3>
+                <Link
+                  href="/student/dashboard/requests"
+                  className="text-xs font-medium text-[#DC2626] hover:text-[#B91C1C]"
+                >
+                  View all
+                </Link>
               </div>
-            ) : (
-              <div className="grid gap-4 sm:grid-cols-2 lg:grid-cols-3">
-                {filteredServices.map((service) => {
-                  const requestStatus = getRequestStatus(service.id);
+              <div className="mt-3 grid gap-2 sm:grid-cols-3">
+                {recentRequests.map((request) => {
+                  const matched = services.find((s) => s.id === request.serviceId);
                   return (
-                    <div key={service.id} className="rounded-xl border border-slate-200/60 p-4 hover:shadow-lift transition-shadow">
-                      <div className="mb-3 flex items-center justify-between">
-                        <span className="inline-flex items-center rounded-full bg-red-100 px-2.5 py-0.5 text-xs font-medium text-red-800 capitalize">
-                          {service.providerType}
-                        </span>
-                        <span className="text-lg font-bold text-[#DC2626]">₹{service.price}</span>
+                    <div
+                      key={request.id}
+                      className="flex items-center justify-between gap-2 rounded-xl bg-slate-50/80 px-3 py-2.5"
+                    >
+                      <div className="min-w-0">
+                        <p className="truncate text-sm font-medium text-slate-900">
+                          {matched?.name ?? "Service request"}
+                        </p>
+                        <p className="text-xs text-slate-500">{formatShortDate(request.createdAt)}</p>
                       </div>
-                      <h3 className="font-semibold text-slate-900">{service.name}</h3>
-                      <p className="mt-1 text-sm text-slate-600 line-clamp-2">{service.description}</p>
-                      {service.rating && (
-                        <div className="mt-2 flex items-center gap-1 text-sm text-amber-500">
-                          <Star className="h-4 w-4 fill-current" />
-                          <span>{service.rating}</span>
-                          <span className="text-slate-400">({service.reviews || 0} reviews)</span>
-                        </div>
-                      )}
-                      <div className="mt-4">
-                        {requestStatus ? (
-                          <span
-                            className={`inline-flex w-full items-center justify-center rounded-lg px-4 py-2 text-sm font-medium ${
-                              requestStatus === "APPROVED"
-                                ? "bg-emerald-100 text-emerald-800"
-                                : requestStatus === "REJECTED"
-                                ? "bg-red-100 text-red-800"
-                                : "bg-amber-100 text-amber-800"
-                            }`}
-                          >
-                            {requestStatus === "PENDING" && "Request Pending"}
-                            {requestStatus === "APPROVED" && "Request Approved"}
-                            {requestStatus === "REJECTED" && "Request Rejected"}
-                          </span>
-                        ) : (
-                          <Button
-                            className="w-full"
-                            onClick={() => handleAvailService(service)}
-                            isLoading={requestingId === service.id}
-                          >
-                            Request Service
-                          </Button>
-                        )}
-                      </div>
+                      <Badge variant={requestStatusVariant(request.status)}>
+                        {REQUEST_LABELS[request.status]}
+                      </Badge>
                     </div>
                   );
                 })}
               </div>
+            </div>
+          )}
+
+          {/* Quick actions */}
+          <div className="grid grid-cols-1 gap-4 sm:grid-cols-2 lg:grid-cols-4">
+            {QUICK_ACTIONS.map((action) => (
+              <Link
+                key={action.href}
+                href={action.href}
+                className="group flex items-start gap-3 rounded-2xl border border-slate-200/60 bg-white p-5 shadow-soft transition-all duration-200 hover:shadow-lift"
+              >
+                <div className="flex h-10 w-10 shrink-0 items-center justify-center rounded-xl bg-red-100/70 text-[#DC2626]">
+                  {action.icon}
+                </div>
+                <div className="min-w-0 flex-1">
+                  <p className="font-semibold text-slate-900">{action.title}</p>
+                  <p className="mt-0.5 text-xs text-slate-500">{action.description}</p>
+                </div>
+                <ArrowRight className="mt-1 h-4 w-4 shrink-0 text-slate-300 transition-transform duration-200 group-hover:translate-x-0.5 group-hover:text-[#DC2626]" />
+              </Link>
+            ))}
+          </div>
+
+          {/* Services grid */}
+          <div>
+            <div className="mb-4 flex items-end justify-between">
+              <div>
+                <h3 className="text-lg font-semibold text-slate-900">Available services</h3>
+                {isFiltered && (
+                  <p className="text-sm text-slate-500">
+                    {visibleServices.length} {visibleServices.length === 1 ? "result" : "results"}
+                  </p>
+                )}
+              </div>
+            </div>
+            {visibleServices.length === 0 ? (
+              <EmptyState
+                icon={BookOpen}
+                title="No services found"
+                description="Try adjusting your search or picking a different category."
+              />
+            ) : (
+              <div className="grid gap-4 sm:grid-cols-2 lg:grid-cols-3">
+                {visibleServices.map((service) => {
+                  const status = getRequestStatus(service.id);
+                  return (
+                    <ServiceCard
+                      key={service.id}
+                      service={service}
+                      requestStatus={status}
+                      onRequest={status ? undefined : () => handleAvailService(service)}
+                      requesting={requestingId === service.id}
+                    />
+                  );
+                })}
+              </div>
             )}
-          </Card>
+          </div>
         </div>
       </DashboardLayout>
     </ProtectedRoute>

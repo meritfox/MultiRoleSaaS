@@ -13,6 +13,8 @@ import { Select } from "@/components/ui/Select";
 import { Alert } from "@/components/ui/Alert";
 import { createMarketplaceItem } from "@/lib/services/marketplace";
 import { MarketplaceCategory, MarketplaceCondition } from "@/types";
+import { PageHeader } from "@/components/ui/PageHeader";
+import { ArrowLeft } from "lucide-react";
 
 const STUDENT_ROLE = "STUDENT";
 const CATEGORIES: MarketplaceCategory[] = ["BOOK", "UNIFORM", "STATIONERY", "ELECTRONICS", "OTHER"];
@@ -63,15 +65,18 @@ export default function PostItemPage() {
     <ProtectedRoute allowedRoles={[STUDENT_ROLE]}>
       <DashboardLayout title="Post Item for Sale">
         <div className="max-w-2xl mx-auto space-y-6">
-          <div className="flex items-center justify-between">
-            <h2 className="text-2xl font-bold text-slate-900">Post an Item for Sale</h2>
-            <Link
-              href="/student/dashboard/marketplace"
-              className="text-sm font-medium text-slate-600 hover:text-slate-900"
-            >
-              ← Back
-            </Link>
-          </div>
+          <PageHeader
+            title="Post an Item for Sale"
+            description="List second-hand books and school items."
+            actions={
+              <Link
+                href="/student/dashboard/marketplace"
+                className="inline-flex items-center gap-1.5 text-sm font-medium text-slate-600 hover:text-slate-900"
+              >
+                <ArrowLeft className="h-4 w-4" /> Back
+              </Link>
+            }
+          />
 
           {error && <Alert variant="error">{error}</Alert>}
 

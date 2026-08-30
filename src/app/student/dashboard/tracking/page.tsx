@@ -6,6 +6,7 @@ import ProtectedRoute from "@/components/auth/ProtectedRoute";
 import DashboardLayout from "@/components/layout/DashboardLayout";
 import { Card } from "@/components/ui/Card";
 import { Spinner } from "@/components/ui/Spinner";
+import { PageHeader } from "@/components/ui/PageHeader";
 import TransportMap, { MapMarker } from "@/components/map/TransportMap";
 import { getRequestsByStudent } from "@/lib/services/services";
 import {
@@ -99,9 +100,11 @@ export default function StudentTrackingPage() {
     <ProtectedRoute allowedRoles={[STUDENT_ROLE]}>
       <DashboardLayout title="GPS Tracking">
         <div className="max-w-5xl mx-auto space-y-6">
-          <div className="flex items-center justify-between">
-            <h2 className="text-2xl font-bold text-slate-900">My Transport Tracking</h2>
-            {providerId &&
+          <PageHeader
+            title="My Transport Tracking"
+            description="Live GPS position and check-in history of your linked transport."
+            actions={
+              providerId &&
               (live?.active ? (
                 <span className="inline-flex items-center gap-1.5 rounded-full bg-emerald-100 px-3 py-1 text-xs font-medium text-emerald-700">
                   <span className="h-2 w-2 rounded-full bg-emerald-500 animate-pulse" />
@@ -111,8 +114,9 @@ export default function StudentTrackingPage() {
                 <span className="rounded-full bg-slate-100 px-3 py-1 text-xs font-medium text-slate-500">
                   Transport offline
                 </span>
-              ))}
-          </div>
+              ))
+            }
+          />
 
           {providerId ? (
             <Card title="Live Vehicle Location (OpenStreetMap)">

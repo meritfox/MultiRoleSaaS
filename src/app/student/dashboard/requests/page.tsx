@@ -4,17 +4,30 @@ import React, { useState, useEffect } from "react";
 import { useAuth } from "@/lib/auth-context";
 import ProtectedRoute from "@/components/auth/ProtectedRoute";
 import DashboardLayout from "@/components/layout/DashboardLayout";
-import { Card } from "@/components/ui/Card";
+import { Badge } from "@/components/ui/Badge";
 import { Spinner } from "@/components/ui/Spinner";
+import { PageHeader } from "@/components/ui/PageHeader";
+import { EmptyState } from "@/components/ui/EmptyState";
 import { getRequestsByStudent } from "@/lib/services/services";
 import { ServiceRequest } from "@/types";
-import { Clock, CheckCircle, XCircle, BookOpen } from "lucide-react";
+import { requestStatusVariant, formatShortDate } from "@/lib/utils";
+import { Clock, CheckCircle, XCircle, ClipboardList } from "lucide-react";
 
 const STUDENT_ROLE = "STUDENT";
 
+type RequestWithService = ServiceRequest & {
+  service?: { name: string; price: number; providerType: string };
+};
+
+const STATUS_ICONS = {
+  PENDING: <Clock className="h-4 w-4" />,
+  APPROVED: <CheckCircle className="h-4 w-4" />,
+  REJECTED: <XCircle className="h-4 w-4" />,
+} as const;
+
 export default function StudentRequestsPage() {
   const { user } = useAuth();
-  const [requests, setRequests] = useState<(ServiceRequest & { service?: { name: string; price: number; providerType: string } })[]>([]);
+  const [requests, setRequests] = useState<RequestWithService[]>([]);
   const [loading, setLoading] = useState(true);
 
   useEffect(() => {
@@ -38,37 +51,50 @@ export default function StudentRequestsPage() {
   return (
     <ProtectedRoute allowedRoles={[STUDENT_ROLE]}>
       <DashboardLayout title="My Requests">
-        <div className="max-w-3xl mx-auto space-y-6">
-          <h2 className="text-2xl font-bold text-slate-900">My Service Requests</h2>
+        <div className="max-w-5xl mx-auto space-y-6">
+          <PageHeader
+            title="My Requests"
+            description="Track the status of every service request you have made."
+          />
 
-          <Card title="Request History">
-            {requests.length === 0 ? (
-              <div className="text-center py-8">
-                <BookOpen className="mx-auto h-12 w-12 text-slate-300" />
-                <p className="mt-4 text-slate-500">No service requests yet.</p>
-              </div>
-            ) : (
-              <div className="space-y-3">
-                {requests.map((r) => (
-                  <div key={r.id} className="flex items-center justify-between p-4 rounded-xl bg-slate-50/70">
-                    <div className="flex items-start gap-3">
-                      <div className={`p-2 rounded-lg ${r.status === "APPROVED" ? "bg-emerald-100 text-emerald-600" : r.status === "REJECTED" ? "bg-red-100 text-red-600" : "bg-amber-100 text-amber-600"}`}>
-                        {r.status === "APPROVED" ? <CheckCircle className="h-4 w-4" /> : r.status === "REJECTED" ? <XCircle className="h-4 w-4" /> : <Clock className="h-4 w-4" />}
-                      </div>
-                      <div>
-                        <p className="font-medium text-slate-900">{r.service?.name || "Unknown Service"}</p>
-                        <p className="text-xs text-slate-500 capitalize">{r.service?.providerType || "Service"} • ₹{r.service?.price || 0}</p>
-                        <p className="text-xs text-slate-400">Requested {new Date(r.createdAt).toLocaleDateString()}</p>
-                      </div>
+          {requests.length === 0 ? (
+            <EmptyState
+              icon={ClipboardList}
+              title="No requests yet"
+              description="Browse services and hit Request Service to get started."
+              actionLabel="Browse services"
+              actionHref="/student/dashboard"
+            />
+          ) : (
+            <div className="space-y-3">
+              {requests.map((r) => (
+                <div
+                  key={r.id}
+                  className="flex items-center justify-between gap-4 rounded-2xl border border-slate-200/60 bg-white p-4 shadow-soft"
+                >
+                  <div className="flex items-start gap-3 min-w-0">
+                    <div className="rounded-xl bg-slate-100 p-2.5 text-slate-500">
+                      {STATUS_ICONS[r.status]}
                     </div>
-                    <span className={`text-xs px-2 py-1 rounded-full font-medium ${r.status === "APPROVED" ? "bg-emerald-100 text-emerald-700" : r.status === "REJECTED" ? "bg-red-100 text-red-700" : "bg-amber-100 text-amber-700"}`}>
-                      {r.status}
-                    </span>
+                    <div className="min-w-0">
+                      <p className="truncate font-medium text-slate-900">
+                        {r.service?.name || "Unknown Service"}
+                      </p>
+                      <p className="text-xs text-slate-500 capitalize">
+                        {r.service?.providerType || "Service"}
+                      </p>
+                      <p className="text-xs text-slate-400">
+                        Requested {formatShortDate(r.createdAt)}
+                      </p>
+                    </div>
                   </div>
-                ))}
-              </div>
-            )}
-          </Card>
+                  <Badge variant={requestStatusVariant(r.status)} dot>
+                    {r.status}
+                  </Badge>
+                </div>
+              ))}
+            </div>
+          )}
         </div>
       </DashboardLayout>
     </ProtectedRoute>

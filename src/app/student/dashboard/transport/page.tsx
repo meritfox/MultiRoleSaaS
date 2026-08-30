@@ -1,16 +1,18 @@
 "use client";
 
 import React, { useState, useEffect, useMemo } from "react";
-import Link from "next/link";
 import ProtectedRoute from "@/components/auth/ProtectedRoute";
 import DashboardLayout from "@/components/layout/DashboardLayout";
 import { Card } from "@/components/ui/Card";
 import { Input } from "@/components/ui/Input";
 import { Select } from "@/components/ui/Select";
 import { Spinner } from "@/components/ui/Spinner";
+import { PageHeader } from "@/components/ui/PageHeader";
+import { EmptyState } from "@/components/ui/EmptyState";
+import { ServiceCard } from "@/components/student/ServiceCard";
 import { getAllServices } from "@/lib/services/services";
-import { Service, RATE_UNIT_LABELS } from "@/types";
-import { Bus, Star, MapPin } from "lucide-react";
+import { Service } from "@/types";
+import { Bus } from "lucide-react";
 
 const STUDENT_ROLE = "STUDENT";
 const VEHICLE_TYPES = ["Bus", "Van", "Mini Bus", "Car", "Auto"];
@@ -72,14 +74,12 @@ export default function StudentTransportPage() {
 
   return (
     <ProtectedRoute allowedRoles={[STUDENT_ROLE]}>
-      <DashboardLayout title="Find School Transportation">
+      <DashboardLayout title="School Transport">
         <div className="max-w-6xl mx-auto space-y-6">
-          <div>
-            <h2 className="text-2xl font-bold text-slate-900">Find School Transportation</h2>
-            <p className="text-sm text-slate-500">
-              Filter by area, school, vehicle type and reviews.
-            </p>
-          </div>
+          <PageHeader
+            title="School Transport"
+            description="Filter routes by area, school, vehicle type and rating."
+          />
 
           <Card title="Filters">
             <div className="grid gap-4 sm:grid-cols-2 lg:grid-cols-4">
@@ -97,7 +97,7 @@ export default function StudentTransportPage() {
                 />
               </div>
               <div className="space-y-1.5">
-                <label className="text-sm font-medium text-slate-700">Min. Rating</label>
+                <label className="text-sm font-medium text-slate-700">Minimum Rating</label>
                 <Select
                   value={minRating}
                   onChange={(e) => setMinRating(e.target.value)}
@@ -113,71 +113,26 @@ export default function StudentTransportPage() {
           </Card>
 
           {filtered.length === 0 ? (
-            <Card>
-              <p className="text-center text-slate-500 py-8">
-                No transport routes match your filters.
-              </p>
-            </Card>
+            <EmptyState
+              icon={Bus}
+              title="No transport routes match your filters"
+              description="Try clearing some filters or searching another area or school."
+            />
           ) : (
             <div className="grid gap-4 sm:grid-cols-2 lg:grid-cols-3">
-              {filtered.map((service) => (
-                <div
-                  key={service.id}
-                  className="flex flex-col rounded-xl border border-slate-200/60 bg-white p-4 shadow-soft transition-all duration-200 hover:shadow-lift"
-                >
-                  <div className="mb-2 flex items-start justify-between gap-2">
-                    <div className="flex items-center gap-2">
-                      <Bus className="h-5 w-5 text-amber-600" />
-                      <h3 className="font-semibold text-slate-900">{service.name}</h3>
-                    </div>
-                    {service.vehicleType && (
-                      <span className="shrink-0 rounded-full bg-amber-100 px-2 py-0.5 text-[11px] font-medium text-amber-700">
-                        {service.vehicleType}
-                      </span>
-                    )}
-                  </div>
-
-                  <p className="text-sm text-slate-600 line-clamp-2">{service.description}</p>
-
-                  <div className="mt-2 flex flex-wrap gap-1.5">
-                    {service.school && (
-                      <span className="rounded-full bg-slate-100 px-2 py-0.5 text-[11px] text-slate-600">
-                        {service.school}
-                      </span>
-                    )}
-                  </div>
-
-                  <div className="mt-2 flex items-center gap-3 text-xs text-slate-500">
-                    {(service.area || service.location) && (
-                      <span className="inline-flex items-center gap-1">
-                        <MapPin className="h-3.5 w-3.5" />
-                        {service.area ?? service.location}
-                      </span>
-                    )}
-                    {service.rating !== undefined && (
-                      <span className="inline-flex items-center gap-1">
-                        <Star className="h-3.5 w-3.5 fill-amber-400 text-amber-400" />
-                        {service.rating} ({service.reviews ?? 0} reviews)
-                      </span>
-                    )}
-                  </div>
-
-                  <div className="mt-3 flex items-center justify-between border-t border-slate-100 pt-3">
-                    <span className="text-lg font-bold text-[#DC2626]">
-                      ₹{service.price}
-                      <span className="text-xs font-normal text-slate-500">
-                        {service.rateUnit ? ` / ${RATE_UNIT_LABELS[service.rateUnit]}` : " / month"}
-                      </span>
-                    </span>
-                    <Link
-                      href={`/student/dashboard/transport/detail?id=${service.id}`}
-                      className="rounded-lg bg-[#DC2626] px-3 py-1.5 text-sm font-medium text-white shadow-sm transition-colors hover:bg-[#B91C1C]"
-                    >
-                      View & Book
-                    </Link>
-                  </div>
-                </div>
-              ))}
+              {filtered.map((service) => {
+                const chips = [service.school].filter((c): c is string => Boolean(c));
+                return (
+                  <ServiceCard
+                    key={service.id}
+                    service={service}
+                    chips={chips}
+                    defaultRateUnitLabel="month"
+                    detailHref={`/student/dashboard/transport/detail?id=${service.id}`}
+                    detailLabel="View & Book"
+                  />
+                );
+              })}
             </div>
           )}
         </div>

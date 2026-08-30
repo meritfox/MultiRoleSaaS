@@ -1,21 +1,23 @@
 "use client";
 
 import React, { useState, useEffect, useMemo } from "react";
-import Link from "next/link";
 import ProtectedRoute from "@/components/auth/ProtectedRoute";
 import DashboardLayout from "@/components/layout/DashboardLayout";
 import { Card } from "@/components/ui/Card";
 import { Input } from "@/components/ui/Input";
 import { Select } from "@/components/ui/Select";
 import { Spinner } from "@/components/ui/Spinner";
+import { PageHeader } from "@/components/ui/PageHeader";
+import { EmptyState } from "@/components/ui/EmptyState";
+import { FilterPills, FilterPillOption } from "@/components/ui/FilterPills";
+import { ServiceCard } from "@/components/student/ServiceCard";
 import { getAllServices } from "@/lib/services/services";
 import {
   Service,
   TeacherCategory,
-  RATE_UNIT_LABELS,
   TEACHER_CATEGORY_LABELS,
 } from "@/types";
-import { GraduationCap, Building2, Star, MapPin } from "lucide-react";
+import { GraduationCap, Building2 } from "lucide-react";
 
 const STUDENT_ROLE = "STUDENT";
 const TEACHER_CATEGORIES: TeacherCategory[] = [
@@ -26,6 +28,12 @@ const TEACHER_CATEGORIES: TeacherCategory[] = [
 ];
 
 type TypeFilter = "ALL" | "TEACHER" | "INSTITUTION";
+
+const TYPE_OPTIONS: FilterPillOption<TypeFilter>[] = [
+  { value: "ALL", label: "All" },
+  { value: "TEACHER", label: "Teachers", icon: <GraduationCap className="h-3.5 w-3.5" /> },
+  { value: "INSTITUTION", label: "Institutions", icon: <Building2 className="h-3.5 w-3.5" /> },
+];
 
 export default function FindTeachersPage() {
   const [services, setServices] = useState<Service[]>([]);
@@ -83,37 +91,16 @@ export default function FindTeachersPage() {
 
   return (
     <ProtectedRoute allowedRoles={[STUDENT_ROLE]}>
-      <DashboardLayout title="Find Teacher / Institution">
+      <DashboardLayout title="Find Tutors">
         <div className="max-w-6xl mx-auto space-y-6">
-          <div>
-            <h2 className="text-2xl font-bold text-slate-900">Find Teacher / Institution</h2>
-            <p className="text-sm text-slate-500">
-              Filter by area, school, subject or hobby to find the right educator.
-            </p>
-          </div>
+          <PageHeader
+            title="Find Tutors"
+            description="Search teachers and institutions by area, school, subject or hobby."
+          />
 
           <Card title="Filters">
             <div className="space-y-4">
-              <div className="flex flex-wrap gap-2">
-                {(["ALL", "TEACHER", "INSTITUTION"] as TypeFilter[]).map((t) => (
-                  <button
-                    key={t}
-                    onClick={() => setTypeFilter(t)}
-                    className={`inline-flex items-center gap-1.5 rounded-full px-3 py-1.5 text-xs font-medium transition-colors ${
-                      typeFilter === t
-                        ? "bg-[#DC2626] text-white"
-                        : "bg-slate-100 text-slate-600 hover:bg-slate-200"
-                    }`}
-                  >
-                    {t === "INSTITUTION" ? (
-                      <Building2 className="h-3.5 w-3.5" />
-                    ) : (
-                      <GraduationCap className="h-3.5 w-3.5" />
-                    )}
-                    {t === "ALL" ? "All" : t === "TEACHER" ? "Teachers" : "Institutions"}
-                  </button>
-                ))}
-              </div>
+              <FilterPills options={TYPE_OPTIONS} value={typeFilter} onChange={setTypeFilter} />
               <div className="grid gap-4 sm:grid-cols-2 lg:grid-cols-3">
                 <Input label="Area" value={area} onChange={(e) => setArea(e.target.value)} placeholder="e.g. Ulubari, Beltola" />
                 <Input label="School" value={school} onChange={(e) => setSchool(e.target.value)} placeholder="e.g. Don Bosco" />
@@ -138,88 +125,27 @@ export default function FindTeachersPage() {
           </Card>
 
           {filtered.length === 0 ? (
-            <Card>
-              <p className="text-center text-slate-500 py-8">
-                No teachers or institutions match your filters.
-              </p>
-            </Card>
+            <EmptyState
+              icon={GraduationCap}
+              title="No tutors match your filters"
+              description="Try clearing some filters or searching a different school, subject or area."
+            />
           ) : (
             <div className="grid gap-4 sm:grid-cols-2 lg:grid-cols-3">
-              {filtered.map((service) => (
-                <div
-                  key={service.id}
-                  className="flex flex-col rounded-xl border border-slate-200/60 bg-white p-4 shadow-soft transition-all duration-200 hover:shadow-lift"
-                >
-                  <div className="mb-2 flex items-start justify-between gap-2">
-                    <h3 className="font-semibold text-slate-900">{service.name}</h3>
-                    <span
-                      className={`shrink-0 rounded-full px-2 py-0.5 text-[11px] font-medium ${
-                        service.providerType === "INSTITUTION"
-                          ? "bg-purple-100 text-purple-700"
-                          : "bg-red-100 text-[#DC2626]"
-                      }`}
-                    >
-                      {service.providerType === "INSTITUTION" ? "Institution" : "Teacher"}
-                    </span>
-                  </div>
-
-                  {service.teacherCategory && (
-                    <span className="mb-2 inline-flex w-fit rounded-full bg-slate-100 px-2 py-0.5 text-[11px] font-medium text-slate-600">
-                      {TEACHER_CATEGORY_LABELS[service.teacherCategory] ?? service.teacherCategory}
-                    </span>
-                  )}
-
-                  <p className="text-sm text-slate-600 line-clamp-2">{service.description}</p>
-
-                  <div className="mt-2 flex flex-wrap gap-1.5">
-                    {service.subject && (
-                      <span className="rounded-full bg-slate-100 px-2 py-0.5 text-[11px] text-slate-600">
-                        {service.subject}
-                      </span>
-                    )}
-                    {service.hobby && (
-                      <span className="rounded-full bg-slate-100 px-2 py-0.5 text-[11px] text-slate-600">
-                        {service.hobby}
-                      </span>
-                    )}
-                    {service.school && (
-                      <span className="rounded-full bg-slate-100 px-2 py-0.5 text-[11px] text-slate-600">
-                        {service.school}
-                      </span>
-                    )}
-                  </div>
-
-                  <div className="mt-2 flex items-center gap-3 text-xs text-slate-500">
-                    {(service.area || service.location) && (
-                      <span className="inline-flex items-center gap-1">
-                        <MapPin className="h-3.5 w-3.5" />
-                        {service.area ?? service.location}
-                      </span>
-                    )}
-                    {service.rating !== undefined && (
-                      <span className="inline-flex items-center gap-1">
-                        <Star className="h-3.5 w-3.5 fill-amber-400 text-amber-400" />
-                        {service.rating} ({service.reviews ?? 0})
-                      </span>
-                    )}
-                  </div>
-
-                  <div className="mt-3 flex items-center justify-between border-t border-slate-100 pt-3">
-                    <span className="text-lg font-bold text-[#DC2626]">
-                      ₹{service.price}
-                      <span className="text-xs font-normal text-slate-500">
-                        {service.rateUnit ? ` / ${RATE_UNIT_LABELS[service.rateUnit]}` : ""}
-                      </span>
-                    </span>
-                    <Link
-                      href={`/student/dashboard/tutors/detail?id=${service.id}`}
-                      className="rounded-lg bg-[#DC2626] px-3 py-1.5 text-sm font-medium text-white shadow-sm transition-colors hover:bg-[#B91C1C]"
-                    >
-                      View Profile
-                    </Link>
-                  </div>
-                </div>
-              ))}
+              {filtered.map((service) => {
+                const chips = [service.subject, service.hobby, service.school].filter(
+                  (c): c is string => Boolean(c)
+                );
+                return (
+                  <ServiceCard
+                    key={service.id}
+                    service={service}
+                    chips={chips}
+                    detailHref={`/student/dashboard/tutors/detail?id=${service.id}`}
+                    detailLabel="View Profile"
+                  />
+                );
+              })}
             </div>
           )}
         </div>

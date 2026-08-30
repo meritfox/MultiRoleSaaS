@@ -9,6 +9,7 @@ import DashboardLayout from "@/components/layout/DashboardLayout";
 import { Card } from "@/components/ui/Card";
 import { Button } from "@/components/ui/Button";
 import { Alert } from "@/components/ui/Alert";
+import { Badge } from "@/components/ui/Badge";
 import { Spinner } from "@/components/ui/Spinner";
 import { getServiceById, createServiceRequest } from "@/lib/services/services";
 import { getUserById } from "@/lib/services/users";
@@ -118,9 +119,7 @@ function TransporterDetailContent() {
                   )}
                 </div>
                 {service.vehicleType && (
-                  <span className="rounded-full bg-amber-100 px-3 py-1 text-xs font-medium text-amber-700">
-                    {service.vehicleType}
-                  </span>
+                  <Badge variant="warning">{service.vehicleType}</Badge>
                 )}
               </div>
 

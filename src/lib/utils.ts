@@ -108,6 +108,20 @@ export function escrowStatusVariant(status?: string): BadgeVariant {
   }
 }
 
+/** Soft-tint badge variant for service request states. */
+export function requestStatusVariant(status?: "PENDING" | "APPROVED" | "REJECTED"): BadgeVariant {
+  switch (status) {
+    case "APPROVED":
+      return "success";
+    case "REJECTED":
+      return "danger";
+    case "PENDING":
+      return "warning";
+    default:
+      return "slate";
+  }
+}
+
 /** Month-over-month percentage change; returns null when there is no prior baseline. */
 export function percentChange(current: number, previous: number): number | null {
   if (previous <= 0) return null;

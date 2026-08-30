@@ -12,7 +12,8 @@ import { Input } from "@/components/ui/Input";
 import { Select } from "@/components/ui/Select";
 import { Alert } from "@/components/ui/Alert";
 import { createJob } from "@/lib/services/jobs";
-import { MapPin } from "lucide-react";
+import { PageHeader } from "@/components/ui/PageHeader";
+import { MapPin, ArrowLeft } from "lucide-react";
 
 const STUDENT_ROLE = "STUDENT";
 const JOB_CATEGORIES = [
@@ -79,12 +80,18 @@ export default function PostJobPage() {
     <ProtectedRoute allowedRoles={[STUDENT_ROLE]}>
       <DashboardLayout title="Post a Job">
         <div className="max-w-2xl mx-auto space-y-6">
-          <div className="flex items-center justify-between">
-            <h2 className="text-2xl font-bold text-slate-900">Post a Job / Request</h2>
-            <Link href="/student/dashboard/jobs" className="text-sm font-medium text-slate-600 hover:text-slate-900">
-              ← Back
-            </Link>
-          </div>
+          <PageHeader
+            title="Post a Job"
+            description="Describe what you need help with."
+            actions={
+              <Link
+                href="/student/dashboard/jobs"
+                className="inline-flex items-center gap-1.5 text-sm font-medium text-slate-600 hover:text-slate-900"
+              >
+                <ArrowLeft className="h-4 w-4" /> Back
+              </Link>
+            }
+          />
 
           {error && <Alert variant="error">{error}</Alert>}
 

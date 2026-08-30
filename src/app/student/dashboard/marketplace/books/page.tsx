@@ -9,6 +9,9 @@ import { Card } from "@/components/ui/Card";
 import { Input } from "@/components/ui/Input";
 import { Toggle } from "@/components/ui/Toggle";
 import { Spinner } from "@/components/ui/Spinner";
+import { PageHeader } from "@/components/ui/PageHeader";
+import { EmptyState } from "@/components/ui/EmptyState";
+import { Button } from "@/components/ui/Button";
 import { getMarketplaceItems } from "@/lib/services/marketplace";
 import { getUserById } from "@/lib/services/users";
 import { MarketplaceItem, StudentProfile } from "@/types";
@@ -73,20 +76,15 @@ export default function OldBooksPage() {
     <ProtectedRoute allowedRoles={[STUDENT_ROLE]}>
       <DashboardLayout title="Old Books">
         <div className="max-w-6xl mx-auto space-y-6">
-          <div className="flex flex-wrap items-center justify-between gap-3">
-            <div>
-              <h2 className="text-2xl font-bold text-slate-900">Sell Your Old Books</h2>
-              <p className="text-sm text-slate-500">
-                Match books by class, school and board.
-              </p>
-            </div>
-            <Link
-              href="/student/dashboard/marketplace/new"
-              className="rounded-lg bg-[#DC2626] px-3 py-2 text-sm font-medium text-white shadow-sm hover:bg-[#B91C1C]"
-            >
-              Post a Book
-            </Link>
-          </div>
+          <PageHeader
+            title="Old Books"
+            description="Match old textbooks by class, school and board."
+            actions={
+              <Button asChild>
+                <Link href="/student/dashboard/marketplace/new">Post a Book</Link>
+              </Button>
+            }
+          />
 
           <Card title="Matching Filters">
             <div className="space-y-4">
@@ -109,15 +107,17 @@ export default function OldBooksPage() {
           </Card>
 
           {filtered.length === 0 ? (
-            <Card>
-              <p className="text-center text-slate-500 py-8">No books match your filters.</p>
-            </Card>
+            <EmptyState
+              icon={BookOpen}
+              title="No books match your filters"
+              description="Try clearing the class, school or board filters."
+            />
           ) : (
             <div className="grid gap-4 sm:grid-cols-2 lg:grid-cols-3">
               {filtered.map((item) => (
                 <div
                   key={item.id}
-                  className="flex flex-col rounded-xl border border-slate-200/60 bg-white p-4 shadow-soft transition-all duration-200 hover:shadow-lift"
+                  className="flex flex-col rounded-2xl border border-slate-200/60 bg-white p-5 shadow-soft transition-all duration-200 hover:shadow-lift"
                 >
                   <div className="mb-2 flex items-center gap-2">
                     <BookOpen className="h-5 w-5 text-[#DC2626]" />
