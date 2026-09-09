@@ -81,9 +81,9 @@ export function getMobileTabItems(role: UserRole | null): NavItem[] {
   if (role === "STUDENT") {
     return [
       { label: "Home", href: "/student/dashboard", icon: LayoutDashboard },
+      { label: "Transport", href: "/student/dashboard/transport", icon: Bus },
       { label: "Tutors", href: "/student/dashboard/tutors", icon: Search },
       { label: "Market", href: "/student/dashboard/marketplace", icon: ShoppingCart },
-      { label: "Jobs", href: "/student/dashboard/jobs", icon: Briefcase },
     ];
   }
 

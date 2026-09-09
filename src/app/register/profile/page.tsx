@@ -43,6 +43,7 @@ export default function ProfileSetupPage() {
         displayName: prev.displayName || user.displayName || "",
         phoneNumber: user.phoneNumber || prev.phoneNumber,
       }));
+    referredCode: "",
     }
   }, [user]);
 

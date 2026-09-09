@@ -53,6 +53,20 @@ export default function PostJobPage() {
   };
 
   const handleSubmit = async (e: React.FormEvent) => {
+
+      // Firestore rejects undefined values, so we must clean the payload
+      const cleanPayload: any = {
+        title,
+        description,
+        category,
+        posterName: user.displayName,
+      };
+      if (budget) cleanPayload.budget = parseFloat(budget);
+      if (location) cleanPayload.location = location;
+      if (coords?.lat !== undefined) cleanPayload.lat = coords.lat;
+      if (coords?.lng !== undefined) cleanPayload.lng = coords.lng;
+      
+      await createJob(user.uid, cleanPayload);
     e.preventDefault();
     if (!user) return;
     setIsSubmitting(true);

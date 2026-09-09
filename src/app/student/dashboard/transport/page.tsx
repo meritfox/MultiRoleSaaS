@@ -23,6 +23,19 @@ export default function StudentTransportPage() {
 
   // Filters: Area, School, Vehicle Type, Reviews (Screen 13)
   const [area, setArea] = useState("");
+  // Applied filter state
+  const [searchArea, setSearchArea] = useState("");
+  const [searchSchool, setSearchSchool] = useState("");
+  const [searchVehicleType, setSearchVehicleType] = useState("");
+  const [searchMinRating, setSearchMinRating] = useState("");
+
+  const handleSearch = () => {
+    setSearchArea(area);
+    setSearchSchool(school);
+    setSearchVehicleType(vehicleType);
+    setSearchMinRating(minRating);
+  };
+
   const [school, setSchool] = useState("");
   const [vehicleType, setVehicleType] = useState("");
   const [minRating, setMinRating] = useState("");

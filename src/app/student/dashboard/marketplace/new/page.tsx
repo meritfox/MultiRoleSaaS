@@ -43,6 +43,21 @@ export default function PostItemPage() {
     setError(null);
     try {
       await createMarketplaceItem(user.uid, {
+
+      const cleanPayload: any = {
+        title,
+        description,
+        price: parseFloat(price),
+        category,
+        condition,
+        sellerName: user.displayName,
+      };
+      if (category === "BOOK") {
+        if (grade) cleanPayload.grade = grade;
+        if (school) cleanPayload.school = school;
+        if (board) cleanPayload.board = board;
+      }
+      await createMarketplaceItem(user.uid, cleanPayload);
         title,
         description,
         price: parseFloat(price),

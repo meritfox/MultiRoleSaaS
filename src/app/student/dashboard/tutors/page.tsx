@@ -40,6 +40,22 @@ export default function FindTeachersPage() {
   const [loading, setLoading] = useState(true);
 
   // Filters: Area, School, Subject, Hobby (Screen 11)
+  const [searchArea, setSearchArea] = useState("");
+  const [searchSchool, setSearchSchool] = useState("");
+  const [searchSubject, setSearchSubject] = useState("");
+  const [searchHobby, setSearchHobby] = useState("");
+  const [searchCategory, setSearchCategory] = useState("");
+  const [searchTypeFilter, setSearchTypeFilter] = useState<TypeFilter>("ALL");
+
+  const handleSearch = () => {
+    setSearchArea(area);
+    setSearchSchool(school);
+    setSearchSubject(subject);
+    setSearchHobby(hobby);
+    setSearchCategory(category);
+    setSearchTypeFilter(typeFilter);
+  };
+
   const [area, setArea] = useState("");
   const [school, setSchool] = useState("");
   const [subject, setSubject] = useState("");
@@ -102,10 +118,10 @@ export default function FindTeachersPage() {
             <div className="space-y-4">
               <FilterPills options={TYPE_OPTIONS} value={typeFilter} onChange={setTypeFilter} />
               <div className="grid gap-4 sm:grid-cols-2 lg:grid-cols-3">
-                <Input label="Area" value={area} onChange={(e) => setArea(e.target.value)} placeholder="e.g. Ulubari, Beltola" />
-                <Input label="School" value={school} onChange={(e) => setSchool(e.target.value)} placeholder="e.g. Don Bosco" />
-                <Input label="Subject" value={subject} onChange={(e) => setSubject(e.target.value)} placeholder="e.g. Mathematics" />
-                <Input label="Hobby" value={hobby} onChange={(e) => setHobby(e.target.value)} placeholder="e.g. Music, Chess" />
+                <Input label="Area" value={area} onChange={(e) => setArea(e.target.value)} placeholder="e.g. Ulubari, Beltola" onKeyDown={(e) => e.key === "Enter" && handleSearch()} />
+                <Input label="School" value={school} onChange={(e) => setSchool(e.target.value)} placeholder="e.g. Don Bosco" onKeyDown={(e) => e.key === "Enter" && handleSearch()} />
+                <Input label="Subject" value={subject} onChange={(e) => setSubject(e.target.value)} placeholder="e.g. Mathematics" onKeyDown={(e) => e.key === "Enter" && handleSearch()} />
+                <Input label="Hobby" value={hobby} onChange={(e) => setHobby(e.target.value)} placeholder="e.g. Music, Chess" onKeyDown={(e) => e.key === "Enter" && handleSearch()} />
                 <div className="space-y-1.5">
                   <label className="text-sm font-medium text-slate-700">Teacher Category</label>
                   <Select
@@ -119,6 +135,11 @@ export default function FindTeachersPage() {
                       })),
                     ]}
                   />
+                </div>
+                <div className="flex items-end">
+                  <Button onClick={handleSearch} className="w-full" size="lg">
+                    Search
+                  </Button>
                 </div>
               </div>
             </div>
