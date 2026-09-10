@@ -23,12 +23,6 @@ export default function JobBoardPage() {
   const [search, setSearch] = useState("");
   const [sortByDistance, setSortByDistance] = useState(false);
   const [coords, setCoords] = useState<Coords | null>(null);
-  const [searchQuery, setSearchQuery] = useState("");
-  const [maxDistance, setMaxDistance] = useState<number | "">("");
-  
-  const handleSearch = () => {
-    setSearchQuery(search);
-  };
 
 
   useEffect(() => {
@@ -71,14 +65,6 @@ export default function JobBoardPage() {
     return (
       <ProtectedRoute allowedRoles={[STUDENT_ROLE]}>
         <div className="flex min-h-screen items-center justify-center">
-    if (n && !`${j.title} ${j.description} ${j.category}`.toLowerCase().includes(n)) return false;
-
-      if (maxDistance !== "" && coords) {
-        const dist = distanceFor(j);
-        if (dist === null || dist > maxDistance) return false;
-      }
-      return true;
-    });
           <Spinner size="lg" />
         </div>
       </ProtectedRoute>

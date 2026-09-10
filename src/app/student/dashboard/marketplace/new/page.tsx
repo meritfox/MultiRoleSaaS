@@ -42,8 +42,7 @@ export default function PostItemPage() {
     setIsSubmitting(true);
     setError(null);
     try {
-      await createMarketplaceItem(user.uid, {
-
+      // Firestore rejects undefined values, so we must clean the payload
       const cleanPayload: any = {
         title,
         description,
@@ -58,16 +57,6 @@ export default function PostItemPage() {
         if (board) cleanPayload.board = board;
       }
       await createMarketplaceItem(user.uid, cleanPayload);
-        title,
-        description,
-        price: parseFloat(price),
-        category,
-        condition,
-        sellerName: user.displayName,
-        grade: category === "BOOK" ? grade || undefined : undefined,
-        school: category === "BOOK" ? school || undefined : undefined,
-        board: category === "BOOK" ? board || undefined : undefined,
-      });
       router.push("/student/dashboard/marketplace");
     } catch (err) {
       console.error("Failed to post item:", err);

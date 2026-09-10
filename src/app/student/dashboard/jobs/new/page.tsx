@@ -53,7 +53,11 @@ export default function PostJobPage() {
   };
 
   const handleSubmit = async (e: React.FormEvent) => {
-
+    e.preventDefault();
+    if (!user) return;
+    setIsSubmitting(true);
+    setError(null);
+    try {
       // Firestore rejects undefined values, so we must clean the payload
       const cleanPayload: any = {
         title,
@@ -65,23 +69,7 @@ export default function PostJobPage() {
       if (location) cleanPayload.location = location;
       if (coords?.lat !== undefined) cleanPayload.lat = coords.lat;
       if (coords?.lng !== undefined) cleanPayload.lng = coords.lng;
-      
       await createJob(user.uid, cleanPayload);
-    e.preventDefault();
-    if (!user) return;
-    setIsSubmitting(true);
-    setError(null);
-    try {
-      await createJob(user.uid, {
-        title,
-        description,
-        category,
-        budget: budget ? parseFloat(budget) : undefined,
-        location: location || undefined,
-        lat: coords?.lat,
-        lng: coords?.lng,
-        posterName: user.displayName,
-      });
       router.push("/student/dashboard/jobs");
     } catch (err) {
       console.error("Failed to post job:", err);

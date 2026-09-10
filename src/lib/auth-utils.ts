@@ -53,13 +53,12 @@ export const createGoogleUserProfile = async (user: FirebaseUser): Promise<void>
   if (user.photoURL) profile.photoURL = user.photoURL;
   if (user.phoneNumber) profile.phoneNumber = user.phoneNumber;
   await setDoc(doc(db, "users", user.uid), profile);
+};
+
 export const resetPassword = async (email: string) => {
   if (!ensureFirebaseInit()) throw new Error("Firebase is not initialized. Check your environment variables.");
   const { sendPasswordResetEmail } = await import("firebase/auth");
   return await sendPasswordResetEmail(auth, email);
-};
-
-
 };
 
 /** Maps Firebase email/password sign-in error codes to friendly messages. */

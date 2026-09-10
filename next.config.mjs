@@ -1,5 +1,10 @@
 /** @type {import('next').NextConfig} */
 const nextConfig = {
+  turbopack: {
+    // Fixes: "Next.js inferred your workspace root" when other lockfiles exist above this folder.
+    // Must be an absolute path.
+    root: process.cwd(),
+  },
   output: 'export',
   distDir: 'dist',
   images: {
