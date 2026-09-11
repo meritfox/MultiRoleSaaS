@@ -12,9 +12,10 @@ import { Input } from "@/components/ui/Input";
 import { Select } from "@/components/ui/Select";
 import { Alert } from "@/components/ui/Alert";
 import { createMarketplaceItem } from "@/lib/services/marketplace";
-import { MarketplaceCategory, MarketplaceCondition } from "@/types";
+import { MarketplaceCategory, MarketplaceCondition, MarketplaceItem } from "@/types";
 import { PageHeader } from "@/components/ui/PageHeader";
 import { ArrowLeft } from "lucide-react";
+import { geocodeAddress } from "@/lib/services/geo";
 
 const STUDENT_ROLE = "STUDENT";
 const CATEGORIES: MarketplaceCategory[] = ["BOOK", "UNIFORM", "STATIONERY", "ELECTRONICS", "OTHER"];
@@ -32,6 +33,8 @@ export default function PostItemPage() {
   const [grade, setGrade] = useState("");
   const [school, setSchool] = useState("");
   const [board, setBoard] = useState("");
+  const [location, setLocation] = useState("");
+  const [sellerPhone, setSellerPhone] = useState("");
 
   const [isSubmitting, setIsSubmitting] = useState(false);
   const [error, setError] = useState<string | null>(null);
@@ -43,18 +46,26 @@ export default function PostItemPage() {
     setError(null);
     try {
       // Firestore rejects undefined values, so we must clean the payload
-      const cleanPayload: any = {
+      const cleanPayload: Omit<MarketplaceItem, "id" | "sellerId" | "status" | "createdAt"> = {
         title,
         description,
         price: parseFloat(price),
         category,
         condition,
         sellerName: user.displayName,
+        sellerPhone: sellerPhone || user.phoneNumber || undefined,
+        location: location || undefined,
       };
       if (category === "BOOK") {
         if (grade) cleanPayload.grade = grade;
         if (school) cleanPayload.school = school;
         if (board) cleanPayload.board = board;
+      }
+
+      const coords = await geocodeAddress([location, school].filter(Boolean).join(", "));
+      if (coords) {
+        cleanPayload.lat = coords.lat;
+        cleanPayload.lng = coords.lng;
       }
       await createMarketplaceItem(user.uid, cleanPayload);
       router.push("/student/dashboard/marketplace");
@@ -106,7 +117,7 @@ export default function PostItemPage() {
               </div>
               <div className="grid gap-4 sm:grid-cols-3">
                 <Input
-                  label="Price (₹)"
+                  label="Price (â‚¹)"
                   type="number"
                   required
                   value={price}
@@ -129,6 +140,20 @@ export default function PostItemPage() {
                     options={CONDITIONS.map((c) => ({ value: c, label: c.replace("_", " ") }))}
                   />
                 </div>
+              </div>
+              <div className="grid gap-4 sm:grid-cols-2">
+                <Input
+                  label="Contact Number"
+                  value={sellerPhone}
+                  onChange={(e) => setSellerPhone(e.target.value)}
+                  placeholder="e.g. +91 98765 43210"
+                />
+                <Input
+                  label="Location"
+                  value={location}
+                  onChange={(e) => setLocation(e.target.value)}
+                  placeholder="e.g. Ulubari, Guwahati"
+                />
               </div>
               {category === "BOOK" && (
                 <div className="space-y-4 rounded-lg bg-red-50/60 p-4">

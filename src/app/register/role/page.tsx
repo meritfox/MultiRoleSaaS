@@ -6,7 +6,7 @@ import { useRouter } from "next/navigation";
 import { useAuth } from "@/lib/auth-context";
 import { Button } from "@/components/ui/Button";
 import { Alert } from "@/components/ui/Alert";
-import { updateUserProfile } from "@/lib/auth-utils";
+import { updateUserProfile, UserProfileUpdate } from "@/lib/auth-utils";
 import { UserRole } from "@/types";
 import { GraduationCap, Users, BookOpen, Bus, Check, HelpCircle } from "lucide-react";
 
@@ -85,16 +85,16 @@ export default function RoleSelectionPage() {
     setError(null);
 
     try {
-      const updateData: any = { role: selectedRole };
+      const updateData: UserProfileUpdate = { role: selectedRole };
       if (providerType) {
         updateData.providerType = providerType;
       }
       await updateUserProfile(firebaseUser.uid, updateData);
       await refreshUser();
       router.push("/register/subscription");
-    } catch (err: any) {
+    } catch (err: unknown) {
       console.error(err);
-      setError(err.message || "Failed to save role. Please try again.");
+      setError((err as { message?: string })?.message || "Failed to save role. Please try again.");
     } finally {
       setIsLoading(false);
     }
@@ -116,7 +116,7 @@ export default function RoleSelectionPage() {
         </Link>
         <div className="text-center mb-8">
           <h1 className="text-3xl font-bold tracking-tight text-slate-900">Select Your Role</h1>
-          <p className="mt-2 text-slate-600">Choose how you'll use OmniStud to tailor your experience</p>
+          <p className="mt-2 text-slate-600">Choose how you&apos;ll use OmniStud to tailor your experience</p>
         </div>
 
         <div className="flex items-center justify-center mb-8">

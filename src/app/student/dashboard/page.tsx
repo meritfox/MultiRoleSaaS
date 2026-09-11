@@ -7,6 +7,7 @@ import ProtectedRoute from "@/components/auth/ProtectedRoute";
 import DashboardLayout from "@/components/layout/DashboardLayout";
 import { Alert } from "@/components/ui/Alert";
 import { Badge } from "@/components/ui/Badge";
+import { Button } from "@/components/ui/Button";
 import { Spinner } from "@/components/ui/Spinner";
 import { EmptyState } from "@/components/ui/EmptyState";
 import { FilterPills, FilterPillOption } from "@/components/ui/FilterPills";
@@ -76,7 +77,9 @@ export default function StudentDashboard() {
   const [error, setError] = useState<string | null>(null);
   const [success, setSuccess] = useState<string | null>(null);
   const [searchTerm, setSearchTerm] = useState("");
+  const [appliedSearchTerm, setAppliedSearchTerm] = useState("");
   const [categoryFilter, setCategoryFilter] = useState<CategoryFilter>("ALL");
+  const [appliedCategoryFilter, setAppliedCategoryFilter] = useState<CategoryFilter>("ALL");
   const [requestingId, setRequestingId] = useState<string | null>(null);
 
   useEffect(() => {
@@ -149,9 +152,11 @@ export default function StudentDashboard() {
   ];
 
   const visibleServices = useMemo(() => {
-    const needle = searchTerm.trim().toLowerCase();
+    const needle = appliedSearchTerm.trim().toLowerCase();
     return services.filter((service) => {
-      if (categoryFilter !== "ALL" && service.providerType !== categoryFilter) return false;
+      if (appliedCategoryFilter !== "ALL" && service.providerType !== appliedCategoryFilter) {
+        return false;
+      }
       if (!needle) return true;
       return (
         service.name.toLowerCase().includes(needle) ||
@@ -159,7 +164,19 @@ export default function StudentDashboard() {
         service.description.toLowerCase().includes(needle)
       );
     });
-  }, [services, searchTerm, categoryFilter]);
+  }, [services, appliedSearchTerm, appliedCategoryFilter]);
+
+  const availingServices = useMemo(() => {
+    const approvedIds = new Set(
+      myRequests.filter((r) => r.status === "APPROVED").map((r) => r.serviceId)
+    );
+    return services.filter((s) => approvedIds.has(s.id));
+  }, [myRequests, services]);
+
+  const availableServices = useMemo(() => {
+    const approvedIds = new Set(availingServices.map((s) => s.id));
+    return visibleServices.filter((s) => !approvedIds.has(s.id));
+  }, [visibleServices, availingServices]);
 
   const getRequestStatus = (serviceId: string) => {
     const request = myRequests.find((r) => r.serviceId === serviceId);
@@ -172,7 +189,12 @@ export default function StudentDashboard() {
   );
 
   const firstName = user?.displayName?.split(" ")[0] ?? "there";
-  const isFiltered = searchTerm.trim() !== "" || categoryFilter !== "ALL";
+  const isFiltered = appliedSearchTerm.trim() !== "" || appliedCategoryFilter !== "ALL";
+
+  const handleSearch = () => {
+    setAppliedSearchTerm(searchTerm);
+    setAppliedCategoryFilter(categoryFilter);
+  };
 
   if (loading) {
     return (
@@ -212,6 +234,9 @@ export default function StudentDashboard() {
                 onChange={(e) => setSearchTerm(e.target.value)}
                 className="w-full rounded-xl border border-slate-200 bg-slate-50/60 py-2.5 pl-10 pr-4 text-sm transition-all duration-200 focus:outline-none focus:border-[#DC2626]/40 focus:bg-white focus:shadow-glow"
               />
+              <div className="mt-3 flex justify-end">
+                <Button onClick={handleSearch}>Search</Button>
+              </div>
             </div>
             <FilterPills
               className="mt-3"
@@ -220,6 +245,24 @@ export default function StudentDashboard() {
               onChange={setCategoryFilter}
             />
           </div>
+
+          {availingServices.length > 0 && (
+            <div>
+              <div className="mb-3">
+                <h3 className="text-lg font-semibold text-slate-900">Already availing services</h3>
+                <p className="text-sm text-slate-500">Services already approved for you.</p>
+              </div>
+              <div className="grid gap-4 sm:grid-cols-2 xl:grid-cols-3">
+                {availingServices.map((service) => (
+                  <ServiceCard
+                    key={`availing-${service.id}`}
+                    service={service}
+                    requestStatus="APPROVED"
+                  />
+                ))}
+              </div>
+            </div>
+          )}
 
           {/* My activity strip - only shows when the student has requests */}
           {recentRequests.length > 0 && (
@@ -284,12 +327,12 @@ export default function StudentDashboard() {
                 <h3 className="text-lg font-semibold text-slate-900">Available services</h3>
                 {isFiltered && (
                   <p className="text-sm text-slate-500">
-                    {visibleServices.length} {visibleServices.length === 1 ? "result" : "results"}
+                    {availableServices.length} {availableServices.length === 1 ? "result" : "results"}
                   </p>
                 )}
               </div>
             </div>
-            {visibleServices.length === 0 ? (
+            {availableServices.length === 0 ? (
               <EmptyState
                 icon={BookOpen}
                 title="No services found"
@@ -297,7 +340,7 @@ export default function StudentDashboard() {
               />
             ) : (
               <div className="grid gap-4 sm:grid-cols-2 xl:grid-cols-3">
-                {visibleServices.map((service) => {
+                {availableServices.map((service) => {
                   const status = getRequestStatus(service.id);
                   return (
                     <ServiceCard

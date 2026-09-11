@@ -104,6 +104,14 @@ export function ServiceCard({
       <h3 className="font-semibold text-slate-900">{service.name}</h3>
       <p className="mt-1 text-sm text-slate-600 line-clamp-2">{service.description}</p>
 
+      {(service.providerName || service.providerPhone || service.providerCity) && (
+        <div className="mt-2 rounded-lg bg-slate-50/70 px-3 py-2 text-xs text-slate-600">
+          {service.providerName && <p className="font-medium text-slate-700">By: {service.providerName}</p>}
+          {service.providerPhone && <p>Contact: {service.providerPhone}</p>}
+          {service.providerCity && <p>City: {service.providerCity}</p>}
+        </div>
+      )}
+
       {chips && chips.length > 0 && (
         <div className="mt-2 flex flex-wrap gap-1.5">
           {chips.map((chip) => (

@@ -57,6 +57,12 @@ service cloud.firestore {
          isAdmin());
     }
 
+    // Service catalog: public read for service creation discovery, admin write
+    match /serviceCatalog/{catalogId} {
+      allow read: if true;
+      allow write: if isAdmin();
+    }
+
     // Payments: users can read their own; admins can read any; create own only
     match /payments/{paymentId} {
       allow read: if isAuthenticated() && (resource.data.userId == request.auth.uid || isAdmin());
@@ -106,6 +112,40 @@ service cloud.firestore {
          isAdmin());
       allow create: if isAuthenticated() && request.resource.data.refereeId == request.auth.uid;
       allow update, delete: if isAdmin();
+    }
+
+    // Jobs: all authenticated users can read, any authenticated user can post,
+    // only poster or admin can update/delete
+    match /jobs/{jobId} {
+      allow read: if isAuthenticated();
+      allow create: if isAuthenticated() && request.resource.data.posterId == request.auth.uid;
+      allow update, delete: if isAuthenticated() &&
+        (resource.data.posterId == request.auth.uid || isAdmin());
+    }
+
+    // Marketplace items: all authenticated users can read, seller creates/owns
+    match /marketplaceItems/{itemId} {
+      allow read: if isAuthenticated();
+      allow create: if isAuthenticated() && request.resource.data.sellerId == request.auth.uid;
+      allow update, delete: if isAuthenticated() &&
+        (resource.data.sellerId == request.auth.uid || isAdmin());
+    }
+
+    // Service reviews: authenticated users can read; reviewer creates own
+    // review; reviewer/admin can edit/delete review
+    match /serviceReviews/{reviewId} {
+      allow read: if isAuthenticated();
+      allow create: if isAuthenticated() && request.resource.data.reviewerId == request.auth.uid;
+      allow update, delete: if isAuthenticated() &&
+        (resource.data.reviewerId == request.auth.uid || isAdmin());
+    }
+
+    // Seller reviews: authenticated users can read; reviewer creates own review
+    match /sellerReviews/{reviewId} {
+      allow read: if isAuthenticated();
+      allow create: if isAuthenticated() && request.resource.data.reviewerId == request.auth.uid;
+      allow update, delete: if isAuthenticated() &&
+        (resource.data.reviewerId == request.auth.uid || isAdmin());
     }
 
     // Feedback & suggestions: users read/create their own; admins read all

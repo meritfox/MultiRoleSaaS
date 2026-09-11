@@ -1,6 +1,6 @@
 "use client";
 
-import React, { useState, useEffect } from "react";
+import React, { useState } from "react";
 import { useRouter } from "next/navigation";
 import { useAuth } from "@/lib/auth-context";
 import { Button } from "@/components/ui/Button";
@@ -8,8 +8,8 @@ import { Input } from "@/components/ui/Input";
 import { Card } from "@/components/ui/Card";
 import { Alert } from "@/components/ui/Alert";
 import { AuthShell } from "@/components/layout/AuthShell";
-import { updateUserProfile } from "@/lib/auth-utils";
-import { User, Phone, MapPin, Building2, GraduationCap, Bus, CreditCard } from "lucide-react";
+import { updateUserProfile, UserProfileUpdate } from "@/lib/auth-utils";
+import { User, Phone, MapPin, Building2, GraduationCap, Bus } from "lucide-react";
 
 export default function ProfileSetupPage() {
   const { user, firebaseUser, role, refreshUser } = useAuth();
@@ -36,15 +36,15 @@ export default function ProfileSetupPage() {
 
   // Prefill fields already captured during registration (e.g. phone number)
   // once the user profile loads, so this step doesn't overwrite them.
-  useEffect(() => {
-    if (user) {
-      setFormData((prev) => ({
-        ...prev,
-        displayName: prev.displayName || user.displayName || "",
-        phoneNumber: user.phoneNumber || prev.phoneNumber,
-      }));
-    }
-  }, [user]);
+  const [syncedUserId, setSyncedUserId] = useState<string | null>(null);
+  if (user && user.uid !== syncedUserId) {
+    setSyncedUserId(user.uid);
+    setFormData((prev) => ({
+      ...prev,
+      displayName: prev.displayName || user.displayName || "",
+      phoneNumber: user.phoneNumber || prev.phoneNumber,
+    }));
+  }
 
   const handleChange = (field: string, value: string) => {
     setFormData((prev) => ({ ...prev, [field]: value }));
@@ -61,7 +61,7 @@ export default function ProfileSetupPage() {
     setError(null);
 
     try {
-      const updateData: any = {
+      const updateData: UserProfileUpdate = {
         displayName: formData.displayName,
         address: formData.address,
         city: formData.city,
@@ -91,9 +91,9 @@ export default function ProfileSetupPage() {
       await updateUserProfile(firebaseUser.uid, updateData);
       await refreshUser();
       router.push("/");
-    } catch (err: any) {
+    } catch (err: unknown) {
       console.error(err);
-      setError(err.message || "Failed to save profile. Please try again.");
+      setError((err as { message?: string })?.message || "Failed to save profile. Please try again.");
     } finally {
       setIsLoading(false);
     }

@@ -7,8 +7,9 @@ import { Button } from "@/components/ui/Button";
 import { Alert } from "@/components/ui/Alert";
 import { Spinner } from "@/components/ui/Spinner";
 import { useAuth } from "@/lib/auth-context";
+import { updatePaymentStatus } from "@/lib/auth-utils";
 import { db } from "@/lib/firebase";
-import { doc, getDoc, updateDoc } from "firebase/firestore";
+import { doc, getDoc } from "firebase/firestore";
 import { AppSettings } from "@/types";
 import { createRegistrationPayment } from "@/lib/services/payments";
 import { AuthShell } from "@/components/layout/AuthShell";
@@ -53,11 +54,7 @@ export default function PaymentPage() {
 
       // Persist demo payment record and mark user as paid
       await createRegistrationPayment(firebaseUser.uid, registrationFee);
-      const userRef = doc(db, "users", firebaseUser.uid);
-      await updateDoc(userRef, {
-        paymentStatus: "COMPLETED",
-        updatedAt: Date.now(),
-      });
+      await updatePaymentStatus(firebaseUser.uid, "COMPLETED");
 
       router.push("/login?payment=success");
     } catch (err) {

@@ -32,9 +32,9 @@ export default function ForgotPasswordPage() {
     try {
       await resetPassword(email);
       setSuccessMessage("Password reset email sent. Please check your inbox.");
-    } catch (err: any) {
+    } catch (err: unknown) {
       console.error(err);
-      setError(err.message || "Failed to send reset email. Please try again.");
+      setError((err as { message?: string })?.message || "Failed to send reset email. Please try again.");
     } finally {
       setIsLoading(false);
     }
@@ -49,7 +49,7 @@ export default function ForgotPasswordPage() {
           </Link>
           <h1 className="text-3xl font-bold tracking-tight text-slate-900">Reset Password</h1>
           <p className="mt-2 text-slate-600">
-            Enter your email and we'll send you instructions to reset your password.
+            Enter your email and we&apos;ll send you instructions to reset your password.
           </p>
         </div>
 

@@ -6,12 +6,14 @@ import DashboardLayout from "@/components/layout/DashboardLayout";
 import { Card } from "@/components/ui/Card";
 import { Input } from "@/components/ui/Input";
 import { Select } from "@/components/ui/Select";
+import { Button } from "@/components/ui/Button";
 import { Spinner } from "@/components/ui/Spinner";
 import { PageHeader } from "@/components/ui/PageHeader";
 import { EmptyState } from "@/components/ui/EmptyState";
 import { ServiceCard } from "@/components/student/ServiceCard";
 import { getAllServices } from "@/lib/services/services";
 import { Service } from "@/types";
+import { distanceKm } from "@/lib/services/geo";
 import { Bus } from "lucide-react";
 
 const STUDENT_ROLE = "STUDENT";
@@ -28,12 +30,16 @@ export default function StudentTransportPage() {
   const [searchSchool, setSearchSchool] = useState("");
   const [searchVehicleType, setSearchVehicleType] = useState("");
   const [searchMinRating, setSearchMinRating] = useState("");
+  const [distanceLimitKm, setDistanceLimitKm] = useState("");
+  const [searchDistanceLimitKm, setSearchDistanceLimitKm] = useState("");
+  const [coords, setCoords] = useState<{ lat: number; lng: number } | null>(null);
 
   const handleSearch = () => {
     setSearchArea(area);
     setSearchSchool(school);
     setSearchVehicleType(vehicleType);
     setSearchMinRating(minRating);
+    setSearchDistanceLimitKm(distanceLimitKm);
   };
 
   const [school, setSchool] = useState("");
@@ -52,6 +58,14 @@ export default function StudentTransportPage() {
       }
     };
     fetch();
+
+    if (navigator.geolocation) {
+      navigator.geolocation.getCurrentPosition(
+        (pos) => setCoords({ lat: pos.coords.latitude, lng: pos.coords.longitude }),
+        () => setCoords(null),
+        { timeout: 8000 }
+      );
+    }
   }, []);
 
   const vehicleOptions = useMemo(() => {
@@ -64,16 +78,31 @@ export default function StudentTransportPage() {
   const filtered = useMemo(() => {
     const needle = (v: string) => v.trim().toLowerCase();
     return services.filter((s) => {
-      if (needle(area)) {
+      if (needle(searchArea)) {
         const hay = `${s.area ?? ""} ${s.location ?? ""}`.toLowerCase();
-        if (!hay.includes(needle(area))) return false;
+        if (!hay.includes(needle(searchArea))) return false;
       }
-      if (needle(school) && !(s.school ?? "").toLowerCase().includes(needle(school))) return false;
-      if (vehicleType && s.vehicleType !== vehicleType) return false;
-      if (minRating && (s.rating ?? 0) < Number(minRating)) return false;
+      if (needle(searchSchool) && !(s.school ?? "").toLowerCase().includes(needle(searchSchool))) {
+        return false;
+      }
+      if (searchVehicleType && s.vehicleType !== searchVehicleType) return false;
+      if (searchMinRating && (s.rating ?? 0) < Number(searchMinRating)) return false;
+      if (searchDistanceLimitKm && coords) {
+        if (s.lat === undefined || s.lng === undefined) return false;
+        const d = distanceKm(coords, { lat: s.lat, lng: s.lng });
+        if (d > Number(searchDistanceLimitKm)) return false;
+      }
       return true;
     });
-  }, [services, area, school, vehicleType, minRating]);
+  }, [
+    services,
+    searchArea,
+    searchSchool,
+    searchVehicleType,
+    searchMinRating,
+    searchDistanceLimitKm,
+    coords,
+  ]);
 
   if (loading) {
     return (
@@ -95,7 +124,7 @@ export default function StudentTransportPage() {
           />
 
           <Card title="Filters">
-            <div className="grid gap-4 sm:grid-cols-2 lg:grid-cols-4">
+            <div className="grid gap-4 sm:grid-cols-2 lg:grid-cols-5">
               <Input label="Area" value={area} onChange={(e) => setArea(e.target.value)} placeholder="e.g. Ulubari" />
               <Input label="School" value={school} onChange={(e) => setSchool(e.target.value)} placeholder="e.g. City Prep" />
               <div className="space-y-1.5">
@@ -122,6 +151,23 @@ export default function StudentTransportPage() {
                   ]}
                 />
               </div>
+              <div className="space-y-1.5">
+                <label className="text-sm font-medium text-slate-700">Within distance</label>
+                <Select
+                  value={distanceLimitKm}
+                  onChange={(e) => setDistanceLimitKm(e.target.value)}
+                  options={[
+                    { value: "", label: "Any distance" },
+                    { value: "1", label: "Within 1 km" },
+                    { value: "2", label: "Within 2 km" },
+                    { value: "5", label: "Within 5 km" },
+                    { value: "10", label: "Within 10 km" },
+                  ]}
+                />
+              </div>
+            </div>
+            <div className="mt-4 flex justify-end">
+              <Button onClick={handleSearch}>Search</Button>
             </div>
           </Card>
 

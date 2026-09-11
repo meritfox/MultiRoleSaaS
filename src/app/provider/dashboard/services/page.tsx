@@ -26,6 +26,7 @@ import {
   TEACHER_CATEGORY_LABELS,
 } from "@/types";
 import { Pencil, Trash2 } from "lucide-react";
+import { geocodeAddress } from "@/lib/services/geo";
 
 const PROVIDER_ROLE = "SERVICE_PROVIDER";
 
@@ -164,7 +165,15 @@ export default function ProviderServicesPage() {
         school: school || undefined,
         area: area || undefined,
         vehicleType: providerType === "TRANSPORTER" ? vehicleType || undefined : undefined,
+        location: area || school || undefined,
       };
+
+      const geocodeQuery = [area, school].filter(Boolean).join(", ");
+      const coords = await geocodeAddress(geocodeQuery);
+      if (coords) {
+        (serviceData as Service).lat = coords.lat;
+        (serviceData as Service).lng = coords.lng;
+      }
 
       if (editingId) {
         await updateService(editingId, serviceData);

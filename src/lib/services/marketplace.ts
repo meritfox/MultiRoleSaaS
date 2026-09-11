@@ -11,6 +11,7 @@ import {
   orderBy,
 } from "firebase/firestore";
 import { MarketplaceItem } from "@/types";
+import { getUserById } from "./users";
 
 // Lazy getter so the module can be imported during static generation
 // without requiring Firebase to be initialized.
@@ -41,7 +42,15 @@ export async function createMarketplaceItem(
   sellerId: string,
   data: Omit<MarketplaceItem, "id" | "sellerId" | "status" | "createdAt">
 ): Promise<MarketplaceItem> {
-  const payload = { ...data, sellerId, status: "ACTIVE" as const, createdAt: Date.now() };
+  const seller = await getUserById(sellerId).catch(() => null);
+  const payload = {
+    ...data,
+    sellerId,
+    sellerName: data.sellerName ?? seller?.displayName,
+    sellerPhone: data.sellerPhone ?? seller?.phoneNumber,
+    status: "ACTIVE" as const,
+    createdAt: Date.now(),
+  };
   const docRef = await addDoc(getItemsRef(), payload);
   return { id: docRef.id, ...payload } as MarketplaceItem;
 }

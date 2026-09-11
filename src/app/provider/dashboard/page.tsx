@@ -8,10 +8,11 @@ import { Card } from "@/components/ui/Card";
 import { Button } from "@/components/ui/Button";
 import Link from "next/link";
 import { db } from "@/lib/firebase";
-import { collection, query, where, getDocs, updateDoc, doc, getDoc } from "firebase/firestore";
+import { collection, query, where, getDocs, doc, getDoc } from "firebase/firestore";
 import { ServiceRequest, Service, UserProfile, ServiceProviderProfile } from "@/types";
 import { Briefcase, Users, Star, IndianRupee, Bus, BookOpen, CheckCircle, XCircle, Clock, MapPin, TrendingUp, Calendar, Wallet } from "lucide-react";
 import { getEscrowByProvider } from "@/lib/services/payments";
+import { updateServiceRequestStatus } from "@/lib/services/services";
 
 const PROVIDER_ROLE = "SERVICE_PROVIDER";
 
@@ -98,10 +99,7 @@ export default function ProviderDashboard() {
 
   const handleRequestAction = async (requestId: string, status: "APPROVED" | "REJECTED") => {
     try {
-      await updateDoc(doc(db, "serviceRequests", requestId), {
-        status,
-        updatedAt: Date.now(),
-      });
+      await updateServiceRequestStatus(requestId, status);
       setRequests(requests.map((r) => (r.id === requestId ? { ...r, status } : r)));
       if (status === "APPROVED") {
         setStats((prev) => ({ ...prev, pendingRequests: Math.max(0, prev.pendingRequests - 1), approvedRequests: prev.approvedRequests + 1 }));
@@ -114,6 +112,7 @@ export default function ProviderDashboard() {
   };
 
   const isTransporter = (user as ServiceProviderProfile | null)?.providerType === "TRANSPORTER";
+  const providerRating = (user as ServiceProviderProfile | null)?.rating ?? 0;
 
   return (
     <ProtectedRoute allowedRoles={[PROVIDER_ROLE]}>
@@ -332,10 +331,10 @@ export default function ProviderDashboard() {
                   <div>
                     <div className="flex justify-between text-sm mb-1">
                       <span className="text-slate-600">Rating</span>
-                      <span className="font-medium text-slate-900">{(user as any)?.rating || 0}/5.0</span>
+                      <span className="font-medium text-slate-900">{providerRating}/5.0</span>
                     </div>
                     <div className="h-2 bg-slate-100 rounded-full overflow-hidden">
-                      <div className="h-full bg-amber-400 rounded-full" style={{ width: `${Math.min(((user as any)?.rating || 0) / 5 * 100, 100)}%` }}></div>
+                      <div className="h-full bg-amber-400 rounded-full" style={{ width: `${Math.min((providerRating / 5) * 100, 100)}%` }}></div>
                     </div>
                   </div>
                   <div>

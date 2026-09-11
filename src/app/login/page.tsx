@@ -85,6 +85,12 @@ function LoginForm() {
   const router = useRouter();
   const searchParams = useSearchParams();
   const { user, role, loading: authLoading } = useAuth();
+  const querySuccessMessage =
+    searchParams.get("payment") === "success"
+      ? "Payment completed successfully! You can now log in."
+      : searchParams.get("registered") === "true"
+      ? "Account created successfully! Please log in."
+      : null;
 
   // Inline field-level validation state
   const [touched, setTouched] = useState<Record<string, boolean>>({});
@@ -103,15 +109,6 @@ function LoginForm() {
     }
   }, [authLoading, user, role, router, googleLoading]);
 
-  useEffect(() => {
-    if (searchParams.get("payment") === "success") {
-      setSuccessMessage("Payment completed successfully! You can now log in.");
-    }
-    if (searchParams.get("registered") === "true") {
-      setSuccessMessage("Account created successfully! Please log in.");
-    }
-  }, [searchParams]);
-
   const markTouched = (field: string) =>
     setTouched((prev) => (prev[field] ? prev : { ...prev, [field]: true }));
 
@@ -128,7 +125,7 @@ function LoginForm() {
       const credential = await login(email.trim(), password);
       const profile = await getUserProfile(credential.user.uid);
       router.replace(getDashboardPath(profile?.role));
-    } catch (err: any) {
+    } catch (err: unknown) {
       console.error(err);
       setError(getEmailAuthErrorMessage(err));
     } finally {
@@ -192,12 +189,13 @@ function LoginForm() {
       setOtp("");
       setOtpSent(true);
       setSuccessMessage(`OTP sent to ${normalizePhoneNumber(phoneNumber)}`);
-    } catch (err: any) {
+    } catch (err: unknown) {
       console.error(err);
       clearRecaptcha(recaptchaVerifierRef.current);
       recaptchaVerifierRef.current = null;
+      const message = (err as { message?: string })?.message;
       setError(
-        err.message?.startsWith("reCAPTCHA") ? err.message : getPhoneAuthErrorMessage(err)
+        message?.startsWith("reCAPTCHA") ? message : getPhoneAuthErrorMessage(err)
       );
     } finally {
       setIsLoading(false);
@@ -230,7 +228,7 @@ function LoginForm() {
         return;
       }
       router.replace(getDashboardPath(profile.role));
-    } catch (err: any) {
+    } catch (err: unknown) {
       console.error(err);
       setError(getPhoneAuthErrorMessage(err));
     } finally {
@@ -306,9 +304,9 @@ function LoginForm() {
           </button>
         </div>
 
-        {successMessage && (
+        {(successMessage ?? querySuccessMessage) && (
           <Alert variant="success" className="mb-6">
-            {successMessage}
+            {successMessage ?? querySuccessMessage}
           </Alert>
         )}
         {error && <Alert variant="error" className="mb-6">{error}</Alert>}

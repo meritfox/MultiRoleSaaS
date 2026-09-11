@@ -40,12 +40,13 @@ export default function ProviderCheckInPage() {
 
   useEffect(() => {
     if (!user) return;
-    setLoading(true);
-    Promise.all([
-      getCheckInsByProvider(user.uid),
-      getRequestsByProvider(user.uid),
-    ])
-      .then(([checkInHistory, requests]) => {
+    const load = async () => {
+      setLoading(true);
+      try {
+        const [checkInHistory, requests] = await Promise.all([
+          getCheckInsByProvider(user.uid),
+          getRequestsByProvider(user.uid),
+        ]);
         setCheckIns(checkInHistory);
         // Roster = students with an approved request for this provider.
         const approved = requests.filter((r) => r.status === "APPROVED" && r.studentId);
@@ -60,12 +61,18 @@ export default function ProviderCheckInPage() {
           }
         }
         setRoster(Array.from(unique.values()));
-      })
-      .catch((err) => {
+      } catch (err) {
         console.error(err);
         setError("Failed to load check-in data.");
-      })
-      .finally(() => setLoading(false));
+      } finally {
+        setLoading(false);
+      }
+    };
+
+    // Defer so synchronous setLoading inside load() runs after effect body.
+    queueMicrotask(() => {
+      void load();
+    });
   }, [user]);
 
   const handleSubmit = async (e: React.FormEvent) => {

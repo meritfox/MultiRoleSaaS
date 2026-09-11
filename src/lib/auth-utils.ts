@@ -16,6 +16,9 @@ import {
 import { doc, setDoc, getDoc, updateDoc } from "firebase/firestore";
 import { UserProfile, PaymentStatus } from "@/types";
 
+export type RegisterProfileInput = Omit<UserProfile, "uid"> & Record<string, unknown>;
+export type UserProfileUpdate = Partial<UserProfile> & Record<string, unknown>;
+
 export const login = async (email: string, pass: string) => {
   if (!ensureFirebaseInit()) throw new Error("Firebase is not initialized. Check your environment variables.");
   return await signInWithEmailAndPassword(auth, email, pass);
@@ -82,6 +85,25 @@ export const getEmailAuthErrorMessage = (err: unknown): string => {
   }
 };
 
+/** Maps Firebase registration errors to friendly product messaging. */
+export const getRegistrationErrorMessage = (err: unknown): string => {
+  const code = (err as { code?: string })?.code || "";
+  switch (code) {
+    case "auth/email-already-in-use":
+      return "This email is already registered. Please log in instead, or use Forgot Password to recover your account.";
+    case "auth/invalid-email":
+      return "Please enter a valid email address.";
+    case "auth/weak-password":
+      return "Your password is too weak. Use at least 8 characters with a number and special character.";
+    case "auth/network-request-failed":
+      return "Network issue detected. Please check your internet connection and try again.";
+    case "auth/too-many-requests":
+      return "Too many attempts from this device. Please wait a moment and try again.";
+    default:
+      return (err as { message?: string })?.message || "Registration failed. Please try again.";
+  }
+};
+
 /**
  * Maps Firebase Google sign-in error codes to friendly messages.
  * Returns an empty string when the user simply cancelled the popup so the
@@ -114,7 +136,7 @@ export const logout = async () => {
 export const register = async (
   email: string, 
   pass: string, 
-  profile: UserProfile
+  profile: RegisterProfileInput
 ) => {
   if (!ensureFirebaseInit()) throw new Error("Firebase is not initialized. Check your environment variables.");
   const userCredential = await createUserWithEmailAndPassword(auth, email, pass);
@@ -148,7 +170,7 @@ export const getUserProfile = async (uid: string): Promise<UserProfile | null> =
 
 export const updateUserProfile = async (
   uid: string,
-  data: Partial<UserProfile>
+  data: UserProfileUpdate
 ) => {
   if (!ensureFirebaseInit()) throw new Error("Firebase is not initialized. Check your environment variables.");
   const userRef = doc(db, "users", uid);

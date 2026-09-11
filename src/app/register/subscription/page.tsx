@@ -85,9 +85,9 @@ export default function SubscriptionPage() {
       await updateSubscription(firebaseUser.uid, selectedPlan, billing);
       await refreshUser();
       router.push("/register/profile");
-    } catch (err: any) {
+    } catch (err: unknown) {
       console.error(err);
-      setError(err.message || "Payment failed. Please try again.");
+      setError((err as { message?: string })?.message || "Payment failed. Please try again.");
     } finally {
       setIsLoading(false);
     }

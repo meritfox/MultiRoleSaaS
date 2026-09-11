@@ -142,7 +142,7 @@ export default function ParentDashboard() {
         <div className="space-y-6">
           {/* Header */}
           <div>
-            <h2 className="text-2xl font-bold text-slate-900">Parent Dashboard: {user?.displayName}'s Family Overview</h2>
+            <h2 className="text-2xl font-bold text-slate-900">Parent Dashboard: {user?.displayName}&apos;s Family Overview</h2>
             <p className="text-slate-600">Monitor your children, services, and live tracking.</p>
           </div>
 

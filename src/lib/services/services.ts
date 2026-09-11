@@ -10,10 +10,9 @@ import {
   query,
   where,
   onSnapshot,
-  orderBy,
-  Timestamp,
-} from "firebase/firestore";
-import { Service, ServiceRequest, ServiceProviderProfile, Notification } from "@/types";
+  orderBy} from "firebase/firestore";
+import { Service, ServiceRequest, ServiceProviderProfile, Notification, UserProfile } from "@/types";
+import { getUserById } from "./users";
 
 // Lazy getters so the module can be imported during static generation
 // without requiring Firebase to be initialized.
@@ -47,7 +46,11 @@ export async function getServiceById(serviceId: string): Promise<Service | null>
 }
 
 export async function createService(providerId: string, data: Omit<Service, "id" | "providerId" | "createdAt" | "updatedAt">) {
-  const payload = {
+  const provider = (await getUserById(providerId).catch(() => null)) as
+    | (ServiceProviderProfile & { city?: string; phoneNumber?: string })
+    | null;
+
+  const payload: Record<string, unknown> = {
     ...data,
     providerId,
     rating: data.rating ?? 0,
@@ -55,6 +58,9 @@ export async function createService(providerId: string, data: Omit<Service, "id"
     createdAt: Date.now(),
     updatedAt: Date.now(),
   };
+  if (provider?.displayName) payload.providerName = provider.displayName;
+  if (provider?.phoneNumber) payload.providerPhone = provider.phoneNumber;
+  if (provider?.city) payload.providerCity = provider.city;
   const docRef = await addDoc(getServicesRef(), payload);
   return { id: docRef.id, ...payload } as Service;
 }
@@ -96,7 +102,7 @@ export async function createServiceRequest(studentId: string, service: Service) 
   return { id: docRef.id, ...payload } as ServiceRequest;
 }
 
-export async function getRequestsByProvider(providerId: string): Promise<(ServiceRequest & { service?: Service; student?: any })[]> {
+export async function getRequestsByProvider(providerId: string): Promise<(ServiceRequest & { service?: Service; student?: UserProfile })[]> {
   const q = query(getRequestsRef(), where("providerId", "==", providerId), orderBy("createdAt", "desc"));
   const snap = await getDocs(q);
   const reqs = snap.docs.map((d) => ({ id: d.id, ...d.data() }) as ServiceRequest);
@@ -109,7 +115,7 @@ export async function getRequestsByProvider(providerId: string): Promise<(Servic
       return {
         ...r,
         service: serviceSnap.exists() ? ({ id: serviceSnap.id, ...serviceSnap.data() } as Service) : undefined,
-        student: studentSnap.exists() ? studentSnap.data() : undefined,
+        student: studentSnap.exists() ? (studentSnap.data() as UserProfile) : undefined,
       };
     })
   );
@@ -169,3 +175,4 @@ export function subscribeToNotifications(userId: string, callback: (notification
     callback(snap.docs.map((d) => ({ id: d.id, ...d.data() }) as Notification));
   });
 }
+

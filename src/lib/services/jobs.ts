@@ -11,6 +11,7 @@ import {
   orderBy,
 } from "firebase/firestore";
 import { Job } from "@/types";
+import { distanceKm } from "./geo";
 
 // Lazy getter so the module can be imported during static generation
 // without requiring Firebase to be initialized.
@@ -54,16 +55,4 @@ export async function closeJob(jobId: string): Promise<void> {
   await updateDoc(doc(getJobsRef(), jobId), { status: "CLOSED" });
 }
 
-/** Haversine distance in kilometers between two coordinates. */
-export function distanceKm(
-  a: { lat: number; lng: number },
-  b: { lat: number; lng: number }
-): number {
-  const R = 6371;
-  const dLat = ((b.lat - a.lat) * Math.PI) / 180;
-  const dLng = ((b.lng - a.lng) * Math.PI) / 180;
-  const s =
-    Math.sin(dLat / 2) ** 2 +
-    Math.cos((a.lat * Math.PI) / 180) * Math.cos((b.lat * Math.PI) / 180) * Math.sin(dLng / 2) ** 2;
-  return 2 * R * Math.asin(Math.sqrt(s));
-}
+export { distanceKm };

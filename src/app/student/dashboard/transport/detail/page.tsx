@@ -2,18 +2,20 @@
 
 import React, { Suspense, useState, useEffect } from "react";
 import Link from "next/link";
-import { useSearchParams, useRouter } from "next/navigation";
+import { useSearchParams } from "next/navigation";
 import { useAuth } from "@/lib/auth-context";
 import ProtectedRoute from "@/components/auth/ProtectedRoute";
 import DashboardLayout from "@/components/layout/DashboardLayout";
 import { Card } from "@/components/ui/Card";
 import { Button } from "@/components/ui/Button";
+import { Input } from "@/components/ui/Input";
 import { Alert } from "@/components/ui/Alert";
 import { Badge } from "@/components/ui/Badge";
 import { Spinner } from "@/components/ui/Spinner";
 import { getServiceById, createServiceRequest } from "@/lib/services/services";
 import { getUserById } from "@/lib/services/users";
-import { Service, ServiceProviderProfile, RATE_UNIT_LABELS } from "@/types";
+import { addServiceReview, getServiceReviews } from "@/lib/services/reviews";
+import { Service, ServiceProviderProfile, RATE_UNIT_LABELS, ServiceReview } from "@/types";
 import { Bus, Star, MapPin, ArrowLeft } from "lucide-react";
 
 const STUDENT_ROLE = "STUDENT";
@@ -21,7 +23,6 @@ const STUDENT_ROLE = "STUDENT";
 function TransporterDetailContent() {
   const { user } = useAuth();
   const searchParams = useSearchParams();
-  const router = useRouter();
   const serviceId = searchParams.get("id") ?? "";
 
   const [service, setService] = useState<Service | null>(null);
@@ -31,6 +32,11 @@ function TransporterDetailContent() {
   const [requesting, setRequesting] = useState(false);
   const [error, setError] = useState<string | null>(null);
   const [success, setSuccess] = useState(false);
+  const [reviews, setReviews] = useState<ServiceReview[]>([]);
+  const [reviewRating, setReviewRating] = useState("5");
+  const [reviewComment, setReviewComment] = useState("");
+  const [reviewError, setReviewError] = useState<string | null>(null);
+  const [reviewSubmitting, setReviewSubmitting] = useState(false);
 
   useEffect(() => {
     if (!serviceId) return;
@@ -41,6 +47,8 @@ function TransporterDetailContent() {
         if (svc?.providerId) {
           const profile = await getUserById(svc.providerId).catch(() => null);
           setProvider(profile as ServiceProviderProfile | null);
+          const serviceReviews = await getServiceReviews(svc.id).catch(() => []);
+          setReviews(serviceReviews);
         }
       } catch (err) {
         console.error("Failed to load transporter profile:", err);
@@ -63,6 +71,34 @@ function TransporterDetailContent() {
       setError((err as Error).message);
     } finally {
       setRequesting(false);
+    }
+  };
+
+  const handleReviewSubmit = async (e: React.FormEvent) => {
+    e.preventDefault();
+    if (!user || !service || !reviewComment.trim()) return;
+
+    setReviewSubmitting(true);
+    setReviewError(null);
+    try {
+      const { review, summary } = await addServiceReview({
+        serviceId: service.id,
+        providerId: service.providerId,
+        reviewerId: user.uid,
+        reviewerName: user.displayName,
+        rating: Number(reviewRating),
+        comment: reviewComment.trim(),
+      });
+      setReviews((prev) => [review, ...prev]);
+      setService((prev) =>
+        prev ? { ...prev, rating: summary.average, reviews: summary.count } : prev
+      );
+      setReviewComment("");
+      setReviewRating("5");
+    } catch (err) {
+      setReviewError((err as Error).message || "Failed to submit review.");
+    } finally {
+      setReviewSubmitting(false);
     }
   };
 
@@ -100,7 +136,7 @@ function TransporterDetailContent() {
       <DashboardLayout title="Transporter Profile">
         <div className="max-w-4xl mx-auto space-y-6">
           <button
-            onClick={() => router.back()}
+            onClick={() => window.history.back()}
             className="inline-flex items-center gap-1 text-sm font-medium text-slate-600 hover:text-slate-900"
           >
             <ArrowLeft className="h-4 w-4" /> Back to results
@@ -199,6 +235,41 @@ function TransporterDetailContent() {
                 </Button>
               </form>
             )}
+          </Card>
+
+          <Card title="Reviews">
+            <form onSubmit={handleReviewSubmit} className="space-y-3">
+              {reviewError && <Alert variant="error">{reviewError}</Alert>}
+              <Input
+                label="Your rating (1-5)"
+                value={reviewRating}
+                onChange={(e) => setReviewRating(e.target.value.replace(/[^1-5]/g, "") || "5")}
+              />
+              <textarea
+                value={reviewComment}
+                onChange={(e) => setReviewComment(e.target.value)}
+                rows={3}
+                placeholder="Write your review based on your real experience"
+                className="w-full rounded-xl border border-slate-200 bg-slate-50/60 px-3 py-2 text-sm focus:outline-none focus:border-[#DC2626]/40"
+              />
+              <Button type="submit" isLoading={reviewSubmitting}>
+                Submit Review
+              </Button>
+            </form>
+
+            <div className="mt-4 space-y-2">
+              {reviews.length === 0 ? (
+                <p className="text-sm text-slate-500">No reviews yet.</p>
+              ) : (
+                reviews.map((r) => (
+                  <div key={r.id} className="rounded-lg bg-slate-50/70 p-3 text-sm">
+                    <p className="font-medium text-slate-800">{r.reviewerName ?? "Student"}</p>
+                    <p className="text-xs text-slate-500">{r.rating}/5 · {new Date(r.createdAt).toLocaleDateString()}</p>
+                    <p className="mt-1 text-slate-700">{r.comment}</p>
+                  </div>
+                ))
+              )}
+            </div>
           </Card>
         </div>
       </DashboardLayout>

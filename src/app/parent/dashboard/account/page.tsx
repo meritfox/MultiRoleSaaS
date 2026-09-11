@@ -1,6 +1,6 @@
 "use client";
 
-import React, { useState, useEffect } from "react";
+import React, { useState } from "react";
 import { useAuth } from "@/lib/auth-context";
 import ProtectedRoute from "@/components/auth/ProtectedRoute";
 import DashboardLayout from "@/components/layout/DashboardLayout";
@@ -19,12 +19,14 @@ export default function AccountPage() {
   const [phone, setPhone] = useState("");
   const [loading, setLoading] = useState(false);
 
-  useEffect(() => {
-    if (user) {
-      setDisplayName(user.displayName || "");
-      setPhone(user.phoneNumber || "");
-    }
-  }, [user]);
+  // Adjust form state when a different user loads (render-time sync to keep
+  // effects free of synchronous setState calls).
+  const [syncedUserId, setSyncedUserId] = useState<string | null>(null);
+  if (user && user.uid !== syncedUserId) {
+    setSyncedUserId(user.uid);
+    setDisplayName(user.displayName || "");
+    setPhone(user.phoneNumber || "");
+  }
 
   const handleSave = async () => {
     if (!user) return;

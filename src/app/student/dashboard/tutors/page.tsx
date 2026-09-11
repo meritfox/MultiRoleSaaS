@@ -13,11 +13,7 @@ import { EmptyState } from "@/components/ui/EmptyState";
 import { FilterPills, FilterPillOption } from "@/components/ui/FilterPills";
 import { ServiceCard } from "@/components/student/ServiceCard";
 import { getAllServices } from "@/lib/services/services";
-import {
-  Service,
-  TeacherCategory,
-  TEACHER_CATEGORY_LABELS,
-} from "@/types";
+import { Service, TeacherCategory, TEACHER_CATEGORY_LABELS } from "@/types";
 import { GraduationCap, Building2 } from "lucide-react";
 
 const STUDENT_ROLE = "STUDENT";
@@ -32,15 +28,31 @@ type TypeFilter = "ALL" | "TEACHER" | "INSTITUTION";
 
 const TYPE_OPTIONS: FilterPillOption<TypeFilter>[] = [
   { value: "ALL", label: "All" },
-  { value: "TEACHER", label: "Teachers", icon: <GraduationCap className="h-3.5 w-3.5" /> },
-  { value: "INSTITUTION", label: "Institutions", icon: <Building2 className="h-3.5 w-3.5" /> },
+  {
+    value: "TEACHER",
+    label: "Teachers",
+    icon: <GraduationCap className="h-3.5 w-3.5" />,
+  },
+  {
+    value: "INSTITUTION",
+    label: "Institutions",
+    icon: <Building2 className="h-3.5 w-3.5" />,
+  },
 ];
 
 export default function FindTeachersPage() {
   const [services, setServices] = useState<Service[]>([]);
   const [loading, setLoading] = useState(true);
 
-  // Filters: Area, School, Subject, Hobby (Screen 11)
+  // Draft filters
+  const [area, setArea] = useState("");
+  const [school, setSchool] = useState("");
+  const [subject, setSubject] = useState("");
+  const [hobby, setHobby] = useState("");
+  const [category, setCategory] = useState("");
+  const [typeFilter, setTypeFilter] = useState<TypeFilter>("ALL");
+
+  // Applied filters (search only when button is clicked)
   const [searchArea, setSearchArea] = useState("");
   const [searchSchool, setSearchSchool] = useState("");
   const [searchSubject, setSearchSubject] = useState("");
@@ -56,13 +68,6 @@ export default function FindTeachersPage() {
     setSearchCategory(category);
     setSearchTypeFilter(typeFilter);
   };
-
-  const [area, setArea] = useState("");
-  const [school, setSchool] = useState("");
-  const [subject, setSubject] = useState("");
-  const [hobby, setHobby] = useState("");
-  const [category, setCategory] = useState("");
-  const [typeFilter, setTypeFilter] = useState<TypeFilter>("ALL");
 
   useEffect(() => {
     const fetch = async () => {
@@ -83,18 +88,41 @@ export default function FindTeachersPage() {
   const filtered = useMemo(() => {
     const needle = (v: string) => v.trim().toLowerCase();
     return services.filter((s) => {
-      if (typeFilter !== "ALL" && s.providerType !== typeFilter) return false;
-      if (category && s.teacherCategory !== category) return false;
-      if (needle(area)) {
+      if (searchTypeFilter !== "ALL" && s.providerType !== searchTypeFilter) return false;
+      if (searchCategory && s.teacherCategory !== searchCategory) return false;
+      if (needle(searchArea)) {
         const hay = `${s.area ?? ""} ${s.location ?? ""}`.toLowerCase();
-        if (!hay.includes(needle(area))) return false;
+        if (!hay.includes(needle(searchArea))) return false;
       }
-      if (needle(school) && !(s.school ?? "").toLowerCase().includes(needle(school))) return false;
-      if (needle(subject) && !(s.subject ?? "").toLowerCase().includes(needle(subject))) return false;
-      if (needle(hobby) && !(s.hobby ?? "").toLowerCase().includes(needle(hobby))) return false;
+      if (
+        needle(searchSchool) &&
+        !(s.school ?? "").toLowerCase().includes(needle(searchSchool))
+      ) {
+        return false;
+      }
+      if (
+        needle(searchSubject) &&
+        !(s.subject ?? "").toLowerCase().includes(needle(searchSubject))
+      ) {
+        return false;
+      }
+      if (
+        needle(searchHobby) &&
+        !(s.hobby ?? "").toLowerCase().includes(needle(searchHobby))
+      ) {
+        return false;
+      }
       return true;
     });
-  }, [services, area, school, subject, hobby, category, typeFilter]);
+  }, [
+    services,
+    searchArea,
+    searchSchool,
+    searchSubject,
+    searchHobby,
+    searchCategory,
+    searchTypeFilter,
+  ]);
 
   if (loading) {
     return (
@@ -119,10 +147,30 @@ export default function FindTeachersPage() {
             <div className="space-y-4">
               <FilterPills options={TYPE_OPTIONS} value={typeFilter} onChange={setTypeFilter} />
               <div className="grid gap-4 sm:grid-cols-2 lg:grid-cols-3">
-                <Input label="Area" value={area} onChange={(e) => setArea(e.target.value)} placeholder="e.g. Ulubari, Beltola" onKeyDown={(e) => e.key === "Enter" && handleSearch()} />
-                <Input label="School" value={school} onChange={(e) => setSchool(e.target.value)} placeholder="e.g. Don Bosco" onKeyDown={(e) => e.key === "Enter" && handleSearch()} />
-                <Input label="Subject" value={subject} onChange={(e) => setSubject(e.target.value)} placeholder="e.g. Mathematics" onKeyDown={(e) => e.key === "Enter" && handleSearch()} />
-                <Input label="Hobby" value={hobby} onChange={(e) => setHobby(e.target.value)} placeholder="e.g. Music, Chess" onKeyDown={(e) => e.key === "Enter" && handleSearch()} />
+                <Input
+                  label="Area"
+                  value={area}
+                  onChange={(e) => setArea(e.target.value)}
+                  placeholder="e.g. Ulubari, Beltola"
+                />
+                <Input
+                  label="School"
+                  value={school}
+                  onChange={(e) => setSchool(e.target.value)}
+                  placeholder="e.g. Don Bosco"
+                />
+                <Input
+                  label="Subject"
+                  value={subject}
+                  onChange={(e) => setSubject(e.target.value)}
+                  placeholder="e.g. Mathematics"
+                />
+                <Input
+                  label="Hobby"
+                  value={hobby}
+                  onChange={(e) => setHobby(e.target.value)}
+                  placeholder="e.g. Music, Chess"
+                />
                 <div className="space-y-1.5">
                   <label className="text-sm font-medium text-slate-700">Teacher Category</label>
                   <Select

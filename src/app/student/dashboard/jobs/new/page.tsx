@@ -12,8 +12,10 @@ import { Input } from "@/components/ui/Input";
 import { Select } from "@/components/ui/Select";
 import { Alert } from "@/components/ui/Alert";
 import { createJob } from "@/lib/services/jobs";
+import { geocodeAddress } from "@/lib/services/geo";
 import { PageHeader } from "@/components/ui/PageHeader";
 import { MapPin, ArrowLeft } from "lucide-react";
+import { Job } from "@/types";
 
 const STUDENT_ROLE = "STUDENT";
 const JOB_CATEGORIES = [
@@ -59,7 +61,7 @@ export default function PostJobPage() {
     setError(null);
     try {
       // Firestore rejects undefined values, so we must clean the payload
-      const cleanPayload: any = {
+      const cleanPayload: Omit<Job, "id" | "posterId" | "status" | "createdAt"> = {
         title,
         description,
         category,
@@ -67,6 +69,14 @@ export default function PostJobPage() {
       };
       if (budget) cleanPayload.budget = parseFloat(budget);
       if (location) cleanPayload.location = location;
+
+      if (!coords && location.trim()) {
+        const geocoded = await geocodeAddress(location);
+        if (geocoded) {
+          cleanPayload.lat = geocoded.lat;
+          cleanPayload.lng = geocoded.lng;
+        }
+      }
       if (coords?.lat !== undefined) cleanPayload.lat = coords.lat;
       if (coords?.lng !== undefined) cleanPayload.lng = coords.lng;
       await createJob(user.uid, cleanPayload);

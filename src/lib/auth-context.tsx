@@ -27,7 +27,7 @@ export const AuthProvider = ({ children }: { children: React.ReactNode }) => {
 
   const [user, setUser] = useState<UserProfile | null>(null);
   const [firebaseUser, setFirebaseUser] = useState<FirebaseUser | null>(null);
-  const [loading, setLoading] = useState(true);
+  const [loading, setLoading] = useState(firebaseReady);
   const [role, setRole] = useState<UserRole | null>(null);
 
   const fetchUserProfile = async (fbUser: FirebaseUser) => {
@@ -49,10 +49,7 @@ export const AuthProvider = ({ children }: { children: React.ReactNode }) => {
   };
 
   useEffect(() => {
-    if (!firebaseReady) {
-      setLoading(false);
-      return;
-    }
+    if (!firebaseReady) return;
 
     const unsubscribe = onAuthStateChanged(auth, async (fbUser) => {
       try {

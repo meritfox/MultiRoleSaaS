@@ -69,7 +69,7 @@ export default function ProviderProfilePage() {
       setProfile({ ...profile, ...updatedData } as ServiceProviderProfile);
       setSuccess(true);
       setTimeout(() => setSuccess(false), 3000);
-    } catch (err: any) {
+    } catch (err: unknown) {
       console.error("Error updating profile:", err);
       setError("Failed to update profile.");
     } finally {

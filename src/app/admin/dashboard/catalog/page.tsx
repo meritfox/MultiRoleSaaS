@@ -45,7 +45,10 @@ export default function AdminCatalogPage() {
   };
 
   useEffect(() => {
-    load();
+    // Defer so the synchronous setLoading inside load() runs after effect body.
+    queueMicrotask(() => {
+      void load();
+    });
   }, []);
 
   const handleAdd = async (e: React.FormEvent) => {

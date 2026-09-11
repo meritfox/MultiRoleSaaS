@@ -23,6 +23,8 @@ export interface UserProfile {
   country?: string;
   pincode?: string;
   blocked?: boolean;
+  /** Nullable referral owner uid captured at signup (if provided). */
+  referredBy?: string | null;
 }
 
 export interface ServiceProviderProfile extends UserProfile {
@@ -98,6 +100,9 @@ export const TEACHER_CATEGORY_LABELS: Record<TeacherCategory, string> = {
 export interface Service {
   id: string;
   providerId: string;
+  providerName?: string;
+  providerPhone?: string;
+  providerCity?: string;
   name: string;
   description: string;
   price: number;
@@ -111,6 +116,8 @@ export interface Service {
   area?: string;
   vehicleType?: string;
   location?: string;
+  lat?: number;
+  lng?: number;
   rating?: number;
   reviews?: number;
 }
@@ -187,6 +194,7 @@ export interface MarketplaceItem {
   id: string;
   sellerId: string;
   sellerName?: string;
+  sellerPhone?: string;
   title: string;
   description: string;
   price: number;
@@ -195,6 +203,9 @@ export interface MarketplaceItem {
   grade?: string; // book-specific
   school?: string; // book-specific
   board?: string; // book-specific
+  location?: string;
+  lat?: number;
+  lng?: number;
   status: "ACTIVE" | "SOLD";
   createdAt: number;
 }
@@ -247,4 +258,35 @@ export interface ContestEntry {
   feedbackId?: string;
   month: string; // e.g. "2025-08"
   createdAt: number;
+}
+
+// ---------------------------------------------------------------------------
+// Reviews (real user reviews + aggregated metrics)
+// ---------------------------------------------------------------------------
+export interface ServiceReview {
+  id: string;
+  serviceId: string;
+  providerId: string;
+  reviewerId: string;
+  reviewerName?: string;
+  rating: number;
+  comment: string;
+  createdAt: number;
+  updatedAt: number;
+}
+
+export interface SellerReview {
+  id: string;
+  sellerId: string;
+  reviewerId: string;
+  reviewerName?: string;
+  rating: number;
+  comment: string;
+  createdAt: number;
+  updatedAt: number;
+}
+
+export interface ReviewSummary {
+  average: number;
+  count: number;
 }

@@ -21,8 +21,18 @@ export default function JobBoardPage() {
   const [jobs, setJobs] = useState<Job[]>([]);
   const [loading, setLoading] = useState(true);
   const [search, setSearch] = useState("");
+  const [appliedSearch, setAppliedSearch] = useState("");
   const [sortByDistance, setSortByDistance] = useState(false);
+  const [appliedSortByDistance, setAppliedSortByDistance] = useState(false);
+  const [distanceLimitKm, setDistanceLimitKm] = useState("");
+  const [appliedDistanceLimitKm, setAppliedDistanceLimitKm] = useState("");
   const [coords, setCoords] = useState<Coords | null>(null);
+
+  const handleSearch = () => {
+    setAppliedSearch(search);
+    setAppliedSortByDistance(sortByDistance);
+    setAppliedDistanceLimitKm(distanceLimitKm);
+  };
 
 
   useEffect(() => {
@@ -42,11 +52,19 @@ export default function JobBoardPage() {
   }, []);
 
   const visible = useMemo(() => {
-    const n = search.trim().toLowerCase();
+    const n = appliedSearch.trim().toLowerCase();
     let list = jobs.filter(
       (j) => !n || `${j.title} ${j.description} ${j.category}`.toLowerCase().includes(n)
     );
-    if (sortByDistance && coords) {
+    if (appliedDistanceLimitKm && coords) {
+      list = list.filter((job) => {
+        if (job.lat === undefined || job.lng === undefined) return false;
+        return (
+          distanceKm(coords, { lat: job.lat, lng: job.lng }) <= Number(appliedDistanceLimitKm)
+        );
+      });
+    }
+    if (appliedSortByDistance && coords) {
       list = [...list].sort((a, b) => {
         const da = a.lat !== undefined && a.lng !== undefined ? distanceKm(coords, { lat: a.lat, lng: a.lng }) : Number.MAX_VALUE;
         const db = b.lat !== undefined && b.lng !== undefined ? distanceKm(coords, { lat: b.lat, lng: b.lng }) : Number.MAX_VALUE;
@@ -54,7 +72,7 @@ export default function JobBoardPage() {
       });
     }
     return list;
-  }, [jobs, search, sortByDistance, coords]);
+  }, [jobs, appliedSearch, appliedSortByDistance, appliedDistanceLimitKm, coords]);
 
   const distanceFor = (job: Job): number | null => {
     if (!coords || job.lat === undefined || job.lng === undefined) return null;
@@ -87,26 +105,39 @@ export default function JobBoardPage() {
             }
           />
 
-          <div className="rounded-2xl border border-slate-200/60 bg-white p-4 shadow-soft flex flex-col gap-3 sm:flex-row sm:items-center">
-            <div className="flex-1">
+          <div className="rounded-2xl border border-slate-200/60 bg-white p-4 shadow-soft space-y-3">
+            <div className="grid gap-3 sm:grid-cols-2 lg:grid-cols-4">
               <Input
                 value={search}
                 onChange={(e) => setSearch(e.target.value)}
                 placeholder="Search jobs by title, category or keyword"
                 icon={<Search className="h-4 w-4" />}
               />
+              <Input
+                value={distanceLimitKm}
+                onChange={(e) => setDistanceLimitKm(e.target.value.replace(/[^0-9]/g, ""))}
+                placeholder="Within distance (km)"
+                label="Within distance"
+              />
+              <div className="flex items-end">
+                <button
+                  onClick={() => setSortByDistance((v) => !v)}
+                  className={`h-10 w-full inline-flex items-center justify-center gap-1.5 rounded-full px-3 py-1.5 text-xs font-medium transition-all duration-200 ${
+                    sortByDistance
+                      ? "bg-gradient-to-b from-[#ef4444] to-[#DC2626] text-white shadow-soft"
+                      : "border border-slate-200 bg-white text-slate-600 hover:border-slate-300 hover:text-slate-900"
+                  }`}
+                >
+                  <Navigation2 className="h-3.5 w-3.5" />
+                  Nearest first
+                </button>
+              </div>
+              <div className="flex items-end">
+                <Button onClick={handleSearch} className="w-full">
+                  Search
+                </Button>
+              </div>
             </div>
-            <button
-              onClick={() => setSortByDistance((v) => !v)}
-              className={`inline-flex items-center gap-1.5 rounded-full px-3 py-1.5 text-xs font-medium transition-all duration-200 ${
-                sortByDistance
-                  ? "bg-gradient-to-b from-[#ef4444] to-[#DC2626] text-white shadow-soft"
-                  : "border border-slate-200 bg-white text-slate-600 hover:border-slate-300 hover:text-slate-900"
-              }`}
-            >
-              <Navigation2 className="h-3.5 w-3.5" />
-              Nearest first
-            </button>
           </div>
 
           {visible.length === 0 ? (

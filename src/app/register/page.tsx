@@ -11,6 +11,7 @@ import {
   sendPhoneLinkOTP,
   clearRecaptcha,
   getPhoneAuthErrorMessage,
+  getRegistrationErrorMessage,
 } from "@/lib/auth-utils";
 import {
   validateEmail,
@@ -24,8 +25,7 @@ import { Button } from "@/components/ui/Button";
 import { Input } from "@/components/ui/Input";
 import { Card } from "@/components/ui/Card";
 import { Alert } from "@/components/ui/Alert";
-import { Spinner } from "@/components/ui/Spinner";
-import { UserRole } from "@/types";
+import { ServiceProviderProfile, UserProfile, UserRole } from "@/types";
 import { AuthShell } from "@/components/layout/AuthShell";
 import { recordReferralSignup } from "@/lib/services/engagement";
 import { db } from "@/lib/firebase";
@@ -72,7 +72,19 @@ const PROVIDER_TYPES = [
   { label: "Transporter / Driver", value: "TRANSPORTER", icon: <Bus className="h-4 w-4" /> },
 ];
 
+type RegisterProfile =
+  Omit<UserProfile, "uid"> &
+    Partial<Pick<ServiceProviderProfile, "providerType" | "bio" | "rating" | "services" | "earnings">> & {
+      children?: string[];
+      assignedServices?: string[];
+    };
+
 export default function RegisterPage() {
+  const initialReferrerId =
+    typeof window !== "undefined"
+      ? new URLSearchParams(window.location.search).get("ref")
+      : null;
+
   const [step, setStep] = useState(1);
   const [email, setEmail] = useState("");
   const [password, setPassword] = useState("");
@@ -92,15 +104,9 @@ export default function RegisterPage() {
   const recaptchaVerifierRef = useRef<RecaptchaVerifier | null>(null);
   const otpRequestedRef = useRef(false);
   const router = useRouter();
-  const [referrerId, setReferrerId] = useState<string | null>(null);
-
-  // Capture the Refer & Earn referral id from /register?ref=<uid>.
-  // Read from window.location so this page doesn't need a Suspense boundary.
-  useEffect(() => {
-    const ref = new URLSearchParams(window.location.search).get("ref");
-    // eslint-disable-next-line react-hooks/set-state-in-effect -- one-time read of a browser-only API after mount
-    if (ref) setReferrerId(ref);
-  }, []);
+  const [referrerId] = useState<string | null>(initialReferrerId);
+  const [hasReferral, setHasReferral] = useState(Boolean(initialReferrerId));
+  const [manualReferrerId, setManualReferrerId] = useState("");
 
   useEffect(() => {
     const fetchSettings = async () => {
@@ -181,12 +187,22 @@ export default function RegisterPage() {
         }
       }
 
-      const profile: any = {
+      let selectedReferrerId: string | null = referrerId;
+      if (!selectedReferrerId && hasReferral) {
+        const entered = manualReferrerId.trim();
+        if (!entered) {
+          throw new Error("Please enter your referral ID.");
+        }
+        selectedReferrerId = entered;
+      }
+
+      const profile: RegisterProfile = {
         email,
         displayName,
         phoneNumber: normalizePhoneNumber(phoneNumber),
         role,
         paymentStatus: "PENDING",
+        referredBy: selectedReferrerId,
         createdAt: Date.now(),
         updatedAt: Date.now(),
       };
@@ -206,9 +222,9 @@ export default function RegisterPage() {
       const newUser = await register(email, password, profile);
       // Attribute the signup to the referrer (Refer & Earn). Non-blocking:
       // a referral failure must never break registration.
-      if (referrerId && newUser?.uid && referrerId !== newUser.uid) {
+      if (selectedReferrerId && newUser?.uid && selectedReferrerId !== newUser.uid) {
         try {
-          await recordReferralSignup(referrerId, {
+          await recordReferralSignup(selectedReferrerId, {
             uid: newUser.uid,
             email,
             displayName,
@@ -220,9 +236,9 @@ export default function RegisterPage() {
       // Move to phone verification - the OTP is auto-sent once step 3 renders
       // (the invisible reCAPTCHA needs its container to exist in the DOM).
       setStep(3);
-    } catch (err: any) {
+    } catch (err: unknown) {
       console.error(err);
-      setError(err.message || "Registration failed. Please try again.");
+      setError(getRegistrationErrorMessage(err));
     } finally {
       setIsLoading(false);
     }
@@ -245,12 +261,13 @@ export default function RegisterPage() {
         recaptchaVerifierRef.current
       );
       setConfirmationResult(result);
-    } catch (err: any) {
+    } catch (err: unknown) {
       console.error(err);
       clearRecaptcha(recaptchaVerifierRef.current);
       recaptchaVerifierRef.current = null;
+      const message = (err as { message?: string })?.message;
       setError(
-        err.message?.startsWith("reCAPTCHA") ? err.message : getPhoneAuthErrorMessage(err)
+        message?.startsWith("reCAPTCHA") ? message : getPhoneAuthErrorMessage(err)
       );
     } finally {
       setOtpLoading(false);
@@ -289,7 +306,7 @@ export default function RegisterPage() {
       setTimeout(() => {
         router.push("/register/role");
       }, 1500);
-    } catch (err: any) {
+    } catch (err: unknown) {
       console.error(err);
       setError(getPhoneAuthErrorMessage(err));
     } finally {
@@ -315,7 +332,7 @@ export default function RegisterPage() {
               </svg>
             </div>
             <h2 className="text-2xl font-bold text-slate-900">Account Created!</h2>
-            <p className="text-slate-600">Let's set up your profile and choose your plan.</p>
+            <p className="text-slate-600">Let&apos;s set up your profile and choose your plan.</p>
             <Button asChild>
               <Link href="/register/role">Continue Setup</Link>
             </Button>
@@ -351,8 +368,33 @@ export default function RegisterPage() {
             <form onSubmit={(e) => { e.preventDefault(); handleNext(); }} className="space-y-5" noValidate>
               {referrerId && (
                 <Alert variant="success">
-                  You were referred by a friend — welcome to OmniStud!
+                  Referral detected from your invite link. Your signup will be attributed automatically.
                 </Alert>
+              )}
+              {!referrerId && (
+                <div className="space-y-3 rounded-xl border border-slate-200 bg-slate-50/60 p-3">
+                  <label className="inline-flex cursor-pointer items-center gap-2 text-sm font-medium text-slate-700">
+                    <input
+                      type="checkbox"
+                      checked={hasReferral}
+                      onChange={(e) => {
+                        setHasReferral(e.target.checked);
+                        if (!e.target.checked) setManualReferrerId("");
+                      }}
+                      className="h-4 w-4 rounded border-slate-300 text-[#DC2626] focus:ring-[#DC2626]/40"
+                    />
+                    Have a referral?
+                  </label>
+                  {hasReferral && (
+                    <Input
+                      label="Referral ID"
+                      type="text"
+                      value={manualReferrerId}
+                      onChange={(e) => setManualReferrerId(e.target.value)}
+                      placeholder="Enter referral user ID"
+                    />
+                  )}
+                </div>
               )}
               <Input
                 label="Full Name"
