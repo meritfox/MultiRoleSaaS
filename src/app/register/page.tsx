@@ -35,16 +35,16 @@ import { User, Mail, Lock, Shield, GraduationCap, Users, BookOpen, Bus, Building
 
 const ROLES: { label: string; value: UserRole; icon: React.ReactNode; description: string }[] = [
   { 
-    label: "Student", 
-    value: "STUDENT", 
-    icon: <GraduationCap className="h-5 w-5" />,
-    description: "Access learning resources and services"
-  },
-  { 
-    label: "Parent", 
+    label: "Parent / Guardian (90%)", 
     value: "PARENT", 
     icon: <Users className="h-5 w-5" />,
-    description: "Monitor children and manage payments"
+    description: "Manage child education, live GPS transport, and services"
+  },
+  { 
+    label: "Student (18+ Years, 10%)", 
+    value: "STUDENT", 
+    icon: <GraduationCap className="h-5 w-5" />,
+    description: "Access learning resources, courses, and transport independently"
   },
   { 
     label: "Teacher / Institution", 
@@ -90,7 +90,7 @@ export default function RegisterPage() {
   const [password, setPassword] = useState("");
   const [confirmPassword, setConfirmPassword] = useState("");
   const [displayName, setDisplayName] = useState("");
-  const [role, setRole] = useState<UserRole>("STUDENT");
+  const [role, setRole] = useState<UserRole>("PARENT");
   const [providerType, setProviderType] = useState("TEACHER");
   const [adminKey, setAdminKey] = useState("");
   const [isLoading, setIsLoading] = useState(false);

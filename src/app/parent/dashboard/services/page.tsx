@@ -47,27 +47,62 @@ export default function ParentServicesPage() {
 
   return (
     <ProtectedRoute allowedRoles={[PARENT_ROLE]}>
-      <DashboardLayout title="Tracked Services">
-        <div className="max-w-3xl mx-auto space-y-6">
-          <h2 className="text-2xl font-bold text-slate-900">Tracked Services</h2>
+      <DashboardLayout title="My Services">
+        <div className="max-w-4xl mx-auto space-y-6">
+          <div>
+            <h2 className="text-2xl font-bold tracking-tight text-slate-900">My Services</h2>
+            <p className="text-sm text-slate-600">
+              Overview of School Transport, Math & Science Tutors, Coaching, and Booked Activities.
+            </p>
+          </div>
+
+          {/* Service Samples if none yet */}
+          <div className="grid grid-cols-1 md:grid-cols-2 gap-4 mb-4">
+            <div className="p-4 rounded-2xl border border-slate-200/80 bg-white shadow-soft">
+              <div className="flex items-center justify-between mb-2">
+                <span className="text-xs font-bold text-amber-700 bg-amber-50 px-2.5 py-0.5 rounded-full">School Transport</span>
+                <span className="text-xs px-2 py-0.5 rounded-full bg-emerald-100 text-emerald-700 font-semibold">Active</span>
+              </div>
+              <h4 className="font-bold text-slate-900 text-base">SafeRide Transport</h4>
+              <p className="text-xs text-slate-500 mt-1">Bus Route R-12 · DAV Public School</p>
+              <div className="mt-3 pt-3 border-t border-slate-100 flex items-center justify-between text-xs">
+                <span className="text-slate-500">Pick: 7:20 AM · Drop: 1:50 PM</span>
+                <span className="font-bold text-slate-900">₹3,500/mo</span>
+              </div>
+            </div>
+
+            <div className="p-4 rounded-2xl border border-slate-200/80 bg-white shadow-soft">
+              <div className="flex items-center justify-between mb-2">
+                <span className="text-xs font-bold text-purple-700 bg-purple-50 px-2.5 py-0.5 rounded-full">Tutoring & Coaching</span>
+                <span className="text-xs px-2 py-0.5 rounded-full bg-emerald-100 text-emerald-700 font-semibold">Active</span>
+              </div>
+              <h4 className="font-bold text-slate-900 text-base">Math & Science Tutor</h4>
+              <p className="text-xs text-slate-500 mt-1">Rahul Sharma · 3 classes / week</p>
+              <div className="mt-3 pt-3 border-t border-slate-100 flex items-center justify-between text-xs">
+                <span className="text-slate-500">Tue, Thu, Sat · 5:00 PM</span>
+                <span className="font-bold text-slate-900">₹2,500/mo</span>
+              </div>
+            </div>
+          </div>
+
           {childServices.map(({ child, services }) => (
-            <Card key={child.uid} title={child.displayName}>
+            <Card key={child.uid} title={`${child.displayName}'s Booked Services`}>
               {services.length === 0 ? (
-                <p className="text-slate-500">No active services.</p>
+                <p className="text-slate-500 text-sm">No additional services linked directly to student ID.</p>
               ) : (
                 <div className="space-y-3">
                   {services.map((s) => (
-                    <div key={s.id} className="flex items-center justify-between p-3 rounded-xl bg-slate-50/70">
+                    <div key={s.id} className="flex items-center justify-between p-3.5 rounded-xl bg-slate-50/70 border border-slate-100">
                       <div className="flex items-center gap-3">
-                        <div className={`p-2 rounded-lg ${s.providerType === "TRANSPORTER" ? "bg-amber-100 text-amber-600" : "bg-red-100 text-[#DC2626]"}`}>
+                        <div className={`p-2.5 rounded-xl ${s.providerType === "TRANSPORTER" ? "bg-amber-100 text-amber-600" : "bg-red-100 text-[#DC2626]"}`}>
                           {s.providerType === "TRANSPORTER" ? <Bus className="h-4 w-4" /> : <Clock className="h-4 w-4" />}
                         </div>
                         <div>
-                          <p className="font-medium text-slate-900 text-sm">{s.name}</p>
-                          <p className="text-xs text-slate-500 capitalize">{s.providerType}</p>
+                          <p className="font-semibold text-slate-900 text-sm">{s.name}</p>
+                          <p className="text-xs text-slate-500 capitalize">{s.providerType} · ₹{s.price}</p>
                         </div>
                       </div>
-                      <span className="text-xs px-2 py-1 rounded-full bg-emerald-100 text-emerald-700">Active</span>
+                      <span className="text-xs px-2.5 py-1 rounded-full bg-emerald-100 text-emerald-700 font-medium">Active</span>
                     </div>
                   ))}
                 </div>

@@ -39,6 +39,8 @@ export interface ServiceProviderProfile extends UserProfile {
   vehicleType?: string;
   vehicleNumber?: string;
   licenseNumber?: string;
+  isVerified?: boolean;
+  verificationStatus?: 'VERIFIED' | 'PENDING' | 'REJECTED';
 }
 
 export interface StudentProfile extends UserProfile {
@@ -48,11 +50,48 @@ export interface StudentProfile extends UserProfile {
   grade?: string;
   school?: string;
   board?: string;
+  campus?: string;
+  studentIdCode?: string;
+  dateOfBirth?: string;
+  gender?: string;
+  age?: number;
+  hobby?: string;
+  isManagedChild?: boolean;
 }
 
 export interface ParentProfile extends UserProfile {
   role: 'PARENT';
   children: string[];
+  title?: string;
+  relationship?: string;
+  profession?: string;
+  qualification?: string;
+}
+
+export type TransportNeedOption = 'YES' | 'ALREADY_HAVE' | 'NO' | 'NOT_SURE';
+export type TransportDemandStatus = 'ACTIVE' | 'MATCHED' | 'FULFILLED' | 'INACTIVE';
+
+export interface TransportRequirement {
+  id: string;
+  parentId: string;
+  childId?: string;
+  childName: string;
+  schoolName: string;
+  city: string;
+  state?: string;
+  needTransport: TransportNeedOption;
+  pickupLocation: string;
+  dropLocation: string;
+  morningPickup: boolean;
+  afternoonDrop: boolean;
+  preferredPickupTime?: string;
+  preferredDropTime?: string;
+  currentProvider?: string;
+  startDate?: string;
+  specialRequirement?: string;
+  status: TransportDemandStatus;
+  createdAt: number;
+  updatedAt?: number;
 }
 
 export interface AppSettings {

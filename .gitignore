@@ -43,3 +43,8 @@ dev-server.log
 # typescript
 *.tsbuildinfo
 next-env.d.ts
+
+lint-errors.txt
+lint-output.txt
+eslint-errors.json
+

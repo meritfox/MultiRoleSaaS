@@ -3,57 +3,131 @@
 import React, { useState } from "react";
 import { useRouter } from "next/navigation";
 import { useAuth } from "@/lib/auth-context";
-import { Button } from "@/components/ui/Button";
-import { Input } from "@/components/ui/Input";
 import { Card } from "@/components/ui/Card";
 import { Alert } from "@/components/ui/Alert";
 import { AuthShell } from "@/components/layout/AuthShell";
 import { updateUserProfile, UserProfileUpdate } from "@/lib/auth-utils";
-import { User, Phone, MapPin, Building2, GraduationCap, Bus } from "lucide-react";
+import { createChildProfileForParent, generateStudentIdCode } from "@/lib/services/users";
+import { createTransportRequirement } from "@/lib/services/transport";
+import { ParentStep, ParentStepData } from "@/components/onboarding/ParentStep";
+import { ChildStep, ChildStepData } from "@/components/onboarding/ChildStep";
+import { TransportStep, TransportStepData } from "@/components/onboarding/TransportStep";
+import { User, HeartHandshake } from "lucide-react";
 
 export default function ProfileSetupPage() {
   const { user, firebaseUser, role, refreshUser } = useAuth();
   const router = useRouter();
+
+  const isParent = role === "PARENT";
+  const [currentStep, setCurrentStep] = useState(1);
   const [isLoading, setIsLoading] = useState(false);
   const [error, setError] = useState<string | null>(null);
-  const [formData, setFormData] = useState({
+
+  const [parentData, setParentData] = useState<ParentStepData>({
+    title: "Mr",
     displayName: firebaseUser?.displayName || "",
     phoneNumber: "",
+    email: firebaseUser?.email || "",
     address: "",
-    city: "",
-    state: "",
-    country: "India",
-    pincode: "",
-    grade: "",
-    school: "",
-    board: "CBSE",
-    bio: "",
-    institutionName: "",
-    vehicleType: "",
-    vehicleNumber: "",
-    licenseNumber: "",
+    state: "Jharkhand",
+    city: "Jamshedpur",
+    pincode: "831001",
+    relationship: "Father",
+    profession: "Salaried / Corporate Professional",
+    qualification: "Graduate / Bachelor's (B.Tech, B.Sc, B.Com, B.A, etc.)",
   });
 
-  // Prefill fields already captured during registration (e.g. phone number)
-  // once the user profile loads, so this step doesn't overwrite them.
+  const [childData, setChildData] = useState<ChildStepData>({
+    displayName: "",
+    photoURL: "",
+    dateOfBirth: "",
+    grade: "Class 6",
+    school: "DAV Public School, Bistupur",
+    customSchool: "",
+    board: "CBSE",
+    campus: "Main Campus",
+    gender: "Male",
+    age: 11,
+    hobby: "Cricket / Football / Outdoor Sports",
+    studentIdCode: generateStudentIdCode(),
+  });
+
+  const [transportData, setTransportData] = useState<TransportStepData>({
+    needTransport: "YES",
+    pickupLocation: "Bistupur Market Circle",
+    dropLocation: "DAV Public School Campus Gate",
+    morningPickup: true,
+    afternoonDrop: true,
+    preferredPickupTime: "07:15 AM",
+    preferredDropTime: "01:45 PM",
+    currentProvider: "",
+    startDate: new Date().toISOString().split("T")[0],
+    specialRequirement: "",
+  });
+
   const [syncedUserId, setSyncedUserId] = useState<string | null>(null);
   if (user && user.uid !== syncedUserId) {
     setSyncedUserId(user.uid);
-    setFormData((prev) => ({
+    setParentData((prev) => ({
       ...prev,
       displayName: prev.displayName || user.displayName || "",
       phoneNumber: user.phoneNumber || prev.phoneNumber,
+      email: user.email || prev.email,
     }));
   }
 
-  const handleChange = (field: string, value: string) => {
-    setFormData((prev) => ({ ...prev, [field]: value }));
+  const validateParentStep = () => {
+    if (!parentData.displayName.trim()) return "Please enter your full name.";
+    if (!parentData.phoneNumber.trim()) return "Please enter your phone number.";
+    if (!parentData.state.trim()) return "Please select your state.";
+    if (!parentData.city.trim()) return "Please select your city.";
+    if (!parentData.address.trim()) return "Please enter your address.";
+    return null;
   };
 
-  const handleSubmit = async (e: React.FormEvent) => {
-    e.preventDefault();
+  const validateChildStep = () => {
+    if (!childData.displayName.trim()) return "Please enter your child's full name.";
+    if (!childData.grade) return "Please select class / grade.";
+    const school = childData.school === "Other School (Specify)" ? childData.customSchool : childData.school;
+    if (!school?.trim()) return "Please specify the school name.";
+    return null;
+  };
+
+  const handleNextFromParent = () => {
+    setError(null);
+    const err = validateParentStep();
+    if (err) {
+      setError(err);
+      return;
+    }
+    if (!isParent) {
+      handleFinalSubmit();
+      return;
+    }
+    setCurrentStep(2);
+  };
+
+  const handleNextFromChild = () => {
+    setError(null);
+    const err = validateChildStep();
+    if (err) {
+      setError(err);
+      return;
+    }
+    if (!transportData.pickupLocation && parentData.address) {
+      setTransportData((prev) => ({ ...prev, pickupLocation: parentData.address }));
+    }
+    const school = childData.school === "Other School (Specify)" ? childData.customSchool : childData.school;
+    if (school) {
+      setTransportData((prev) => ({ ...prev, dropLocation: `${school} Campus` }));
+    }
+    setCurrentStep(3);
+  };
+
+  const handleFinalSubmit = async (e?: React.FormEvent) => {
+    if (e) e.preventDefault();
     if (!firebaseUser) {
-      setError("You must be logged in to complete profile setup");
+      setError("You must be logged in to complete setup.");
       return;
     }
 
@@ -61,212 +135,173 @@ export default function ProfileSetupPage() {
     setError(null);
 
     try {
-      const updateData: UserProfileUpdate = {
-        displayName: formData.displayName,
-        address: formData.address,
-        city: formData.city,
-        state: formData.state,
-        country: formData.country,
-        pincode: formData.pincode,
-      };
+      if (isParent) {
+        const parentUpdate: UserProfileUpdate = {
+          displayName: parentData.displayName.trim(),
+          phoneNumber: parentData.phoneNumber.trim(),
+          address: parentData.address.trim(),
+          city: parentData.city.trim(),
+          state: parentData.state.trim(),
+          country: "India",
+          pincode: parentData.pincode.trim(),
+          title: parentData.title,
+          relationship: parentData.relationship,
+          profession: parentData.profession,
+          qualification: parentData.qualification,
+        };
+        await updateUserProfile(firebaseUser.uid, parentUpdate);
 
-      // Only update the phone number when the field isn't left blank,
-      // so the verified number captured at registration isn't wiped.
-      if (formData.phoneNumber.trim()) {
-        updateData.phoneNumber = formData.phoneNumber.trim();
+        const school = childData.school === "Other School (Specify)" ? childData.customSchool : childData.school;
+        const newChild = await createChildProfileForParent(firebaseUser.uid, {
+          displayName: childData.displayName.trim(),
+          grade: childData.grade,
+          school: school.trim(),
+          board: childData.board,
+          campus: childData.campus.trim(),
+          dateOfBirth: childData.dateOfBirth,
+          gender: childData.gender,
+          age: Number(childData.age) || undefined,
+          hobby: childData.hobby,
+          photoURL: childData.photoURL.trim(),
+          studentIdCode: childData.studentIdCode,
+        });
+
+        if (transportData.needTransport === "YES" || transportData.needTransport === "NOT_SURE") {
+          await createTransportRequirement({
+            parentId: firebaseUser.uid,
+            childId: newChild.uid,
+            childName: childData.displayName.trim(),
+            schoolName: school.trim(),
+            city: parentData.city.trim(),
+            state: parentData.state.trim(),
+            needTransport: transportData.needTransport,
+            pickupLocation: transportData.pickupLocation.trim() || parentData.address.trim(),
+            dropLocation: transportData.dropLocation.trim() || school.trim(),
+            morningPickup: transportData.morningPickup,
+            afternoonDrop: transportData.afternoonDrop,
+            preferredPickupTime: transportData.preferredPickupTime,
+            preferredDropTime: transportData.preferredDropTime,
+            currentProvider: transportData.currentProvider.trim(),
+            startDate: transportData.startDate,
+            specialRequirement: transportData.specialRequirement.trim(),
+            status: "ACTIVE",
+          });
+        }
+
+        await refreshUser();
+        router.push("/parent/dashboard");
+      } else {
+        const updateData: UserProfileUpdate = {
+          displayName: parentData.displayName.trim(),
+          address: parentData.address.trim(),
+          city: parentData.city.trim(),
+          state: parentData.state.trim(),
+          country: "India",
+          pincode: parentData.pincode.trim(),
+        };
+        if (parentData.phoneNumber.trim()) {
+          updateData.phoneNumber = parentData.phoneNumber.trim();
+        }
+        await updateUserProfile(firebaseUser.uid, updateData);
+        await refreshUser();
+        router.push(role === "STUDENT" ? "/student/dashboard" : "/provider/dashboard");
       }
-
-      if (role === "STUDENT") {
-        updateData.grade = formData.grade;
-        updateData.school = formData.school;
-        updateData.board = formData.board;
-      } else if (role === "SERVICE_PROVIDER") {
-        updateData.bio = formData.bio;
-        updateData.institutionName = formData.institutionName;
-        updateData.vehicleType = formData.vehicleType;
-        updateData.vehicleNumber = formData.vehicleNumber;
-        updateData.licenseNumber = formData.licenseNumber;
-      }
-
-      await updateUserProfile(firebaseUser.uid, updateData);
-      await refreshUser();
-      router.push("/");
     } catch (err: unknown) {
-      console.error(err);
-      setError((err as { message?: string })?.message || "Failed to save profile. Please try again.");
+      console.error("Profile setup failed:", err);
+      setError((err as { message?: string })?.message || "Failed to complete setup.");
     } finally {
       setIsLoading(false);
     }
   };
 
+
   return (
-    <AuthShell maxWidth="max-w-xl">
+    <AuthShell maxWidth="max-w-2xl">
       <div className="w-full">
-        <div className="mb-8">
-          <div className="mb-4 inline-flex h-14 w-14 items-center justify-center rounded-2xl bg-gradient-to-br from-[#ef4444] to-[#B91C1C] shadow-soft">
-            <User className="h-7 w-7 text-white" />
+        <div className="mb-6 text-center">
+          <div className="mb-3 inline-flex h-12 w-12 items-center justify-center rounded-2xl bg-gradient-to-br from-[#ef4444] to-[#B91C1C] shadow-soft text-white">
+            {isParent ? <HeartHandshake className="h-6 w-6" /> : <User className="h-6 w-6" />}
           </div>
-          <h1 className="text-3xl font-bold tracking-tight text-slate-900">Complete Your Profile</h1>
-          <p className="mt-2 text-slate-600">Tell us a bit more about yourself.</p>
+          <h1 className="text-2xl font-bold tracking-tight text-slate-900">
+            {isParent ? "Parent & Child Registration" : "Complete Your Profile"}
+          </h1>
+          <p className="mt-1 text-sm text-slate-600">
+            {isParent
+              ? "Register once to monitor your child, request transport, and manage school services."
+              : "Tell us a bit more about yourself to personalize your experience."}
+          </p>
         </div>
 
-        <div className="flex items-center mb-8">
-          <div className="flex items-center gap-2">
-            <div className="h-2.5 w-2.5 rounded-full bg-[#DC2626]"></div>
-            <div className="h-0.5 w-8 bg-[#DC2626]"></div>
-            <div className="h-2.5 w-2.5 rounded-full bg-[#DC2626]"></div>
-            <div className="h-0.5 w-8 bg-[#DC2626]"></div>
-            <div className="h-2.5 w-2.5 rounded-full bg-[#DC2626]"></div>
+        {isParent && (
+          <div className="mb-6 flex items-center justify-center gap-2">
+            {[
+              { num: 1, label: "Parent Details" },
+              { num: 2, label: "Add Child" },
+              { num: 3, label: "School Transport" },
+            ].map((s, idx) => (
+              <React.Fragment key={s.num}>
+                <div className="flex items-center gap-1.5">
+                  <span
+                    className={`flex h-6 w-6 items-center justify-center rounded-full text-xs font-semibold transition-colors ${
+                      currentStep >= s.num
+                        ? "bg-[#DC2626] text-white"
+                        : "bg-slate-200 text-slate-600"
+                    }`}
+                  >
+                    {currentStep > s.num ? "✓" : s.num}
+                  </span>
+                  <span
+                    className={`text-xs font-medium hidden sm:inline ${
+                      currentStep === s.num ? "text-slate-900 font-bold" : "text-slate-500"
+                    }`}
+                  >
+                    {s.label}
+                  </span>
+                </div>
+                {idx < 2 && (
+                  <div
+                    className={`h-0.5 w-8 transition-colors ${
+                      currentStep > s.num ? "bg-[#DC2626]" : "bg-slate-200"
+                    }`}
+                  />
+                )}
+              </React.Fragment>
+            ))}
           </div>
-        </div>
+        )}
 
         <Card className="w-full">
           {error && <Alert variant="error" className="mb-6">{error}</Alert>}
 
-          <form onSubmit={handleSubmit} className="space-y-5">
-            <div className="grid grid-cols-1 md:grid-cols-2 gap-5">
-              <Input
-                label="Full Name"
-                value={formData.displayName}
-                onChange={(e) => handleChange("displayName", e.target.value)}
-                placeholder="Your full name"
-                icon={<User className="h-4 w-4" />}
-              />
-              <Input
-                label="Phone Number"
-                value={formData.phoneNumber}
-                onChange={(e) => handleChange("phoneNumber", e.target.value)}
-                placeholder="+91 98765 43210"
-                icon={<Phone className="h-4 w-4" />}
-              />
-            </div>
-
-            <Input
-              label="Address"
-              value={formData.address}
-              onChange={(e) => handleChange("address", e.target.value)}
-              placeholder="Street address"
-              icon={<MapPin className="h-4 w-4" />}
+          {(!isParent || currentStep === 1) && (
+            <ParentStep
+              data={parentData}
+              onChange={setParentData}
+              onNext={handleNextFromParent}
+              isParent={isParent}
+              isLoading={isLoading}
             />
+          )}
 
-            <div className="grid grid-cols-1 md:grid-cols-3 gap-5">
-              <Input
-                label="City"
-                value={formData.city}
-                onChange={(e) => handleChange("city", e.target.value)}
-                placeholder="City"
-              />
-              <Input
-                label="State"
-                value={formData.state}
-                onChange={(e) => handleChange("state", e.target.value)}
-                placeholder="State"
-              />
-              <Input
-                label="Pincode"
-                value={formData.pincode}
-                onChange={(e) => handleChange("pincode", e.target.value)}
-                placeholder="Pincode"
-              />
-            </div>
+          {isParent && currentStep === 2 && (
+            <ChildStep
+              data={childData}
+              city={parentData.city}
+              onChange={setChildData}
+              onNext={handleNextFromChild}
+              onBack={() => setCurrentStep(1)}
+            />
+          )}
 
-            {role === "STUDENT" && (
-              <div className="space-y-5 p-5 bg-red-50/50 rounded-xl border border-red-100">
-                <h3 className="font-semibold text-slate-900 flex items-center gap-2">
-                  <GraduationCap className="h-5 w-5 text-[#DC2626]" /> Student Information
-                </h3>
-                <div className="grid grid-cols-1 md:grid-cols-3 gap-5">
-                  <Input
-                    label="Grade / Class"
-                    value={formData.grade}
-                    onChange={(e) => handleChange("grade", e.target.value)}
-                    placeholder="e.g. Grade 5"
-                  />
-                  <Input
-                    label="School Name"
-                    value={formData.school}
-                    onChange={(e) => handleChange("school", e.target.value)}
-                    placeholder="School name"
-                  />
-                  <div className="space-y-1.5">
-                    <label className="text-sm font-medium text-slate-700">Board</label>
-                    <select
-                      value={formData.board}
-                      onChange={(e) => handleChange("board", e.target.value)}
-                      className="flex h-11 w-full rounded-xl border border-slate-200/60 bg-slate-50/60 px-3 py-2 text-sm focus:outline-none focus:border-[#DC2626]/40 focus:bg-white focus:shadow-glow transition-all duration-200"
-                    >
-                      <option value="CBSE">CBSE</option>
-                      <option value="ICSE">ICSE</option>
-                      <option value="State Board">State Board</option>
-                      <option value="IB">IB</option>
-                      <option value="Other">Other</option>
-                    </select>
-                  </div>
-                </div>
-              </div>
-            )}
-
-            {role === "SERVICE_PROVIDER" && (
-              <div className="space-y-5 p-5 bg-emerald-50/50 rounded-xl border border-emerald-100">
-                <h3 className="font-semibold text-slate-900 flex items-center gap-2">
-                  <Building2 className="h-5 w-5 text-emerald-600" /> Provider Information
-                </h3>
-                <div className="space-y-4">
-                  <Input
-                    label="Institution / Organization Name"
-                    value={formData.institutionName}
-                    onChange={(e) => handleChange("institutionName", e.target.value)}
-                    placeholder="Your institution or business name"
-                  />
-                  <div className="space-y-1.5">
-                    <label className="text-sm font-medium text-slate-700">Bio / Description</label>
-                    <textarea
-                      value={formData.bio}
-                      onChange={(e) => handleChange("bio", e.target.value)}
-                      placeholder="Tell us about your services..."
-                      rows={3}
-                      className="flex w-full rounded-xl border border-slate-200 bg-slate-50/60 px-3 py-2 text-sm focus:outline-none focus:border-[#DC2626]/40 focus:bg-white focus:shadow-glow transition-all duration-200 resize-none"
-                    />
-                  </div>
-                  <div className="grid grid-cols-1 md:grid-cols-3 gap-5">
-                    <Input
-                      label="Vehicle Type"
-                      value={formData.vehicleType}
-                      onChange={(e) => handleChange("vehicleType", e.target.value)}
-                      placeholder="e.g. School Bus"
-                      icon={<Bus className="h-4 w-4" />}
-                    />
-                    <Input
-                      label="Vehicle Number"
-                      value={formData.vehicleNumber}
-                      onChange={(e) => handleChange("vehicleNumber", e.target.value)}
-                      placeholder="e.g. AS-01-AB-1234"
-                    />
-                    <Input
-                      label="License Number"
-                      value={formData.licenseNumber}
-                      onChange={(e) => handleChange("licenseNumber", e.target.value)}
-                      placeholder="License number"
-                    />
-                  </div>
-                </div>
-              </div>
-            )}
-
-            <div className="flex gap-3 pt-4">
-              <Button
-                type="button"
-                variant="outline"
-                className="flex-1"
-                onClick={() => router.push("/register/subscription")}
-              >
-                Back
-              </Button>
-              <Button type="submit" className="flex-1" isLoading={isLoading} size="lg">
-                Complete Setup
-              </Button>
-            </div>
-          </form>
+          {isParent && currentStep === 3 && (
+            <TransportStep
+              data={transportData}
+              onChange={setTransportData}
+              onSubmit={handleFinalSubmit}
+              onBack={() => setCurrentStep(2)}
+              isLoading={isLoading}
+            />
+          )}
         </Card>
       </div>
     </AuthShell>

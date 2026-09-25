@@ -21,20 +21,20 @@ interface RoleOption {
 
 const ROLES: RoleOption[] = [
   {
-    id: "STUDENT",
-    label: "STUDENT",
-    description: "Access learning resources, connect with tutors, view assignments.",
-    icon: <GraduationCap className="h-8 w-8" />,
-    color: "#DC2626",
-    features: ["Find tutors", "Access resources", "View assignments"],
-  },
-  {
     id: "PARENT",
-    label: "PARENT",
-    description: "Monitor child's progress, track transportation, manage payments.",
+    label: "PARENT / GUARDIAN (90%)",
+    description: "Manage child education, track live school bus GPS, and request safe transportation.",
     icon: <Users className="h-8 w-8" />,
     color: "#f59e0b",
-    features: ["Track children", "Live GPS view", "Manage payments"],
+    features: ["Add & monitor children", "Live school transport GPS", "Transport requests & demand"],
+  },
+  {
+    id: "STUDENT",
+    label: "STUDENT (18+ YEARS)",
+    description: "Independent student above 18 managing learning resources, tutors, and transport.",
+    icon: <GraduationCap className="h-8 w-8" />,
+    color: "#DC2626",
+    features: ["Find verified tutors", "College & school transit", "Jobs & book marketplace"],
   },
   {
     id: "SERVICE_PROVIDER",
@@ -47,10 +47,10 @@ const ROLES: RoleOption[] = [
   {
     id: "SERVICE_PROVIDER",
     label: "TRANSPORTATION PROVIDER",
-    description: "View routes, track student check-ins, manage fleet.",
+    description: "Verified school transporter fleet management, live check-ins, and routes.",
     icon: <Bus className="h-8 w-8" />,
     color: "#f97316",
-    features: ["Manage routes", "Check-in/out", "Fleet tracking"],
+    features: ["Manage routes", "OmniStud verification", "Fleet tracking"],
   },
 ];
 
@@ -66,10 +66,12 @@ export default function RoleSelectionPage() {
   const handleSelect = (role: RoleOption) => {
     setSelectedRole(role.id);
     setSelectedLabel(role.label);
-    if (role.label === "TEACHER / INSTITUTION") {
-      setProviderType("TEACHER");
-    } else if (role.label === "TRANSPORTATION PROVIDER") {
-      setProviderType("TRANSPORTER");
+    if (role.id === "SERVICE_PROVIDER") {
+      if (role.label.includes("TEACHER")) {
+        setProviderType("TEACHER");
+      } else if (role.label.includes("TRANSPORTATION")) {
+        setProviderType("TRANSPORTER");
+      }
     } else {
       setProviderType("");
     }

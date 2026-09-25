@@ -78,3 +78,122 @@ export async function getChildrenProfiles(parentUid: string): Promise<StudentPro
   }
   return children;
 }
+
+
+export interface CreateChildInput {
+  displayName: string;
+  grade?: string;
+  school?: string;
+  board?: string;
+  campus?: string;
+  dateOfBirth?: string;
+  gender?: string;
+  age?: number;
+  hobby?: string;
+  photoURL?: string;
+  studentIdCode?: string;
+}
+
+export function generateStudentIdCode(): string {
+  const year = new Date().getFullYear();
+  const rand = Math.floor(10000 + Math.random() * 90000);
+  return `OS-${year}-${rand}`;
+}
+
+export async function createChildProfileForParent(
+  parentUid: string,
+  childData: CreateChildInput
+): Promise<StudentProfile> {
+  const usersRef = getUsersRef();
+  const childIdCode = childData.studentIdCode?.trim() || generateStudentIdCode();
+  const childDocRef = doc(usersRef);
+  const childUid = childDocRef.id;
+
+  const childProfile: StudentProfile = {
+    uid: childUid,
+    email: `${childIdCode.toLowerCase().replace(/[^a-z0-9]/g, "")}@student.omnistud.internal`,
+    displayName: childData.displayName.trim(),
+    role: "STUDENT",
+    parentId: parentUid,
+    grade: childData.grade || "",
+    school: childData.school || "",
+    board: childData.board || "CBSE",
+    campus: childData.campus || "",
+    studentIdCode: childIdCode,
+    dateOfBirth: childData.dateOfBirth || "",
+    gender: childData.gender || "",
+    age: childData.age || undefined,
+    hobby: childData.hobby || "",
+    photoURL: childData.photoURL || "",
+    isManagedChild: true,
+    assignedServices: [],
+    paymentStatus: "COMPLETED",
+    createdAt: Date.now(),
+    updatedAt: Date.now(),
+  };
+
+  // Add the child document into Firestore
+  const { setDoc } = await import("firebase/firestore");
+  await setDoc(childDocRef, childProfile);
+
+  // Link child ID into parent document
+  await updateDoc(doc(usersRef, parentUid), {
+    children: arrayUnion(childUid),
+    updatedAt: Date.now(),
+  });
+
+  return childProfile;
+}
+
+export async function linkChildByStudentCode(
+  parentUid: string,
+  searchQuery: string
+): Promise<StudentProfile | null> {
+  const qClean = searchQuery.trim();
+  if (!qClean) return null;
+
+  // Search by studentIdCode or email
+  let q = query(getUsersRef(), where("studentIdCode", "==", qClean));
+  let snap = await getDocs(q);
+
+  if (snap.empty) {
+    q = query(getUsersRef(), where("email", "==", qClean), where("role", "==", "STUDENT"));
+    snap = await getDocs(q);
+  }
+
+  if (snap.empty) {
+    // Also try matching by name case-insensitively across students
+    const allStudentsSnap = await getDocs(query(getUsersRef(), where("role", "==", "STUDENT")));
+    const matched = allStudentsSnap.docs.find(
+      (d) => (d.data() as StudentProfile).displayName?.toLowerCase() === qClean.toLowerCase()
+    );
+    if (matched) {
+      const childId = matched.id;
+      await updateDoc(doc(getUsersRef(), parentUid), {
+        children: arrayUnion(childId),
+        updatedAt: Date.now(),
+      });
+      await updateDoc(doc(getUsersRef(), childId), {
+        parentId: parentUid,
+        updatedAt: Date.now(),
+      });
+      return { uid: childId, ...matched.data() } as StudentProfile;
+    }
+    return null;
+  }
+
+  const childDoc = snap.docs[0];
+  const childId = childDoc.id;
+
+  await updateDoc(doc(getUsersRef(), parentUid), {
+    children: arrayUnion(childId),
+    updatedAt: Date.now(),
+  });
+  await updateDoc(doc(getUsersRef(), childId), {
+    parentId: parentUid,
+    updatedAt: Date.now(),
+  });
+
+  return { uid: childId, ...childDoc.data() } as StudentProfile;
+}
+

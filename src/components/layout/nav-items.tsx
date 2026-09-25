@@ -13,6 +13,9 @@ import {
   BarChart3,
   Wallet,
   FileText,
+  School,
+  GraduationCap,
+  Bell,
   type LucideIcon,
 } from "lucide-react";
 import { UserRole } from "@/types";
@@ -42,9 +45,13 @@ export function getNavItems(role: UserRole | null): NavItem[] {
   if (role === "PARENT") {
     return [
       { label: "Family Overview", href: "/parent/dashboard", icon: LayoutDashboard },
-      { label: "Live Map", href: "/parent/dashboard/live-map", icon: MapPin },
-      { label: "Tracked Services", href: "/parent/dashboard/services", icon: Bus },
+      { label: "My Children", href: "/parent/dashboard/children", icon: Users },
+      { label: "School Transport", href: "/parent/dashboard/transport", icon: Bus },
+      { label: "School Updates", href: "/parent/dashboard/school-updates", icon: School },
+      { label: "Learning & Services", href: "/parent/dashboard/services", icon: GraduationCap },
+      { label: "Marketplace", href: "/parent/dashboard/marketplace", icon: ShoppingCart },
       { label: "Payments", href: "/parent/dashboard/payments", icon: CreditCard },
+      { label: "Notifications", href: "/parent/dashboard/notifications", icon: Bell },
       { label: "Account", href: "/parent/dashboard/account", icon: UserCircle },
     ];
   }
@@ -90,9 +97,9 @@ export function getMobileTabItems(role: UserRole | null): NavItem[] {
   if (role === "PARENT") {
     return [
       { label: "Home", href: "/parent/dashboard", icon: LayoutDashboard },
-      { label: "Live Map", href: "/parent/dashboard/live-map", icon: MapPin },
-      { label: "Payments", href: "/parent/dashboard/payments", icon: CreditCard },
-      { label: "Account", href: "/parent/dashboard/account", icon: UserCircle },
+      { label: "Children", href: "/parent/dashboard/children", icon: Users },
+      { label: "Transport", href: "/parent/dashboard/transport", icon: Bus },
+      { label: "Services", href: "/parent/dashboard/services", icon: GraduationCap },
     ];
   }
 
