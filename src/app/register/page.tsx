@@ -304,7 +304,7 @@ export default function RegisterPage() {
       await confirmationResult.confirm(otp.trim());
       setSuccess(true);
       setTimeout(() => {
-        router.push("/register/role");
+        router.push("/register/subscription?from=register");
       }, 1500);
     } catch (err: unknown) {
       console.error(err);
@@ -317,7 +317,7 @@ export default function RegisterPage() {
   const handleSkipVerification = () => {
     setSuccess(true);
     setTimeout(() => {
-      router.push("/register/role");
+      router.push("/register/subscription?from=register");
     }, 1500);
   };
 
@@ -334,7 +334,7 @@ export default function RegisterPage() {
             <h2 className="text-2xl font-bold text-slate-900">Account Created!</h2>
             <p className="text-slate-600">Let&apos;s set up your profile and choose your plan.</p>
             <Button asChild>
-              <Link href="/register/role">Continue Setup</Link>
+              <Link href="/register/subscription?from=register">Continue Setup</Link>
             </Button>
           </div>
         </Card>

@@ -13,7 +13,12 @@ import { PageHeader } from "@/components/ui/PageHeader";
 import { EmptyState } from "@/components/ui/EmptyState";
 import { Button } from "@/components/ui/Button";
 import { Alert } from "@/components/ui/Alert";
-import { getMarketplaceItems } from "@/lib/services/marketplace";
+import {
+  createMarketplaceEnquiry,
+  getEnquiriesByBuyer,
+  getItemsBySeller,
+  getMarketplaceItems,
+} from "@/lib/services/marketplace";
 import { getUserById } from "@/lib/services/users";
 import { MarketplaceItem, StudentProfile } from "@/types";
 import { BookOpen, Phone, MapPin, Star } from "lucide-react";
@@ -47,13 +52,25 @@ export default function OldBooksPage() {
   const [reviewingSellerId, setReviewingSellerId] = useState<string | null>(null);
   const [sellerRating, setSellerRating] = useState("5");
   const [sellerComment, setSellerComment] = useState("");
+  const [contactedSellers, setContactedSellers] = useState<Record<string, boolean>>({});
+  const [contactingItemId, setContactingItemId] = useState<string | null>(null);
+  const [showMineOnly, setShowMineOnly] = useState(false);
   const [error, setError] = useState<string | null>(null);
 
   useEffect(() => {
     if (!user) return;
-    Promise.all([getMarketplaceItems(), getUserById(user.uid).catch(() => null)])
-      .then(([all, prof]) => {
-        setItems(all.filter((i) => i.category === "BOOK"));
+    Promise.all([
+      getMarketplaceItems(),
+      getItemsBySeller(user.uid).catch(() => []),
+      getUserById(user.uid).catch(() => null),
+    ])
+      .then(([all, mine, prof]) => {
+        const merged = [...all, ...mine].reduce<MarketplaceItem[]>((acc, item) => {
+          if (acc.some((existing) => existing.id === item.id)) return acc;
+          acc.push(item);
+          return acc;
+        }, []);
+        setItems(merged.filter((i) => i.category === "BOOK"));
         setProfile(prof as StudentProfile | null);
       })
       .catch((err) => console.error("Failed to load books:", err))
@@ -66,6 +83,16 @@ export default function OldBooksPage() {
         { timeout: 8000 }
       );
     }
+
+    getEnquiriesByBuyer(user.uid)
+      .then((enquiries) => {
+        const map: Record<string, boolean> = {};
+        enquiries.forEach((entry) => {
+          map[entry.sellerId] = true;
+        });
+        setContactedSellers(map);
+      })
+      .catch(() => undefined);
   }, [user]);
 
   useEffect(() => {
@@ -86,15 +113,23 @@ export default function OldBooksPage() {
   const filtered = useMemo(() => {
     const needle = (v: string) => v.trim().toLowerCase();
     return items.filter((i) => {
+      if (!showMineOnly && i.status !== "ACTIVE") return false;
+      if (showMineOnly && user && i.sellerId !== user.uid) return false;
+
       if (searchMatchMine && profile) {
-        if (
-          (profile.grade && i.grade === profile.grade) ||
-          (profile.school && i.school && i.school.toLowerCase() === profile.school.toLowerCase()) ||
-          (profile.board && i.board && i.board.toLowerCase() === profile.board.toLowerCase())
-        ) {
-          return true;
+        const hasProfileData = Boolean(profile.grade || profile.school || profile.board);
+        if (hasProfileData) {
+          const gradeMatch = profile.grade
+            ? (i.grade ?? "").toLowerCase() === profile.grade.toLowerCase()
+            : true;
+          const schoolMatch = profile.school
+            ? (i.school ?? "").toLowerCase() === profile.school.toLowerCase()
+            : true;
+          const boardMatch = profile.board
+            ? (i.board ?? "").toLowerCase() === profile.board.toLowerCase()
+            : true;
+          if (!(gradeMatch && schoolMatch && boardMatch)) return false;
         }
-        return false;
       }
       if (needle(searchGrade) && !(i.grade ?? "").toLowerCase().includes(needle(searchGrade))) {
         return false;
@@ -114,6 +149,8 @@ export default function OldBooksPage() {
     });
   }, [
     items,
+    showMineOnly,
+    user,
     searchGrade,
     searchSchool,
     searchBoard,
@@ -152,6 +189,30 @@ export default function OldBooksPage() {
     }
   };
 
+  const handleContactSeller = async (item: MarketplaceItem) => {
+    if (!user || user.uid === item.sellerId) return;
+    setError(null);
+    setContactingItemId(item.id);
+    try {
+      await createMarketplaceEnquiry({
+        itemId: item.id,
+        sellerId: item.sellerId,
+        buyerId: user.uid,
+        buyerName: user.displayName,
+      });
+      setContactedSellers((prev) => ({ ...prev, [item.sellerId]: true }));
+      if (item.sellerPhone) {
+        window.alert(`Contact seller at: ${item.sellerPhone}`);
+      } else {
+        window.alert("Seller contact captured. The seller will follow up through OmniStud.");
+      }
+    } catch (err) {
+      setError((err as Error).message || "Failed to capture seller enquiry.");
+    } finally {
+      setContactingItemId(null);
+    }
+  };
+
   if (loading) {
     return (
       <ProtectedRoute allowedRoles={[STUDENT_ROLE]}>
@@ -170,9 +231,14 @@ export default function OldBooksPage() {
             title="Old Books"
             description="Match old textbooks by class, school and board."
             actions={
-              <Button asChild>
-                <Link href="/student/dashboard/marketplace/new">Post a Book</Link>
-              </Button>
+              <div className="flex flex-wrap items-center gap-2">
+                <Button variant={showMineOnly ? "primary" : "outline"} onClick={() => setShowMineOnly((prev) => !prev)}>
+                  {showMineOnly ? "Showing My Posts" : "My Posts"}
+                </Button>
+                <Button asChild>
+                  <Link href="/student/dashboard/marketplace/new">Post a Book</Link>
+                </Button>
+              </div>
             }
           />
 
@@ -269,6 +335,19 @@ export default function OldBooksPage() {
 
                   {user && user.uid !== item.sellerId && (
                     <div className="mt-2">
+                      <Button
+                        size="sm"
+                        variant="outline"
+                        onClick={() => void handleContactSeller(item)}
+                        isLoading={contactingItemId === item.id}
+                      >
+                        Contact Seller
+                      </Button>
+                    </div>
+                  )}
+
+                  {user && user.uid !== item.sellerId && (
+                    <div className="mt-2">
                       {reviewingSellerId === item.sellerId ? (
                         <div className="space-y-2 rounded-lg border border-slate-200 p-2.5">
                           <Input
@@ -293,9 +372,19 @@ export default function OldBooksPage() {
                           </div>
                         </div>
                       ) : (
-                        <Button size="sm" variant="outline" onClick={() => setReviewingSellerId(item.sellerId)}>
+                        <Button
+                          size="sm"
+                          variant="outline"
+                          disabled={!contactedSellers[item.sellerId]}
+                          onClick={() => setReviewingSellerId(item.sellerId)}
+                        >
                           Add Seller Review
                         </Button>
+                      )}
+                      {!contactedSellers[item.sellerId] && (
+                        <p className="mt-1 text-[11px] text-slate-500">
+                          Contact this seller first to unlock reviews.
+                        </p>
                       )}
                     </div>
                   )}

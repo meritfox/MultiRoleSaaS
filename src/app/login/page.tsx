@@ -58,6 +58,8 @@ const getDashboardPath = (role: UserRole | null | undefined): string => {
     case "SUPER_ADMIN":
       return "/admin/dashboard";
     case "SERVICE_PROVIDER":
+    case "TEACHER":
+    case "TRANSPORTER":
       return "/provider/dashboard";
     case "STUDENT":
       return "/student/dashboard";

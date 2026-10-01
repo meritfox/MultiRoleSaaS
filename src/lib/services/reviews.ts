@@ -4,6 +4,7 @@ import {
   collection,
   doc,
   getDocs,
+  limit,
   orderBy,
   query,
   updateDoc,
@@ -29,6 +30,11 @@ const getServiceRequestsRef = () => {
 const getServicesRef = () => {
   ensureFirebaseInit();
   return collection(db, "services");
+};
+
+const getMarketplaceEnquiriesRef = () => {
+  ensureFirebaseInit();
+  return collection(db, "marketplaceEnquiries");
 };
 
 function buildSummary(ratings: number[]): ReviewSummary {
@@ -144,6 +150,16 @@ export async function addSellerReview(params: {
   rating: number;
   comment: string;
 }): Promise<{ review: SellerReview; summary: ReviewSummary }> {
+  const enquirySnap = await getDocs(
+    query(getMarketplaceEnquiriesRef(), where("buyerId", "==", params.reviewerId), limit(25))
+  );
+  const hasEligibleEnquiry = enquirySnap.docs.some(
+    (d) => (d.data() as { sellerId?: string }).sellerId === params.sellerId
+  );
+  if (!hasEligibleEnquiry) {
+    throw new Error("You can review this seller only after contacting them from a listing.");
+  }
+
   const existing = await getDocs(
     query(
       getSellerReviewsRef(),

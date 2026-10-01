@@ -204,7 +204,13 @@ export default function ProfileSetupPage() {
         }
         await updateUserProfile(firebaseUser.uid, updateData);
         await refreshUser();
-        router.push(role === "STUDENT" ? "/student/dashboard" : "/provider/dashboard");
+        const destination =
+          role === "STUDENT"
+            ? "/student/dashboard"
+            : role === "SERVICE_PROVIDER" || role === "TEACHER" || role === "TRANSPORTER"
+            ? "/provider/dashboard"
+            : "/";
+        router.push(destination);
       }
     } catch (err: unknown) {
       console.error("Profile setup failed:", err);

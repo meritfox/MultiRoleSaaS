@@ -17,9 +17,11 @@ import {
   stopLiveLocation,
   notifyParentOfCheckIn,
   TransportCheckIn,
+  getActiveTransportRequirements,
 } from "@/lib/services/transport";
 import { getRequestsByProvider } from "@/lib/services/services";
-import { Play, Square, CheckCircle, Clock, Trash2, Users } from "lucide-react";
+import { Play, Square, CheckCircle, Clock, Trash2, Users, PhoneCall } from "lucide-react";
+import { TransportRequirement } from "@/types";
 
 const PROVIDER_ROLE = "SERVICE_PROVIDER";
 
@@ -56,6 +58,7 @@ export default function TransportConsolePage() {
   const [trail, setTrail] = useState<GeoPoint[]>([]);
   const [error, setError] = useState<string | null>(null);
   const [actionId, setActionId] = useState<string | null>(null);
+  const [leadDemands, setLeadDemands] = useState<TransportRequirement[]>([]);
 
   const watchIdRef = useRef<number | null>(null);
   const simIntervalRef = useRef<number | null>(null);
@@ -84,6 +87,15 @@ export default function TransportConsolePage() {
 
         const history = await getCheckInsByProvider(user.uid);
         if (!cancelled) setCheckIns(history);
+
+        const activeDemands = await getActiveTransportRequirements(24).catch(() => []);
+        if (!cancelled) {
+          setLeadDemands(
+            activeDemands.filter(
+              (d) => (d.needTransport === "YES" || d.needTransport === "NOT_SURE") && d.status === "ACTIVE"
+            )
+          );
+        }
       } catch (err) {
         console.error(err);
         if (!cancelled) setError("Failed to load transport data.");
@@ -298,6 +310,43 @@ export default function TransportConsolePage() {
             <p className="mt-2 text-xs text-slate-400">
               🚌 current position · green dots: pickups · amber dots: drops
             </p>
+          </Card>
+
+          <Card title="Transport Leads">
+            {leadDemands.length === 0 ? (
+              <p className="text-center text-slate-500 py-4">
+                No active leads at the moment. Check back soon.
+              </p>
+            ) : (
+              <div className="grid gap-3 sm:grid-cols-2">
+                {leadDemands.map((lead) => (
+                  <div key={lead.id} className="rounded-xl border border-slate-200/70 bg-slate-50/60 p-3.5">
+                    <p className="font-semibold text-slate-900 truncate">{lead.schoolName}</p>
+                    <p className="text-xs text-slate-500">{lead.city}{lead.state ? `, ${lead.state}` : ""}</p>
+                    <p className="mt-2 text-xs text-slate-600">
+                      Pickup: {lead.pickupLocation}
+                    </p>
+                    <p className="mt-1 text-xs text-slate-600">
+                      Drop: {lead.dropLocation}
+                    </p>
+                    <p className="mt-1 text-xs text-slate-600">
+                      Preferred: {lead.preferredPickupTime || "--"} / {lead.preferredDropTime || "--"}
+                    </p>
+                    <div className="mt-3">
+                      <Button
+                        size="sm"
+                        variant="outline"
+                        onClick={() => {
+                          window.alert("Lead captured. Follow up from your assigned requests pipeline.");
+                        }}
+                      >
+                        <PhoneCall className="mr-1.5 h-4 w-4" /> Contact Lead
+                      </Button>
+                    </div>
+                  </div>
+                ))}
+              </div>
+            )}
           </Card>
 
           <div className="grid gap-6 lg:grid-cols-2">

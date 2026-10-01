@@ -182,6 +182,15 @@ export async function getTransportRequirementsByParent(parentId: string): Promis
   return snap.docs.map((d) => ({ id: d.id, ...d.data() }) as TransportRequirement);
 }
 
+export async function getActiveTransportRequirements(limitCount = 40): Promise<TransportRequirement[]> {
+  const q = query(getTransportRequirementsRef(), where("status", "==", "ACTIVE"));
+  const snap = await getDocs(q);
+  return snap.docs
+    .map((d) => ({ id: d.id, ...d.data() }) as TransportRequirement)
+    .sort((a, b) => (b.createdAt ?? 0) - (a.createdAt ?? 0))
+    .slice(0, Math.max(1, limitCount));
+}
+
 export async function getTransportDemandStatsForSchool(
   schoolName: string,
   city?: string

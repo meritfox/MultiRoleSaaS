@@ -14,7 +14,7 @@ import { Badge } from "@/components/ui/Badge";
 import { Spinner } from "@/components/ui/Spinner";
 import { getServiceById, createServiceRequest } from "@/lib/services/services";
 import { getUserById } from "@/lib/services/users";
-import { addServiceReview, getServiceReviews } from "@/lib/services/reviews";
+import { addServiceReview, canReviewService, getServiceReviews } from "@/lib/services/reviews";
 import {
   Service,
   ServiceReview,
@@ -44,6 +44,10 @@ function TeacherDetailContent() {
   const [reviewComment, setReviewComment] = useState("");
   const [reviewError, setReviewError] = useState<string | null>(null);
   const [reviewSubmitting, setReviewSubmitting] = useState(false);
+  const [reviewEligibility, setReviewEligibility] = useState<{ serviceId: string; eligible: boolean } | null>(null);
+
+  const canLeaveReview = Boolean(service && reviewEligibility?.serviceId === service.id && reviewEligibility.eligible);
+  const checkingReviewEligibility = Boolean(user && service && reviewEligibility?.serviceId !== service.id);
 
   useEffect(() => {
     if (!serviceId) return;
@@ -65,6 +69,21 @@ function TeacherDetailContent() {
     };
     fetch();
   }, [serviceId]);
+
+  useEffect(() => {
+    if (!user || !service) return;
+    let active = true;
+    canReviewService(user.uid, service.id)
+      .then((eligible) => {
+        if (active) setReviewEligibility({ serviceId: service.id, eligible });
+      })
+      .catch(() => {
+        if (active) setReviewEligibility({ serviceId: service.id, eligible: false });
+      });
+    return () => {
+      active = false;
+    };
+  }, [user, service]);
 
   const handleRequest = async (e: React.FormEvent) => {
     e.preventDefault();
@@ -245,24 +264,32 @@ function TeacherDetailContent() {
           </Card>
 
           <Card title="Reviews">
-            <form onSubmit={handleReviewSubmit} className="space-y-3">
-              {reviewError && <Alert variant="error">{reviewError}</Alert>}
-              <Input
-                label="Your rating (1-5)"
-                value={reviewRating}
-                onChange={(e) => setReviewRating(e.target.value.replace(/[^1-5]/g, "") || "5")}
-              />
-              <textarea
-                value={reviewComment}
-                onChange={(e) => setReviewComment(e.target.value)}
-                rows={3}
-                placeholder="Write your review based on your real experience"
-                className="w-full rounded-xl border border-slate-200 bg-slate-50/60 px-3 py-2 text-sm focus:outline-none focus:border-[#DC2626]/40"
-              />
-              <Button type="submit" isLoading={reviewSubmitting}>
-                Submit Review
-              </Button>
-            </form>
+            {checkingReviewEligibility ? (
+              <p className="text-sm text-slate-500">Checking your review eligibility…</p>
+            ) : canLeaveReview ? (
+              <form onSubmit={handleReviewSubmit} className="space-y-3">
+                {reviewError && <Alert variant="error">{reviewError}</Alert>}
+                <Input
+                  label="Your rating (1-5)"
+                  value={reviewRating}
+                  onChange={(e) => setReviewRating(e.target.value.replace(/[^1-5]/g, "") || "5")}
+                />
+                <textarea
+                  value={reviewComment}
+                  onChange={(e) => setReviewComment(e.target.value)}
+                  rows={3}
+                  placeholder="Write your review based on your real experience"
+                  className="w-full rounded-xl border border-slate-200 bg-slate-50/60 px-3 py-2 text-sm focus:outline-none focus:border-[#DC2626]/40"
+                />
+                <Button type="submit" isLoading={reviewSubmitting}>
+                  Submit Review
+                </Button>
+              </form>
+            ) : (
+              <Alert variant="info">
+                You can submit a review after this provider approves your request.
+              </Alert>
+            )}
 
             <div className="mt-4 space-y-2">
               {reviews.length === 0 ? (

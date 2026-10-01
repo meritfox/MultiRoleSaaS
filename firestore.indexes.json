@@ -160,6 +160,13 @@
         { "fieldPath": "sellerId", "order": "ASCENDING" },
         { "fieldPath": "reviewerId", "order": "ASCENDING" }
       ]
+    },
+    {
+      "collectionGroup": "marketplaceEnquiries",
+      "queryScope": "COLLECTION",
+      "fields": [
+        { "fieldPath": "buyerId", "order": "ASCENDING" }
+      ]
     }
   ],
   "fieldOverrides": []

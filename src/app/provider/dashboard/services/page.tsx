@@ -21,6 +21,7 @@ import {
   Service,
   ServiceCatalogItem,
   RateUnit,
+  ServiceProviderProfile,
   TeacherCategory,
   RATE_UNIT_LABELS,
   TEACHER_CATEGORY_LABELS,
@@ -40,6 +41,7 @@ const TEACHER_CATEGORIES: TeacherCategory[] = [
 
 export default function ProviderServicesPage() {
   const { user } = useAuth();
+  const providerProfileType = (user as ServiceProviderProfile | null)?.providerType;
   const [services, setServices] = useState<Service[]>([]);
   const [catalog, setCatalog] = useState<ServiceCatalogItem[]>([]);
   const [loading, setLoading] = useState(true);
@@ -70,8 +72,15 @@ export default function ProviderServicesPage() {
           getServicesByProvider(user.uid),
           getCatalogItems().catch(() => []),
         ]);
+        const activeCatalog = cat.filter((c) => c.active);
+        const scopedCatalog = providerProfileType
+          ? activeCatalog.filter((c) => c.providerType === providerProfileType)
+          : activeCatalog;
         setServices(svc);
-        setCatalog(cat.filter((c) => c.active));
+        setCatalog(scopedCatalog);
+        if (providerProfileType) {
+          setProviderType(providerProfileType);
+        }
       } catch (err) {
         console.error("Error fetching services:", err);
         setError("Failed to load your services.");
@@ -80,7 +89,7 @@ export default function ProviderServicesPage() {
       }
     };
     fetchAll();
-  }, [user]);
+  }, [user, providerProfileType]);
 
   /** Selecting an entry from the admin master list auto-fills type & category. */
   const handleCatalogSelect = (id: string) => {
@@ -99,7 +108,7 @@ export default function ProviderServicesPage() {
     setPrice("");
     setRateUnit("PER_MONTH");
     setCatalogId("");
-    setProviderType("");
+    setProviderType(providerProfileType || "");
     setCategory("");
     setTeacherCategory("");
     setSubject("");

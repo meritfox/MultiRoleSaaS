@@ -26,6 +26,9 @@ export default function ProviderProfilePage() {
   const [bio, setBio] = useState("");
   const [providerType, setProviderType] = useState("");
   const [phoneNumber, setPhoneNumber] = useState("");
+  const [vehicleType, setVehicleType] = useState("");
+  const [vehicleNumber, setVehicleNumber] = useState("");
+  const [licenseNumber, setLicenseNumber] = useState("");
 
   useEffect(() => {
     const fetchProfile = async () => {
@@ -39,6 +42,9 @@ export default function ProviderProfilePage() {
           setBio(data.bio || "");
           setProviderType(data.providerType || "");
           setPhoneNumber(data.phoneNumber || "");
+          setVehicleType(data.vehicleType || "");
+          setVehicleNumber(data.vehicleNumber || "");
+          setLicenseNumber(data.licenseNumber || "");
         }
       } catch (err) {
         console.error("Error fetching profile:", err);
@@ -64,6 +70,11 @@ export default function ProviderProfilePage() {
         phoneNumber,
         updatedAt: Date.now(),
       };
+      if (providerType === "TRANSPORTER") {
+        updatedData.vehicleType = vehicleType;
+        updatedData.vehicleNumber = vehicleNumber;
+        updatedData.licenseNumber = licenseNumber;
+      }
 
       await updateDoc(doc(db, "users", user!.uid), updatedData);
       setProfile({ ...profile, ...updatedData } as ServiceProviderProfile);
@@ -138,6 +149,34 @@ export default function ProviderProfilePage() {
                   />
                 </div>
 
+                {providerType === "TRANSPORTER" && (
+                  <>
+                    <div className="grid gap-4 sm:grid-cols-2">
+                      <Input
+                        label="Vehicle Type"
+                        type="text"
+                        value={vehicleType}
+                        onChange={(e) => setVehicleType(e.target.value)}
+                        placeholder="e.g. School Van"
+                      />
+                      <Input
+                        label="Vehicle Number"
+                        type="text"
+                        value={vehicleNumber}
+                        onChange={(e) => setVehicleNumber(e.target.value)}
+                        placeholder="e.g. JH-05-AB-1234"
+                      />
+                    </div>
+                    <Input
+                      label="Driver License Number"
+                      type="text"
+                      value={licenseNumber}
+                      onChange={(e) => setLicenseNumber(e.target.value)}
+                      placeholder="e.g. DL-1234567890"
+                    />
+                  </>
+                )}
+
                 <div className="space-y-2">
                   <label className="text-sm font-medium text-slate-700">Bio</label>
                   <textarea
@@ -178,6 +217,22 @@ export default function ProviderProfilePage() {
                   <span className="text-slate-500">Rating:</span>
                   <span className="font-medium">{profile.rating || 0} / 5</span>
                 </div>
+                {profile.providerType === "TRANSPORTER" && (
+                  <>
+                    <div className="flex justify-between border-b pb-2">
+                      <span className="text-slate-500">Vehicle Type:</span>
+                      <span className="font-medium">{profile.vehicleType || "Not provided"}</span>
+                    </div>
+                    <div className="flex justify-between border-b pb-2">
+                      <span className="text-slate-500">Vehicle Number:</span>
+                      <span className="font-medium">{profile.vehicleNumber || "Not provided"}</span>
+                    </div>
+                    <div className="flex justify-between border-b pb-2">
+                      <span className="text-slate-500">License Number:</span>
+                      <span className="font-medium">{profile.licenseNumber || "Not provided"}</span>
+                    </div>
+                  </>
+                )}
               </div>
             </Card>
           </div>

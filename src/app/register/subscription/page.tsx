@@ -1,8 +1,8 @@
 "use client";
 
-import React, { useState, useEffect } from "react";
+import React, { Suspense, useState, useEffect } from "react";
 import Link from "next/link";
-import { useRouter } from "next/navigation";
+import { useRouter, useSearchParams } from "next/navigation";
 import { useAuth } from "@/lib/auth-context";
 import { Button } from "@/components/ui/Button";
 import { Card } from "@/components/ui/Card";
@@ -13,9 +13,12 @@ import { collection, getDocs } from "firebase/firestore";
 import { SubscriptionConfig, SubscriptionBilling } from "@/types";
 import { Check, Sparkles, CreditCard, HelpCircle, GraduationCap } from "lucide-react";
 
-export default function SubscriptionPage() {
+function SubscriptionContent() {
   const { firebaseUser, refreshUser } = useAuth();
   const router = useRouter();
+  const searchParams = useSearchParams();
+  const cameFromRegister = searchParams.get("from") === "register";
+
   const [billing, setBilling] = useState<SubscriptionBilling>("MONTHLY");
   const [selectedPlan, setSelectedPlan] = useState<string | null>(null);
   const [plans, setPlans] = useState<SubscriptionConfig[]>([]);
@@ -206,7 +209,7 @@ export default function SubscriptionPage() {
             </div>
             <div className="flex items-center justify-between max-w-2xl mx-auto">
               <button
-                onClick={() => router.push("/register/role")}
+                onClick={() => router.push(cameFromRegister ? "/register" : "/register/role")}
                 className="text-sm text-slate-500 hover:text-slate-700"
               >
                 Back
@@ -268,5 +271,13 @@ export default function SubscriptionPage() {
         )}
       </div>
     </div>
+  );
+}
+
+export default function SubscriptionPage() {
+  return (
+    <Suspense fallback={<div className="flex min-h-screen items-center justify-center text-slate-500">Loading…</div>}>
+      <SubscriptionContent />
+    </Suspense>
   );
 }

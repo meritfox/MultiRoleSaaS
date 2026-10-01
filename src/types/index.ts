@@ -4,6 +4,13 @@ export type PaymentStatus = 'PENDING' | 'COMPLETED';
 export type SubscriptionPlan = 'BASIC' | 'PRO' | 'ENTERPRISE';
 export type SubscriptionBilling = 'MONTHLY' | 'YEARLY';
 
+export interface ProviderVehicle {
+  id: string;
+  vehicleType: string;
+  vehicleNumber: string;
+  licenseNumber?: string;
+}
+
 export interface UserProfile {
   uid: string;
   email: string;
@@ -39,6 +46,7 @@ export interface ServiceProviderProfile extends UserProfile {
   vehicleType?: string;
   vehicleNumber?: string;
   licenseNumber?: string;
+  vehicles?: ProviderVehicle[];
   isVerified?: boolean;
   verificationStatus?: 'VERIFIED' | 'PENDING' | 'REJECTED';
 }
@@ -246,6 +254,15 @@ export interface MarketplaceItem {
   lat?: number;
   lng?: number;
   status: "ACTIVE" | "SOLD";
+  createdAt: number;
+}
+
+export interface MarketplaceEnquiry {
+  id: string;
+  itemId: string;
+  sellerId: string;
+  buyerId: string;
+  buyerName?: string;
   createdAt: number;
 }
 

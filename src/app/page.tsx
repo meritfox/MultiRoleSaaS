@@ -101,7 +101,7 @@ export default function HomePage() {
   const dashboardHref =
     role === "SUPER_ADMIN"
       ? "/admin/dashboard"
-      : role === "SERVICE_PROVIDER"
+      : role === "SERVICE_PROVIDER" || role === "TEACHER" || role === "TRANSPORTER"
       ? "/provider/dashboard"
       : role === "STUDENT"
       ? "/student/dashboard"

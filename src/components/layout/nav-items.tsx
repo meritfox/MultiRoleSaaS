@@ -26,9 +26,15 @@ export interface NavItem {
   icon: LucideIcon;
 }
 
+function normalizeRole(role: UserRole | null | undefined): UserRole | null {
+  if (role === "TEACHER" || role === "TRANSPORTER") return "SERVICE_PROVIDER";
+  return role ?? null;
+}
+
 /** Full navigation list per role (sidebar + mobile drawer). */
 export function getNavItems(role: UserRole | null): NavItem[] {
-  if (role === "STUDENT") {
+  const normalizedRole = normalizeRole(role);
+  if (normalizedRole === "STUDENT") {
     return [
       { label: "Home", href: "/student/dashboard", icon: LayoutDashboard },
       { label: "Find Tutors", href: "/student/dashboard/tutors", icon: Search },
@@ -42,7 +48,7 @@ export function getNavItems(role: UserRole | null): NavItem[] {
     ];
   }
 
-  if (role === "PARENT") {
+  if (normalizedRole === "PARENT") {
     return [
       { label: "Family Overview", href: "/parent/dashboard", icon: LayoutDashboard },
       { label: "My Children", href: "/parent/dashboard/children", icon: Users },
@@ -56,7 +62,7 @@ export function getNavItems(role: UserRole | null): NavItem[] {
     ];
   }
 
-  if (role === "SERVICE_PROVIDER") {
+  if (normalizedRole === "SERVICE_PROVIDER") {
     return [
       { label: "Dashboard", href: "/provider/dashboard", icon: LayoutDashboard },
       { label: "My Services", href: "/provider/dashboard/services", icon: Briefcase },
@@ -68,7 +74,7 @@ export function getNavItems(role: UserRole | null): NavItem[] {
     ];
   }
 
-  if (role === "SUPER_ADMIN") {
+  if (normalizedRole === "SUPER_ADMIN") {
     return [
       { label: "Overview", href: "/admin/dashboard", icon: LayoutDashboard },
       { label: "User Management", href: "/admin/dashboard/users", icon: Users },
@@ -85,7 +91,9 @@ export function getNavItems(role: UserRole | null): NavItem[] {
 
 /** Primary destinations for the mobile bottom tab bar (a "Menu" tab is appended by the tab bar itself). */
 export function getMobileTabItems(role: UserRole | null): NavItem[] {
-  if (role === "STUDENT") {
+  const normalizedRole = normalizeRole(role);
+
+  if (normalizedRole === "STUDENT") {
     return [
       { label: "Home", href: "/student/dashboard", icon: LayoutDashboard },
       { label: "Transport", href: "/student/dashboard/transport", icon: Bus },
@@ -94,7 +102,7 @@ export function getMobileTabItems(role: UserRole | null): NavItem[] {
     ];
   }
 
-  if (role === "PARENT") {
+  if (normalizedRole === "PARENT") {
     return [
       { label: "Home", href: "/parent/dashboard", icon: LayoutDashboard },
       { label: "Children", href: "/parent/dashboard/children", icon: Users },
@@ -103,7 +111,7 @@ export function getMobileTabItems(role: UserRole | null): NavItem[] {
     ];
   }
 
-  if (role === "SERVICE_PROVIDER") {
+  if (normalizedRole === "SERVICE_PROVIDER") {
     return [
       { label: "Home", href: "/provider/dashboard", icon: LayoutDashboard },
       { label: "Services", href: "/provider/dashboard/services", icon: Briefcase },
@@ -112,7 +120,7 @@ export function getMobileTabItems(role: UserRole | null): NavItem[] {
     ];
   }
 
-  if (role === "SUPER_ADMIN") {
+  if (normalizedRole === "SUPER_ADMIN") {
     return [
       { label: "Home", href: "/admin/dashboard", icon: LayoutDashboard },
       { label: "Users", href: "/admin/dashboard/users", icon: Users },
@@ -125,9 +133,10 @@ export function getMobileTabItems(role: UserRole | null): NavItem[] {
 }
 
 export function getDashboardLink(role: UserRole | null | undefined): string {
-  if (role === "SUPER_ADMIN") return "/admin/dashboard";
-  if (role === "SERVICE_PROVIDER") return "/provider/dashboard";
-  if (role === "STUDENT") return "/student/dashboard";
-  if (role === "PARENT") return "/parent/dashboard";
+  const normalizedRole = normalizeRole(role);
+  if (normalizedRole === "SUPER_ADMIN") return "/admin/dashboard";
+  if (normalizedRole === "SERVICE_PROVIDER") return "/provider/dashboard";
+  if (normalizedRole === "STUDENT") return "/student/dashboard";
+  if (normalizedRole === "PARENT") return "/parent/dashboard";
   return "/";
 }
